@@ -1,0 +1,237 @@
+.welcomeCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  padding: var(--space-8);
+
+  box-shadow: var(--shadow-sm);
+}
+
+
+.greeting {
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  margin-bottom: var(--space-3);
+}
+
+
+.welcomeCard h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+
+  margin-bottom: var(--space-4);
+}
+
+
+.description {
+  color: var(--color-text-secondary);
+  max-width: 520px;
+}
+
+.section {
+  margin-top: var(--space-8);
+}
+
+
+.section h2 {
+  margin-bottom: var(--space-5);
+}
+
+
+.actionsGrid {
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:var(--space-4);
+}
+
+
+.actionCard {
+
+  background:var(--color-surface);
+
+  border:1px solid var(--color-border);
+
+  border-radius:var(--radius-md);
+
+  padding:var(--space-5);
+
+  text-align:left;
+
+  cursor:pointer;
+
+  transition:var(--transition);
+
+}
+
+
+.actionCard:hover {
+
+  box-shadow:var(--shadow-md);
+
+  transform:translateY(-2px);
+
+}
+
+
+.actionCard h3 {
+
+  font-size:1rem;
+
+  margin-bottom:var(--space-2);
+
+}
+
+
+.actionCard p {
+
+  color:var(--color-text-secondary);
+
+  font-size:.9rem;
+
+}
+
+.summaryGrid {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:var(--space-4);
+}
+
+
+.summaryCard {
+
+  background:var(--color-surface);
+
+  border:1px solid var(--color-border);
+
+  border-radius:var(--radius-md);
+
+  padding:var(--space-5);
+
+}
+
+
+.summaryCard p {
+
+  color:var(--color-text-secondary);
+
+  font-size:.9rem;
+
+  margin-bottom:var(--space-2);
+
+}
+
+
+.summaryCard h3 {
+
+  font-size:1.8rem;
+
+  margin-bottom:var(--space-2);
+
+}
+
+
+.summaryCard span {
+
+  color:var(--color-text-secondary);
+
+  font-size:.85rem;
+
+}
+
+.episodesList {
+  display:flex;
+  flex-direction:column;
+  gap:var(--space-4);
+}
+
+
+.episodeCard {
+
+  background:var(--color-surface);
+
+  border:1px solid var(--color-border);
+
+  border-radius:var(--radius-md);
+
+  padding:var(--space-5);
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+}
+
+
+.episodeCard h3 {
+
+  margin-bottom:var(--space-2);
+
+}
+
+
+.episodeCard p {
+
+  color:var(--color-text-secondary);
+
+}
+
+
+.episodeCard span {
+
+  color:var(--color-text-secondary);
+
+  font-size:.85rem;
+
+}
+
+@media (max-width: 900px) {
+
+  .actionsGrid {
+
+    grid-template-columns:repeat(2,1fr);
+
+  }
+
+
+  .summaryGrid {
+
+    grid-template-columns:1fr;
+
+  }
+
+}
+
+
+@media (max-width:600px) {
+
+
+  .actionsGrid {
+
+    grid-template-columns:1fr;
+
+  }
+
+
+  .welcomeCard h1 {
+
+    font-size:1.6rem;
+
+  }
+
+
+  .episodeCard {
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
+    gap:var(--space-3);
+
+  }
+
+}

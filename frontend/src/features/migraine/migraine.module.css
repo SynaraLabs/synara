@@ -1,0 +1,143 @@
+.container {
+
+  background:var(--color-surface);
+
+  border:1px solid var(--color-border);
+
+  border-radius:var(--radius-lg);
+
+  padding:var(--space-8);
+
+}
+
+
+.container h1 {
+
+  margin-bottom:var(--space-4);
+
+}
+
+
+.container p {
+
+  color:var(--color-text-secondary);
+
+}
+
+.painScale {
+
+  margin-top:var(--space-6);
+
+}
+
+
+.scaleButtons {
+
+  display:flex;
+
+  gap:var(--space-2);
+
+  flex-wrap:wrap;
+
+  margin-top:var(--space-4);
+
+}
+
+
+.scaleButtons button {
+
+  width:40px;
+
+  height:40px;
+
+  border-radius:50%;
+
+  border:1px solid var(--color-border);
+
+  background:var(--color-surface);
+
+  cursor:pointer;
+
+}
+
+
+.selectedPain {
+
+  background:var(--color-primary);
+
+  color:white;
+
+}
+
+
+.scaleLabels {
+
+  display:flex;
+
+  justify-content:space-between;
+
+  margin-top:var(--space-3);
+
+  color:var(--color-text-secondary);
+
+  font-size:.85rem;
+
+}
+
+.symptomSelector {
+
+  margin-top:var(--space-6);
+
+}
+
+
+.symptomGrid {
+
+  display:grid;
+
+  grid-template-columns:repeat(2,1fr);
+
+  gap:var(--space-3);
+
+  margin-top:var(--space-4);
+
+}
+
+
+.symptomOption {
+
+  display:flex;
+
+  align-items:center;
+
+  gap:var(--space-2);
+
+  padding:var(--space-3);
+
+  border:1px solid var(--color-border);
+
+  border-radius:var(--radius-md);
+
+  cursor:pointer;
+
+}
+
+
+.symptomOption input {
+
+  width:18px;
+
+  height:18px;
+
+}
+
+
+@media(max-width:600px){
+
+  .symptomGrid{
+
+    grid-template-columns:1fr;
+
+  }
+
+}
