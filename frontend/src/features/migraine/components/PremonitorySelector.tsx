@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import styles from '../migraine.module.css';
 
 import type {
@@ -8,97 +10,158 @@ import {
   useMigraineStore,
 } from '../store/migraine.store';
 
+import {
+  PhaseDateSelector,
+} from './common/PhaseDateSelector';
+
+
+
+
+
+
 const symptoms: {
   value: PremonitorySymptom;
-  label: string;
+  label:string;
 }[] = [
 
   {
-    value: 'fatigue',
-    label: 'Fatiga o cansancio',
+    value:'fatigue',
+    label:'Fatiga o cansancio',
   },
 
   {
-    value: 'yawning',
-    label: 'Bostezos frecuentes',
+    value:'yawning',
+    label:'Bostezos frecuentes',
   },
 
   {
-    value: 'moodChange',
-    label: 'Cambios de ánimo',
+    value:'moodChange',
+    label:'Cambios de ánimo',
   },
 
   {
-    value: 'irritability',
-    label: 'Irritabilidad',
+    value:'irritability',
+    label:'Irritabilidad',
   },
 
   {
-    value: 'brainFog',
-    label: 'Niebla mental',
+    value:'brainFog',
+    label:'Niebla mental',
   },
 
   {
-    value: 'foodCraving',
-    label: 'Antojos alimentarios',
+    value:'foodCraving',
+    label:'Antojos alimentarios',
   },
 
   {
-    value: 'neckStiffness',
-    label: 'Rigidez cervical',
+    value:'neckStiffness',
+    label:'Rigidez cervical',
   },
 
   {
-    value: 'thirst',
-    label: 'Mayor sensación de sed',
+    value:'thirst',
+    label:'Mayor sensación de sed',
   },
 
   {
-    value: 'sleepiness',
-    label: 'Somnolencia',
+    value:'sleepiness',
+    label:'Somnolencia',
   },
 
   {
-    value: 'concentrationDifficulty',
-    label: 'Dificultad para concentrarse',
+    value:'concentrationDifficulty',
+    label:'Dificultad para concentrarse',
   },
 
 ];
 
-export function PremonitorySelector() {
+
+
+
+
+
+
+
+
+export function PremonitorySelector(){
+
+
+
+  const [showDateSelector,setShowDateSelector] =
+    useState(false);
+
+
+
+
 
   const premonitory =
     useMigraineStore(
-      state => state.episode.premonitory,
+      state=>state.episode.premonitory,
     );
+
+
+
+  const timeline =
+    useMigraineStore(
+      state=>state.episode.timeline,
+    );
+
+
 
   const updatePremonitory =
     useMigraineStore(
-      state => state.updatePremonitory,
+      state=>state.updatePremonitory,
     );
 
+
+
+  const updateTimeline =
+    useMigraineStore(
+      state=>state.updateTimeline,
+    );
+
+
+
+
+
+
+
+
   const toggleSymptom = (
-    symptom: PremonitorySymptom,
-  ) => {
+
+    symptom:PremonitorySymptom,
+
+  )=>{
+
+
 
     const updated =
 
-      premonitory.symptoms.includes(
-        symptom,
-      )
+      premonitory.symptoms.includes(symptom)
 
       ?
 
       premonitory.symptoms.filter(
-        item => item !== symptom,
+
+        item=>item !== symptom,
+
       )
 
       :
 
       [
+
         ...premonitory.symptoms,
+
         symptom,
+
       ];
+
+
+
+
+
 
     updatePremonitory({
 
@@ -110,71 +173,220 @@ export function PremonitorySelector() {
 
     });
 
+
+
+
+
+
+
+
+    if(
+
+      updated.length > 0
+
+      &&
+
+      !timeline?.premonitoryStart
+
+    ){
+
+      setShowDateSelector(true);
+
+    }
+
+
+
   };
+
+
+
+
+
+
+
+
+
+  const handleDateChange = (
+
+    date:string,
+
+  )=>{
+
+
+
+    updateTimeline({
+
+
+
+      episodeStart:
+
+        timeline?.episodeStart
+        ??
+        date,
+
+
+
+      premonitoryStart:
+
+        date,
+
+
+
+    });
+
+
+
+    setShowDateSelector(false);
+
+
+
+  };
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
 
+
     <div className={styles.symptomSelector}>
+
 
       <h3>
         Señales antes de la migraña
       </h3>
 
+
+
       <p>
-        ¿Notaste cambios antes de que empezara
-        el dolor?
+        Podés registrar síntomas aunque los hayas notado días atrás.
       </p>
+
+
+
+
 
       <div className={styles.symptomGrid}>
 
+
         {
 
-          symptoms.map((symptom) => (
+          symptoms.map((symptom)=>(
+
 
             <label
 
               key={symptom.value}
 
-              className={
-                styles.symptomOption
-              }
+              className={styles.symptomOption}
 
             >
+
 
               <input
 
                 type="checkbox"
 
+
                 checked={
 
                   premonitory.symptoms.includes(
+
                     symptom.value,
+
                   )
 
                 }
 
-                onChange={() =>
+
+
+                onChange={()=>
+
+
                   toggleSymptom(
+
                     symptom.value,
+
                   )
+
                 }
+
 
               />
 
+
+
               <span>
+
                 {symptom.label}
+
               </span>
 
+
             </label>
+
 
           ))
 
         }
 
+
       </div>
+
+
+
+
+
+
+
+
+      {
+
+        showDateSelector
+
+        &&
+
+        (
+
+          <PhaseDateSelector
+
+
+            title="¿Cuándo empezaste a notar estas señales?"
+
+
+            value={
+              timeline?.premonitoryStart
+            }
+
+
+            onChange={
+              handleDateChange
+            }
+
+
+          />
+
+        )
+
+      }
+
+
+
+
+
 
     </div>
 
+
   );
+
 
 }

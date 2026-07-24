@@ -1,0 +1,167 @@
+.episodeCard {
+
+  background: white;
+
+  border-radius: 16px;
+
+  padding: 20px;
+
+  border: 1px solid #e5e7eb;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+
+}
+
+
+
+.episodeHeader {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+
+}
+
+
+
+.episodeHeader h3 {
+
+  margin: 0;
+
+  font-size: 18px;
+
+}
+
+
+
+.episodeHeader span {
+
+  display: block;
+
+  margin-top: 4px;
+
+  font-size: 14px;
+
+  color: #6b7280;
+
+}
+
+
+
+.episodeHeader strong {
+
+  font-size: 22px;
+
+}
+
+
+
+.episodeInfo {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+}
+
+
+
+.episodeInfo p {
+
+  margin: 0;
+
+  font-size: 14px;
+
+  color: #374151;
+
+}
+
+
+
+.episodeInfo b {
+
+  color: #111827;
+
+}
+
+.episodeList {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+
+}
+
+
+
+.emptyState {
+
+  background: white;
+
+  border-radius: 16px;
+
+  padding: 32px;
+
+  text-align: center;
+
+  border: 1px solid #e5e7eb;
+
+}
+
+
+
+.emptyState h3 {
+
+  margin-bottom: 8px;
+
+}
+
+
+
+.emptyState p {
+
+  color: #6b7280;
+
+}
+
+.container {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 24px;
+
+}
+
+
+
+.pageHeader h1 {
+
+  margin: 0;
+
+  font-size: 32px;
+
+}
+
+
+
+.pageHeader p {
+
+  margin-top: 8px;
+
+  color: #6b7280;
+
+  max-width: 600px;
+
+}

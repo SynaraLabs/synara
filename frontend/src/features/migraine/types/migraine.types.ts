@@ -1,5 +1,5 @@
 // ===============================
-// SYNARA MIGRAINE DOMAIN MODEL v3
+// SYNARA MIGRAINE DOMAIN MODEL v5
 // ===============================
 
 
@@ -10,6 +10,19 @@
 export type PainIntensity =
   | 0 | 1 | 2 | 3 | 4
   | 5 | 6 | 7 | 8 | 9 | 10;
+
+
+
+// -------------------------------
+// EPISODE STATUS
+// -------------------------------
+
+export type MigraineEpisodeStatus =
+  | 'tracking'
+  | 'crisis'
+  | 'postdrome'
+  | 'completed';
+
 
 
 
@@ -45,10 +58,10 @@ export interface PremonitoryPhase {
 
 
 
+
 // -------------------------------
 // AURA
 // -------------------------------
-
 
 export type AuraType =
   | 'visual'
@@ -105,10 +118,10 @@ export interface AuraPhase {
 
 
 
+
 // -------------------------------
 // CRISIS
 // -------------------------------
-
 
 export type PainLocation =
   | 'front'
@@ -124,6 +137,12 @@ export type PainQuality =
   | 'pressure'
   | 'stabbing'
   | 'burning';
+
+export type MigraineEventType =
+  | 'intensity'
+  | 'medication'
+  | 'symptom'
+  | 'note';
 
 
 
@@ -148,6 +167,19 @@ export interface PainRecord {
 
 }
 
+export interface MigraineEvent {
+
+  id:string;
+
+  type:MigraineEventType;
+
+  timestamp:string;
+
+  data:
+    Record<string, unknown>;
+
+}
+ 
 
 
 export interface CrisisPhase {
@@ -157,6 +189,8 @@ export interface CrisisPhase {
   startTime:string;
 
   endTime?:string;
+
+  events:MigraineEvent[];
 
   intensity:PainIntensity;
 
@@ -176,10 +210,11 @@ export interface CrisisPhase {
 
 
 
+
+
 // -------------------------------
 // POSTDROME
 // -------------------------------
-
 
 export type PostdromeSymptom =
   | 'fatigue'
@@ -195,6 +230,10 @@ export interface PostdromePhase {
 
   present:boolean;
 
+  startTime?:string;
+
+  endTime?:string;
+
   symptoms:PostdromeSymptom[];
 
   recoveryHours?:number;
@@ -203,10 +242,11 @@ export interface PostdromePhase {
 
 
 
+
+
 // -------------------------------
 // TRIGGERS
 // -------------------------------
-
 
 export type MigraineTrigger =
   | 'stress'
@@ -222,10 +262,12 @@ export type MigraineTrigger =
 
 
 
+
+
+
 // -------------------------------
 // TREATMENT
 // -------------------------------
-
 
 export type TreatmentEffectiveness =
   | 'none'
@@ -251,19 +293,22 @@ export interface Treatment {
 
 
 
+
+
 // -------------------------------
 // CONTEXT
 // -------------------------------
-
 
 export interface LifestyleContext {
 
   sleepHours?:number;
 
+
   sleepQuality?:
     | 'poor'
     | 'normal'
     | 'good';
+
 
 
   hydration?:
@@ -272,10 +317,13 @@ export interface LifestyleContext {
     | 'high';
 
 
+
   stressLevel?:PainIntensity;
 
 
+
   physicalActivity?:boolean;
+
 
 
   menstrualCyclePhase?:
@@ -289,10 +337,11 @@ export interface LifestyleContext {
 
 
 
+
+
 // -------------------------------
 // IMPACT
 // -------------------------------
-
 
 export interface EpisodeImpact {
 
@@ -308,42 +357,108 @@ export interface EpisodeImpact {
 
 
 
+
+
+// -------------------------------
+// EPISODE TIMELINE
+// -------------------------------
+
+export interface MigraineTimeline {
+
+
+  episodeStart?:string;
+
+
+  episodeEnd?:string;
+
+
+
+  premonitoryStart?:string;
+
+
+  premonitoryEnd?:string;
+
+
+
+  auraStart?:string;
+
+
+  auraEnd?:string;
+
+
+
+  crisisStart?:string;
+
+
+  crisisEnd?:string;
+
+
+
+  postdromeStart?:string;
+
+
+  postdromeEnd?:string;
+
+
+}
+
+
+
+
+
 // -------------------------------
 // COMPLETE EPISODE
 // -------------------------------
-
 
 export interface MigraineEpisode {
 
   id?:string;
 
+
   createdAt:string;
+
+
+  status:MigraineEpisodeStatus;
+
+
+
+  timeline?:MigraineTimeline;
+
 
 
   premonitory:PremonitoryPhase;
 
 
+
   aura:AuraPhase;
+
 
 
   crisis:CrisisPhase;
 
 
+
   postdrome:PostdromePhase;
+
 
 
   triggers:MigraineTrigger[];
 
 
+
   treatment:Treatment;
+
 
 
   lifestyle?:LifestyleContext;
 
 
+
   impact?:EpisodeImpact;
 
 
+
   notes?:string;
+
 
 }

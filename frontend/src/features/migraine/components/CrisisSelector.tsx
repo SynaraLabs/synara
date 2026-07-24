@@ -17,80 +17,92 @@ interface Props {
   value?: CrisisPhase;
 
   onChange?: (
-    crisis: CrisisPhase,
-  ) => void;
+    crisis:CrisisPhase,
+  )=>void;
 
 }
 
 
 
-const locations: {
+
+
+
+
+const locations:{
   value: PainLocation;
-  label: string;
-}[] = [
+  label:string;
+}[]=[
 
   {
-    value: 'front',
-    label: 'Frente',
+    value:'front',
+    label:'Frente',
   },
 
   {
-    value: 'temple',
-    label: 'Sien',
+    value:'temple',
+    label:'Sien',
   },
 
   {
-    value: 'eye',
-    label: 'Ojo',
+    value:'eye',
+    label:'Ojo',
   },
 
   {
-    value: 'neck',
-    label: 'Cuello',
+    value:'neck',
+    label:'Cuello',
   },
 
   {
-    value: 'general',
-    label: 'Toda la cabeza',
+    value:'general',
+    label:'Toda la cabeza',
   },
 
 ];
 
 
 
-const qualities: {
+
+
+
+
+const qualities:{
   value: PainQuality;
-  label: string;
-}[] = [
+  label:string;
+}[]=[
 
   {
-    value: 'pulsating',
-    label: 'Pulsátil',
+    value:'pulsating',
+    label:'Pulsátil',
   },
 
   {
-    value: 'pressure',
-    label: 'Presión',
+    value:'pressure',
+    label:'Presión',
   },
 
   {
-    value: 'stabbing',
-    label: 'Punzante',
+    value:'stabbing',
+    label:'Punzante',
   },
 
   {
-    value: 'burning',
-    label: 'Ardor',
+    value:'burning',
+    label:'Ardor',
   },
 
 ];
 
 
 
-const symptoms: {
-  value: CrisisSymptom;
-  label: string;
-}[] = [
+
+
+
+
+const symptoms:{
+  value:CrisisSymptom;
+  label:string;
+}[]=[
 
   {
     value:'nausea',
@@ -141,10 +153,17 @@ const symptoms: {
 
 
 
+
+
+
+
+
+
 export function CrisisSelector({
   value,
   onChange,
-}:Props) {
+}:Props){
+
 
 
   const [crisis,setCrisis] =
@@ -163,6 +182,8 @@ export function CrisisSelector({
 
         intensityHistory:[],
 
+        events:[],
+
         location:[],
 
         quality:'pulsating',
@@ -175,35 +196,166 @@ export function CrisisSelector({
 
 
 
-  const update = (
+
+
+
+
+
+
+  const updateLocal = (
     updated:CrisisPhase,
   )=>{
 
     setCrisis(updated);
 
-    onChange?.(updated);
+  };
+
+
+
+
+
+
+
+
+
+  const registerIntensity = ()=>{
+
+
+    const now =
+      new Date().toISOString();
+
+
+
+    const updatedCrisis:CrisisPhase = {
+
+
+      ...crisis,
+
+
+
+      intensityHistory:[
+
+
+        ...crisis.intensityHistory,
+
+
+        {
+
+
+          time:now,
+
+
+          intensity:crisis.intensity,
+
+
+        }
+
+
+      ],
+
+
+
+
+
+      events:[
+
+
+        ...(crisis.events ?? []),
+
+
+
+        {
+
+
+          id:
+            crypto.randomUUID(),
+
+
+
+          type:
+            'intensity',
+
+
+
+          timestamp:
+            now,
+
+
+
+          data:{
+
+
+            intensity:
+              crisis.intensity,
+
+
+          }
+
+
+        }
+
+
+      ]
+
+
+
+    };
+
+
+
+
+
+    setCrisis(updatedCrisis);
+
+
+
+    onChange?.(
+      updatedCrisis,
+    );
+
 
   };
 
 
 
-  const toggleArrayValue = <T,>(
+
+
+
+
+
+
+
+
+
+  const toggleArrayValue=<T,>(
     array:T[],
     item:T,
   )=>{
 
+
     return array.includes(item)
 
-      ? array.filter(
-          value=>value!==item,
-        )
+      ?
 
-      : [
-          ...array,
-          item,
-        ];
+      array.filter(
+        value=>value!==item,
+      )
+
+      :
+
+      [
+        ...array,
+        item,
+      ];
+
 
   };
+
+
+
+
+
+
 
 
 
@@ -218,9 +370,14 @@ export function CrisisSelector({
 
 
 
+
+
       <h4>
         Intensidad del dolor
       </h4>
+
+
+
 
 
       <input
@@ -231,41 +388,39 @@ export function CrisisSelector({
 
         max="10"
 
-        value={crisis.intensity}
+        value={
+          crisis.intensity
+        }
+
+
 
         onChange={(e)=>{
 
+
           const intensity =
-          Number(e.target.value) as PainIntensity;
+            Number(
+              e.target.value
+            ) as PainIntensity;
 
 
-          update({
+
+          updateLocal({
 
             ...crisis,
 
             intensity,
 
-            intensityHistory:[
-
-              ...crisis.intensityHistory,
-
-              {
-
-                time:
-                  new Date()
-                  .toISOString(),
-
-                intensity,
-
-              }
-
-            ]
-
           });
+
 
         }}
 
+
+
       />
+
+
+
 
 
       <strong>
@@ -275,24 +430,58 @@ export function CrisisSelector({
 
 
 
+
+      <button
+
+        type="button"
+
+        onClick={
+          registerIntensity
+        }
+
+      >
+
+        Registrar actualización del dolor
+
+      </button>
+
+
+
+
+
+
+
+
+
       <h4>
         ¿Dónde duele?
       </h4>
 
 
+
+
+
       <div className={styles.symptomGrid}>
 
+
       {
+
         locations.map(item=>(
 
+
           <label
+
             key={item.value}
+
             className={styles.symptomOption}
+
           >
+
 
             <input
 
               type="checkbox"
+
 
               checked={
                 crisis.location.includes(
@@ -300,11 +489,15 @@ export function CrisisSelector({
                 )
               }
 
+
+
               onChange={()=>{
 
-                update({
+
+                updateLocal({
 
                   ...crisis,
+
 
                   location:
                     toggleArrayValue(
@@ -314,7 +507,10 @@ export function CrisisSelector({
 
                 });
 
+
               }}
+
+
 
             />
 
@@ -326,10 +522,18 @@ export function CrisisSelector({
 
           </label>
 
+
         ))
+
       }
 
+
       </div>
+
+
+
+
+
 
 
 
@@ -339,39 +543,69 @@ export function CrisisSelector({
       </h4>
 
 
+
+
+
       <select
 
-        value={crisis.quality}
+
+        value={
+          crisis.quality
+        }
+
+
 
         onChange={(e)=>{
 
-          update({
+
+          updateLocal({
 
             ...crisis,
 
+
             quality:
-            e.target.value as PainQuality,
+              e.target.value as PainQuality,
+
 
           });
 
+
         }}
+
+
 
       >
 
+
         {
+
           qualities.map(item=>(
 
+
             <option
+
               key={item.value}
+
               value={item.value}
+
             >
+
               {item.label}
+
             </option>
 
+
           ))
+
         }
 
+
       </select>
+
+
+
+
+
 
 
 
@@ -381,19 +615,31 @@ export function CrisisSelector({
       </h4>
 
 
+
+
+
       <div className={styles.symptomGrid}>
 
+
       {
+
         symptoms.map(item=>(
 
+
           <label
+
             key={item.value}
+
             className={styles.symptomOption}
+
           >
+
 
             <input
 
+
               type="checkbox"
+
 
               checked={
                 crisis.symptoms.includes(
@@ -402,11 +648,14 @@ export function CrisisSelector({
               }
 
 
+
               onChange={()=>{
 
-                update({
+
+                updateLocal({
 
                   ...crisis,
+
 
                   symptoms:
                     toggleArrayValue(
@@ -414,9 +663,13 @@ export function CrisisSelector({
                       item.value,
                     ),
 
+
                 });
 
+
               }}
+
+
 
             />
 
@@ -428,45 +681,70 @@ export function CrisisSelector({
 
           </label>
 
+
         ))
+
       }
+
 
       </div>
 
 
 
+
+
+
+
+
+
       <label>
+
 
         <input
 
+
           type="checkbox"
+
 
           checked={
             crisis.unableToFunction ?? false
           }
 
-          onChange={(e)=>
 
-            update({
+
+          onChange={(e)=>{
+
+
+            updateLocal({
 
               ...crisis,
+
 
               unableToFunction:
                 e.target.checked,
 
-            })
 
-          }
+            });
+
+
+          }}
+
+
 
         />
 
+
         Me impidió continuar mis actividades
+
 
       </label>
 
 
 
+
+
     </section>
+
 
   );
 

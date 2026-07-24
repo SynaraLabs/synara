@@ -3,14 +3,28 @@ import { persist } from 'zustand/middleware';
 
 
 import type {
+
   MigraineEpisode,
+
+  MigraineTimeline,
+
   PremonitoryPhase,
+
   AuraPhase,
+
   CrisisPhase,
+
   PostdromePhase,
+
   MigraineTrigger,
+
   Treatment,
+
+  MigraineEpisodeStatus,
+
 } from '../types/migraine.types';
+
+
 
 
 
@@ -22,7 +36,26 @@ interface MigraineStore {
   episode:MigraineEpisode;
 
 
+  activeEpisode:MigraineEpisode | null;
+
+
   history:MigraineEpisode[];
+
+
+
+
+  startEpisode:
+    ()=>void;
+
+
+
+  startCrisis:
+    ()=>void;
+
+
+
+  finishCrisis:
+    ()=>void;
 
 
 
@@ -31,32 +64,56 @@ interface MigraineStore {
     (premonitory:PremonitoryPhase)=>void;
 
 
+
   updateAura:
     (aura:AuraPhase)=>void;
+
 
 
   updateCrisis:
     (crisis:CrisisPhase)=>void;
 
 
+
   updatePostdrome:
     (postdrome:PostdromePhase)=>void;
+
 
 
   updateTriggers:
     (triggers:MigraineTrigger[])=>void;
 
 
+
   updateTreatment:
     (treatment:Treatment)=>void;
+
 
 
   updateNotes:
     (notes:string)=>void;
 
 
+
+  updateTimeline:
+    (timeline:Partial<MigraineTimeline>)=>void;
+
+
+
+  updateStatus:
+    (status:MigraineEpisodeStatus)=>void;
+
+
+
+
   completeEpisode:
     ()=>void;
+
+
+
+  clearHistory:
+    ()=>void;
+
 
 
   resetEpisode:
@@ -69,13 +126,21 @@ interface MigraineStore {
 
 
 
+
+
+
+
 const generateId = ()=>{
 
 
   if(
+
     typeof crypto !== 'undefined'
+
     &&
+
     crypto.randomUUID
+
   ){
 
     return crypto.randomUUID();
@@ -110,6 +175,16 @@ const createInitialEpisode =
 
 
 
+  status:
+    'active' as MigraineEpisodeStatus,
+
+
+
+  timeline:{},
+
+
+
+
   premonitory:{
 
 
@@ -120,6 +195,7 @@ const createInitialEpisode =
 
 
   },
+
 
 
 
@@ -145,31 +221,36 @@ const createInitialEpisode =
 
 
 
+
   crisis:{
 
 
-    active:false,
+  active:false,
 
 
-    startTime:'',
+  startTime:'',
 
 
-    intensity:0,
+  intensity:0,
 
 
-    intensityHistory:[],
+  intensityHistory:[],
 
 
-    location:[],
+  events:[],
 
 
-    quality:'pressure',
+  location:[],
 
 
-    symptoms:[],
+  quality:'pressure',
 
 
-  },
+  symptoms:[],
+
+
+},
+
 
 
 
@@ -186,15 +267,15 @@ const createInitialEpisode =
 
 
 
+
   triggers:[],
+
 
 
   treatment:{},
 
 
 });
-
-
 
 
 
@@ -221,6 +302,10 @@ createInitialEpisode(),
 
 
 
+activeEpisode:null,
+
+
+
 history:[],
 
 
@@ -229,244 +314,90 @@ history:[],
 
 
 
-updatePremonitory:
-(premonitory)=>
+startEpisode:()=>
 
-set(state=>({
 
-episode:{
+set(()=>{
 
-...state.episode,
 
-premonitory,
+const episode =
+createInitialEpisode();
 
-},
 
-})),
 
+return {
 
 
+episode,
 
 
+activeEpisode:episode,
 
 
+};
 
-updateAura:
-(aura)=>
 
-set(state=>({
+}),
 
-episode:{
-
-...state.episode,
-
-aura,
-
-},
-
-})),
-
-
-
-
-
-
-
-
-updateCrisis:
-(crisis)=>
-
-set(state=>({
-
-episode:{
-
-...state.episode,
-
-crisis,
-
-},
-
-})),
-
-
-
-
-
-
-
-
-updatePostdrome:
-(postdrome)=>
-
-set(state=>({
-
-episode:{
-
-...state.episode,
-
-postdrome,
-
-},
-
-})),
-
-
-
-
-
-
-
-
-updateTriggers:
-(triggers)=>
-
-set(state=>({
-
-episode:{
-
-...state.episode,
-
-triggers,
-
-},
-
-})),
-
-
-
-
-
-
-
-
-updateTreatment:
-(treatment)=>
-
-set(state=>({
-
-episode:{
-
-...state.episode,
-
-treatment,
-
-},
-
-})),
-
-
-
-
-
-
-
-
-updateNotes:
-(notes)=>
-
-set(state=>({
-
-episode:{
-
-...state.episode,
-
-notes,
-
-},
-
-})),
-
-
-
-
-
-
-
-
-
-
-completeEpisode:
-()=>
+startCrisis:()=>
 
 
 set(state=>{
 
 
-
-const crisis =
-state.episode.crisis;
-
-
-
-let completedCrisis =
-crisis;
+const now =
+new Date().toISOString();
 
 
 
 
-if(
-crisis.startTime
-&&
-crisis.endTime
-){
-
-
-const start =
-new Date(
-crisis.startTime,
-).getTime();
-
-
-
-const end =
-new Date(
-crisis.endTime,
-).getTime();
-
-
-
-
-completedCrisis={
-
-
-...crisis,
-
-
-durationMinutes:
-
-Math.max(
-
-0,
-
-Math.round(
-(end-start)/(1000*60)
-)
-
-),
-
-
-};
-
-}
-
-
-
-const completedEpisode:MigraineEpisode={
+const updatedEpisode = {
 
 
 ...state.episode,
 
 
-id:
-generateId(),
+
+status:
+'crisis' as MigraineEpisodeStatus,
 
 
-createdAt:
-new Date().toISOString(),
 
 
-crisis:
-completedCrisis,
+crisis:{
+
+
+...state.episode.crisis,
+
+
+active:true,
+
+
+startTime:
+state.episode.crisis.startTime
+??
+now,
+
+
+},
+
+
+
+
+timeline:{
+
+
+...(state.episode.timeline ?? {}),
+
+
+crisisStart:
+state.episode.timeline?.crisisStart
+??
+now,
+
+
+},
+
 
 
 };
@@ -475,14 +406,603 @@ completedCrisis,
 
 
 
-return{
+return {
+
+
+episode:updatedEpisode,
+
+
+activeEpisode:updatedEpisode,
+
+
+};
+
+
+}),
+
+
+
+
+
+
+
+finishCrisis:()=>
+
+
+set(state=>{
+
+
+const now =
+new Date().toISOString();
+
+
+
+
+
+const updatedEpisode = {
+
+
+...state.episode,
+
+
+
+status:
+'postdrome' as MigraineEpisodeStatus,
+
+
+
+
+crisis:{
+
+
+...state.episode.crisis,
+
+
+active:false,
+
+
+endTime:now,
+
+
+},
+
+
+
+
+
+postdrome:{
+
+
+...state.episode.postdrome,
+
+
+present:true,
+
+
+},
+
+
+
+
+
+timeline:{
+
+
+...(state.episode.timeline ?? {}),
+
+
+crisisEnd:now,
+
+
+postdromeStart:now,
+
+
+},
+
+
+
+};
+
+
+
+
+
+
+return {
+
+
+episode:updatedEpisode,
+
+
+activeEpisode:updatedEpisode,
+
+
+};
+
+
+
+}),
+
+updatePremonitory:(premonitory)=>
+
+
+set(state=>({
+
+
+episode:{
+
+
+...state.episode,
+
+
+premonitory,
+
+
+},
+
+
+activeEpisode:state.activeEpisode
+?
+{
+
+
+...state.activeEpisode,
+
+
+premonitory,
+
+
+}
+:
+null,
+
+
+})),
+
+
+
+
+
+
+
+
+
+
+updateAura:(aura)=>
+
+
+set(state=>({
+
+
+episode:{
+
+
+...state.episode,
+
+
+aura,
+
+
+},
+
+
+activeEpisode:state.activeEpisode
+?
+{
+
+
+...state.activeEpisode,
+
+
+aura,
+
+
+}
+:
+null,
+
+
+})),
+
+
+
+
+
+
+
+
+
+
+updateCrisis:(crisis)=>
+
+
+set(state=>({
+
+
+episode:{
+
+
+...state.episode,
+
+
+crisis,
+
+
+},
+
+
+activeEpisode:state.activeEpisode
+?
+{
+
+
+...state.activeEpisode,
+
+
+crisis,
+
+
+}
+:
+null,
+
+
+})),
+
+
+
+
+
+
+
+
+
+
+updatePostdrome:(postdrome)=>
+
+
+set(state=>({
+
+
+episode:{
+
+
+...state.episode,
+
+
+postdrome,
+
+
+},
+
+
+activeEpisode:state.activeEpisode
+?
+{
+
+
+...state.activeEpisode,
+
+
+postdrome,
+
+
+}
+:
+null,
+
+
+})),
+
+
+
+
+
+
+
+
+
+
+updateTriggers:(triggers)=>
+
+
+set(state=>({
+
+
+episode:{
+
+
+...state.episode,
+
+
+triggers,
+
+
+},
+
+
+activeEpisode:state.activeEpisode
+?
+{
+
+
+...state.activeEpisode,
+
+
+triggers,
+
+
+}
+:
+null,
+
+
+})),
+
+
+
+
+
+
+
+
+
+
+updateTreatment:(treatment)=>
+
+
+set(state=>({
+
+
+episode:{
+
+
+...state.episode,
+
+
+treatment,
+
+
+},
+
+
+activeEpisode:state.activeEpisode
+?
+{
+
+
+...state.activeEpisode,
+
+
+treatment,
+
+
+}
+:
+null,
+
+
+})),
+
+
+
+
+
+
+
+
+
+
+updateNotes:(notes)=>
+
+
+set(state=>({
+
+
+episode:{
+
+
+...state.episode,
+
+
+notes,
+
+
+},
+
+
+activeEpisode:state.activeEpisode
+?
+{
+
+
+...state.activeEpisode,
+
+
+notes,
+
+
+}
+:
+null,
+
+
+})),
+
+
+
+
+
+
+
+
+
+
+updateTimeline:(timeline)=>
+
+
+set(state=>({
+
+
+episode:{
+
+
+...state.episode,
+
+
+
+timeline:{
+
+
+...state.episode.timeline,
+
+
+...timeline,
+
+
+},
+
+
+},
+
+
+
+activeEpisode:state.activeEpisode
+?
+
+
+{
+
+
+...state.activeEpisode,
+
+
+
+timeline:{
+
+
+...state.activeEpisode.timeline,
+
+
+...timeline,
+
+
+},
+
+
+}
+
+
+:
+
+
+null,
+
+
+})),
+
+
+
+
+
+
+
+
+
+
+updateStatus:(status)=>
+
+
+set(state=>({
+
+
+episode:{
+
+
+...state.episode,
+
+
+status,
+
+
+},
+
+
+activeEpisode:state.activeEpisode
+?
+{
+
+
+...state.activeEpisode,
+
+
+status,
+
+
+}
+:
+null,
+
+
+})),
+
+
+
+
+
+
+
+
+
+
+completeEpisode:()=>
+
+
+set(state=>{
+
+
+const completed = {
+
+
+...state.episode,
+
+
+
+status:
+'completed' as MigraineEpisodeStatus,
+
+
+
+timeline:{
+
+
+...state.episode.timeline,
+
+
+episodeEnd:
+new Date().toISOString(),
+
+
+},
+
+
+};
+
+
+
+
+
+return {
 
 
 history:[
 
+
 ...state.history,
 
-completedEpisode,
+
+completed,
+
 
 ],
 
@@ -492,8 +1012,11 @@ episode:
 createInitialEpisode(),
 
 
-};
 
+activeEpisode:null,
+
+
+};
 
 
 }),
@@ -504,20 +1027,55 @@ createInitialEpisode(),
 
 
 
-resetEpisode:
-()=>
+
+
+
+clearHistory:()=>
 
 
 set({
 
-episode:
-createInitialEpisode(),
+
+history:[],
+
 
 }),
 
 
 
+
+
+
+
+
+
+
+resetEpisode:()=>
+
+
+set({
+
+
+episode:
+createInitialEpisode(),
+
+
+activeEpisode:null,
+
+
+}),
+
+
+
+
+
+
+
+
+
+
 }
+
 
 ),
 
@@ -525,8 +1083,7 @@ createInitialEpisode(),
 {
 
 
-name:
-'synara-migraine-storage',
+name:'synara-migraine-storage',
 
 
 }

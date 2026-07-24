@@ -31,7 +31,6 @@ export function Sidebar() {
         <ul>
 
 
-
           <li>
 
             <NavLink to="/">
@@ -48,9 +47,9 @@ export function Sidebar() {
 
           <li>
 
-            <NavLink to="/profile">
+            <NavLink to="/migraine">
 
-              Perfil
+              Migrañas
 
             </NavLink>
 
@@ -62,9 +61,23 @@ export function Sidebar() {
 
           <li>
 
-            <NavLink to="/migraine">
+            <NavLink to="/history">
 
-              Migrañas
+              Historial
+
+            </NavLink>
+
+          </li>
+
+
+
+
+
+          <li>
+
+            <NavLink to="/profile">
+
+              Perfil
 
             </NavLink>
 
@@ -138,5 +151,6 @@ export function Sidebar() {
 
 
   );
+
 
 }

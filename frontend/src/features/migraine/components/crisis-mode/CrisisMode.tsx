@@ -14,6 +14,7 @@ import {
 
 
 
+
 interface Props {
 
   onExit?: () => void;
@@ -24,37 +25,47 @@ interface Props {
 
 
 
+
+
+
 const quickSymptoms: {
   value:CrisisSymptom;
   label:string;
 }[] = [
+
 
   {
     value:'lightSensitivity',
     label:'Luz molesta',
   },
 
+
   {
     value:'soundSensitivity',
     label:'Sonidos molestos',
   },
+
 
   {
     value:'nausea',
     label:'Náuseas',
   },
 
+
   {
     value:'dizziness',
     label:'Mareo',
   },
+
 
   {
     value:'confusion',
     label:'Niebla mental',
   },
 
+
 ];
+
 
 
 
@@ -71,6 +82,7 @@ export function CrisisMode({
 
 
 
+
   const crisis =
     useMigraineStore(
       state =>
@@ -79,11 +91,14 @@ export function CrisisMode({
 
 
 
+
+
   const updateCrisis =
     useMigraineStore(
       state =>
         state.updateCrisis,
     );
+
 
 
 
@@ -104,6 +119,8 @@ export function CrisisMode({
 
 
 
+
+
     const updated:CrisisPhase = {
 
 
@@ -116,26 +133,8 @@ export function CrisisMode({
       intensity,
 
 
-
-      intensityHistory:[
-
-        ...crisis.intensityHistory,
-
-
-        {
-
-          time:
-            new Date().toISOString(),
-
-
-          intensity,
-
-        },
-
-      ],
-
-
     };
+
 
 
 
@@ -152,11 +151,119 @@ export function CrisisMode({
 
 
 
+  const registerPainUpdate = ()=>{
+
+
+    const now =
+      new Date().toISOString();
+
+
+
+
+
+    const updated:CrisisPhase = {
+
+
+      ...crisis,
+
+
+
+      intensityHistory:[
+
+
+        ...crisis.intensityHistory,
+
+
+
+        {
+
+          time:now,
+
+
+          intensity:
+            crisis.intensity,
+
+
+        },
+
+
+      ],
+
+
+
+
+
+      events:[
+
+
+        ...(crisis.events ?? []),
+
+
+
+        {
+
+
+          id:
+            crypto.randomUUID(),
+
+
+
+          type:
+            'intensity',
+
+
+
+          timestamp:
+            now,
+
+
+
+          data:{
+
+
+            intensity:
+              crisis.intensity,
+
+
+          },
+
+
+        },
+
+
+      ],
+
+
+    };
+
+
+
+
+
+    updateCrisis(updated);
+
+
+
+  };
+
+
+
+
+
+
+
+
+
+
+
+
   const toggleSymptom = (
 
     symptom:CrisisSymptom,
 
   )=>{
+
+
 
 
 
@@ -194,7 +301,9 @@ export function CrisisMode({
 
 
 
+
     updateCrisis({
+
 
       ...crisis,
 
@@ -217,11 +326,15 @@ export function CrisisMode({
 
 
 
-  const finishCrisis = () => {
+
+
+
+  const finishCrisis = ()=>{
 
 
 
     updateCrisis({
+
 
       ...crisis,
 
@@ -261,7 +374,6 @@ export function CrisisMode({
     <section className={styles.container}>
 
 
-
       <header>
 
 
@@ -294,11 +406,13 @@ export function CrisisMode({
 
 
 
+
         <strong>
 
           {crisis.intensity}/10
 
         </strong>
+
 
 
 
@@ -324,11 +438,14 @@ export function CrisisMode({
 
           onChange={(e)=>
 
+
             updatePain(
               e.target.value,
             )
 
+
           }
+
 
 
         />
@@ -336,6 +453,9 @@ export function CrisisMode({
 
 
       </div>
+
+
+
 
 
 
@@ -356,73 +476,81 @@ export function CrisisMode({
 
 
 
+
         <div className={styles.grid}>
 
 
-          {
-
-            quickSymptoms.map(item=>(
+        {
 
 
-              <button
-
-
-                key={
-                  item.value
-                }
-
-
-                type="button"
+          quickSymptoms.map(item=>(
 
 
 
-                className={
+            <button
 
 
-                  crisis.symptoms.includes(
-                    item.value,
-                  )
+              key={
+                item.value
+              }
 
 
-                  ?
-
-
-                  styles.active
-
-
-                  :
-
-
-                  ''
-
-
-                }
+              type="button"
 
 
 
-                onClick={()=>
+
+              className={
 
 
-                  toggleSymptom(
-                    item.value,
-                  )
+                crisis.symptoms.includes(
+                  item.value,
+                )
 
 
-                }
+                ?
 
 
-              >
+                styles.active
 
 
-                {item.label}
+                :
 
 
-              </button>
+                ''
 
 
-            ))
+              }
 
-          }
+
+
+
+              onClick={()=>
+
+
+                toggleSymptom(
+                  item.value,
+                )
+
+
+              }
+
+
+
+            >
+
+
+              {item.label}
+
+
+            </button>
+
+
+
+          ))
+
+
+        }
 
 
 
@@ -430,6 +558,9 @@ export function CrisisMode({
 
 
       </div>
+
+
+
 
 
 
@@ -449,21 +580,10 @@ export function CrisisMode({
 
 
 
-        onClick={()=>{
+        onClick={
+          registerPainUpdate
+        }
 
-
-          updateCrisis({
-
-            ...crisis,
-
-
-            active:true,
-
-
-          });
-
-
-        }}
 
 
       >
@@ -473,6 +593,9 @@ export function CrisisMode({
 
 
       </button>
+
+
+
 
 
 
@@ -492,7 +615,9 @@ export function CrisisMode({
 
 
 
-        onClick={finishCrisis}
+        onClick={
+          finishCrisis
+        }
 
 
 
@@ -503,7 +628,6 @@ export function CrisisMode({
 
 
       </button>
-
 
 
 

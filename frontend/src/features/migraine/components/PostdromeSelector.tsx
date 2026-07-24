@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import styles from '../migraine.module.css';
 
 
@@ -13,6 +15,12 @@ import {
 
 
 
+import {
+  PhaseDateSelector,
+} from './common/PhaseDateSelector';
+
+
+
 
 
 
@@ -22,35 +30,42 @@ const symptoms: {
   label: string;
 }[] = [
 
+
   {
     value:'fatigue',
     label:'Cansancio extremo',
   },
+
 
   {
     value:'brainFog',
     label:'Niebla mental',
   },
 
+
   {
     value:'weakness',
     label:'Debilidad corporal',
   },
+
 
   {
     value:'moodChange',
     label:'Cambios emocionales',
   },
 
+
   {
     value:'residualSensitivity',
     label:'Sensibilidad residual',
   },
 
+
   {
     value:'neckDiscomfort',
     label:'Molestia cervical',
   },
+
 
 ];
 
@@ -61,22 +76,45 @@ const symptoms: {
 
 
 
-export function PostdromeSelector() {
+
+export function PostdromeSelector(){
+
+
+
+  const [
+    showStartDate,
+    setShowStartDate,
+  ] =
+    useState(false);
+
 
 
 
   const postdrome =
     useMigraineStore(
-      state => state.episode.postdrome,
+      state=>state.episode.postdrome,
+    );
+
+
+
+  const timeline =
+    useMigraineStore(
+      state=>state.episode.timeline,
     );
 
 
 
   const updatePostdrome =
     useMigraineStore(
-      state => state.updatePostdrome,
+      state=>state.updatePostdrome,
     );
 
+
+
+  const updateTimeline =
+    useMigraineStore(
+      state=>state.updateTimeline,
+    );
 
 
 
@@ -92,6 +130,13 @@ export function PostdromeSelector() {
 
 
 
+    const wasEmpty =
+      postdrome.symptoms.length === 0;
+
+
+
+
+
     const updatedSymptoms =
 
 
@@ -104,7 +149,9 @@ export function PostdromeSelector() {
 
 
       postdrome.symptoms.filter(
-        item => item !== symptom,
+
+        item=>item !== symptom,
+
       )
 
 
@@ -128,6 +175,7 @@ export function PostdromeSelector() {
 
     updatePostdrome({
 
+
       ...postdrome,
 
 
@@ -143,9 +191,113 @@ export function PostdromeSelector() {
 
 
 
+
+
+
+
+    if(
+
+      wasEmpty
+
+      &&
+
+      updatedSymptoms.length > 0
+
+    ){
+
+      setShowStartDate(true);
+
+    }
+
+
+
   };
 
 
+
+
+
+
+
+  const handleStartDate = (
+
+    date:string,
+
+  )=>{
+
+
+    updateTimeline({
+
+
+      postdromeStart:
+
+        timeline?.postdromeStart
+        ??
+        date,
+
+
+    });
+
+
+  };
+
+
+
+
+
+
+
+  const handleRecoveryHours = (
+
+    value:string,
+
+  )=>{
+
+
+    updatePostdrome({
+
+
+      ...postdrome,
+
+
+      recoveryHours:
+
+        Number(value),
+
+
+    });
+
+
+
+  };
+
+
+
+
+
+
+
+  const handleEndDate = (
+
+    date:string,
+
+  )=>{
+
+
+    updateTimeline({
+
+
+      postdromeEnd:
+
+        timeline?.postdromeEnd
+        ??
+        date,
+
+
+    });
+
+
+  };
 
 
 
@@ -156,12 +308,15 @@ export function PostdromeSelector() {
 
   return (
 
+
     <section>
 
 
       <h3>
         Después de la crisis
       </h3>
+
+
 
 
       <p>
@@ -178,76 +333,105 @@ export function PostdromeSelector() {
       <div className={styles.symptomGrid}>
 
 
-      {
+        {
 
-        symptoms.map(item=>(
-
-
-          <label
-
-            key={item.value}
-
-            className={
-              styles.symptomOption
-            }
+          symptoms.map(item=>(
 
 
-          >
+            <label
 
+              key={item.value}
 
-
-            <input
-
-
-              type="checkbox"
-
-
-
-              checked={
-
-                postdrome.symptoms.includes(
-                  item.value,
-                )
-
+              className={
+                styles.symptomOption
               }
 
 
-
-              onChange={()=>
-
-
-                toggleSymptom(
-                  item.value,
-                )
+            >
 
 
-              }
+              <input
+
+
+                type="checkbox"
+
+
+                checked={
+
+                  postdrome.symptoms.includes(
+                    item.value,
+                  )
+
+                }
+
+
+                onChange={()=>
+
+
+                  toggleSymptom(
+                    item.value,
+                  )
+
+                }
+
+
+              />
 
 
 
-            />
+              <span>
+
+                {item.label}
+
+              </span>
 
 
+            </label>
 
 
-            <span>
+          ))
 
-              {item.label}
-
-            </span>
-
-
-
-          </label>
-
-
-        ))
-
-      }
-
+        }
 
 
       </div>
+
+
+
+
+
+
+
+      {
+
+        showStartDate
+
+        &&
+
+        (
+
+          <PhaseDateSelector
+
+
+            title="¿Cuándo empezaron estos síntomas?"
+
+
+            value={
+              timeline?.postdromeStart
+            }
+
+
+            onChange={
+              handleStartDate
+            }
+
+
+          />
+
+        )
+
+      }
+
 
 
 
@@ -272,7 +456,6 @@ export function PostdromeSelector() {
 
 
 
-
           value={
 
             postdrome.recoveryHours ?? ''
@@ -281,50 +464,63 @@ export function PostdromeSelector() {
 
 
 
+          onChange={(e)=>
 
+            handleRecoveryHours(
+              e.target.value,
+            )
 
-
-          onChange={(e)=>{
-
-
-
-            updatePostdrome({
-
-
-
-              ...postdrome,
-
-
-
-
-              recoveryHours:
-
-
-                Number(
-                  e.target.value,
-                ),
-
-
-
-
-            });
-
-
-
-          }}
+          }
 
 
 
         />
 
 
-
       </label>
+
+
+
+
+
+
+
+
+      {
+
+        postdrome.present
+
+        &&
+
+        (
+
+          <PhaseDateSelector
+
+
+            title="¿Cuándo sentiste recuperación completa?"
+
+
+            value={
+              timeline?.postdromeEnd
+            }
+
+
+            onChange={
+              handleEndDate
+            }
+
+
+          />
+
+        )
+
+      }
 
 
 
     </section>
 
   );
+
 
 }

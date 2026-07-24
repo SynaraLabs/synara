@@ -5,8 +5,6 @@ import { Dashboard } from '../pages/Dashboard';
 
 import { MigrainePage } from '../features/migraine/pages/MigrainePage';
 
-import { ProfilePage } from '../features/profile/pages/ProfilePage';
-
 
 import { Anxiety } from '../pages/Anxiety';
 
@@ -16,30 +14,28 @@ import { Journal } from '../pages/Journal';
 
 import { Reports } from '../pages/Reports';
 
+import { ProfilePage } from '../features/profile/pages/ProfilePage';
+
+import { HistoryPage } from '../features/history/pages/HistoryPage';
 
 
 
 
 export const routes = [
 
-
   {
 
+    element: <AppLayout />,
 
-    element:<AppLayout />,
 
-
-    children:[
+    children: [
 
 
       {
 
+        path: '/',
 
-        path:'/',
-
-
-        element:<Dashboard />,
-
+        element: <Dashboard />,
 
       },
 
@@ -47,12 +43,9 @@ export const routes = [
 
       {
 
+        path: '/migraine',
 
-        path:'/migraine',
-
-
-        element:<MigrainePage />,
-
+        element: <MigrainePage />,
 
       },
 
@@ -60,12 +53,9 @@ export const routes = [
 
       {
 
+        path: '/history',
 
-        path:'/profile',
-
-
-        element:<ProfilePage />,
-
+        element: <HistoryPage />,
 
       },
 
@@ -73,12 +63,9 @@ export const routes = [
 
       {
 
+        path: '/profile',
 
-        path:'/anxiety',
-
-
-        element:<Anxiety />,
-
+        element: <ProfilePage />,
 
       },
 
@@ -86,12 +73,9 @@ export const routes = [
 
       {
 
+        path: '/anxiety',
 
-        path:'/panic',
-
-
-        element:<Panic />,
-
+        element: <Anxiety />,
 
       },
 
@@ -99,12 +83,9 @@ export const routes = [
 
       {
 
+        path: '/panic',
 
-        path:'/journal',
-
-
-        element:<Journal />,
-
+        element: <Panic />,
 
       },
 
@@ -112,20 +93,25 @@ export const routes = [
 
       {
 
+        path: '/journal',
 
-        path:'/reports',
+        element: <Journal />,
+
+      },
 
 
-        element:<Reports />,
 
+      {
+
+        path: '/reports',
+
+        element: <Reports />,
 
       },
 
 
     ],
 
-
   },
-
 
 ];

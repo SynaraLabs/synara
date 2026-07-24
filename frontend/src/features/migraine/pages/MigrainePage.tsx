@@ -2,13 +2,13 @@ import { useState } from 'react';
 
 
 import { PremonitorySelector } from '../components/PremonitorySelector';
-import { PainScale } from '../components/PainScale';
-import { SymptomSelector } from '../components/SymptomSelector';
 import { AuraSelector } from '../components/AuraSelector';
 import { CrisisMode } from '../components/crisis-mode/CrisisMode';
 import { PostdromeSelector } from '../components/PostdromeSelector';
 import { TriggerSelector } from '../components/TriggerSelector';
 import { TreatmentSelector } from '../components/TreatmentSelector';
+import { PhaseDateSelector } from '../components/common/PhaseDateSelector';
+import { MigraineDevTools } from '../components/dev/MigraineDevTools';
 
 
 import {
@@ -20,6 +20,8 @@ import styles from '../migraine.module.css';
 
 
 
+
+
 type MigraineMode =
   | 'normal'
   | 'crisis';
@@ -28,35 +30,73 @@ type MigraineMode =
 
 
 
-export function MigrainePage() {
+
+
+export function MigrainePage(){
+
 
 
   const [mode,setMode] =
-    useState<MigraineMode>(
-      'normal',
+    useState<MigraineMode>('normal');
+
+
+
+  const [
+    showCrisisDate,
+    setShowCrisisDate,
+  ] =
+    useState(false);
+
+
+
+
+
+
+  const episode =
+    useMigraineStore(
+      state=>state.activeEpisode,
     );
 
 
 
-
-
-  const completeEpisode =
+  const startEpisode =
     useMigraineStore(
-      state => state.completeEpisode,
+      state=>state.startEpisode,
+    );
+
+
+
+  const updateTimeline =
+    useMigraineStore(
+      state=>state.updateTimeline,
     );
 
 
 
   const updateCrisis =
     useMigraineStore(
-      state => state.updateCrisis,
+      state=>state.updateCrisis,
     );
 
 
 
-  const crisis =
+  const startCrisis =
     useMigraineStore(
-      state => state.episode.crisis,
+      state=>state.startCrisis,
+    );
+
+
+
+  const finishCrisis =
+    useMigraineStore(
+      state=>state.finishCrisis,
+    );
+
+
+
+  const completeEpisode =
+    useMigraineStore(
+      state=>state.completeEpisode,
     );
 
 
@@ -65,25 +105,10 @@ export function MigrainePage() {
 
 
 
-  const startCrisis = () => {
+  const handleNewEpisode = ()=>{
 
 
-    updateCrisis({
-
-      ...crisis,
-
-
-      active:true,
-
-
-      startTime:
-        new Date().toISOString(),
-
-
-    });
-
-
-    setMode('crisis');
+    startEpisode();
 
 
   };
@@ -95,67 +120,124 @@ export function MigrainePage() {
 
 
 
-  const finishEpisode = () => {
+  const handleStartCrisis = ()=>{
 
 
-    const now =
-      new Date();
+    setShowCrisisDate(true);
 
 
-
-    if(crisis.startTime){
-
-
-      const start =
-        new Date(
-          crisis.startTime,
-        );
+  };
 
 
 
-      const duration =
-
-        Math.round(
-
-          (
-            now.getTime()
-            -
-            start.getTime()
-
-          )
-          /
-          60000
-
-        );
 
 
 
-      updateCrisis({
 
 
-        ...crisis,
+  const handleCrisisDate = (
+
+    date:string,
+
+  )=>{
 
 
-        active:false,
+    if(!episode) return;
 
 
-        endTime:
-          now.toISOString(),
+
+    const selectedDate =
+      new Date(date).toISOString();
 
 
-        durationMinutes:
-          duration,
 
 
-      });
+
+    updateTimeline({
 
 
-    }
+      episodeStart:
 
+        episode.timeline?.episodeStart
+        ??
+        selectedDate,
+
+
+
+      crisisStart:
+
+        selectedDate,
+
+
+
+      premonitoryEnd:
+
+        selectedDate,
+
+
+    });
+
+
+
+
+
+
+
+    updateCrisis({
+
+
+      ...episode.crisis,
+
+
+      active:true,
+
+
+      startTime:selectedDate,
+
+
+    });
+
+
+
+
+
+    startCrisis();
+
+
+
+
+    setShowCrisisDate(false);
+
+
+
+    setMode('crisis');
+
+
+  };
+
+
+
+  const handleFinishCrisis = ()=>{
+
+
+    finishCrisis();
+
+
+    setMode('normal');
+
+
+  };
+
+
+
+
+
+
+
+  const handleCompleteEpisode = ()=>{
 
 
     completeEpisode();
-
 
 
     setMode('normal');
@@ -170,44 +252,208 @@ export function MigrainePage() {
 
 
 
+
   return (
+
 
 
     <section className={styles.container}>
 
 
       <h1>
-        Registro de migrañas
+        Seguimiento de migraña
       </h1>
 
 
 
       <p>
-        Registrá tus episodios para comprender
-        tus patrones a lo largo del tiempo.
+        Acompañamos todo el episodio:
+        señales previas, crisis y recuperación.
       </p>
 
 
 
 
 
-      {
-        mode === 'normal' && (
 
-          <>
+
+
+
+      {
+
+        !episode
+
+        &&
+
+        (
+
+
+          <div>
+
+
+            <h2>
+              No hay una migraña activa
+            </h2>
+
+
+            <p>
+              Podés iniciar un nuevo registro cuando lo necesites.
+            </p>
+
 
 
             <button
 
               type="button"
 
-              onClick={startCrisis}
+              onClick={
+                handleNewEpisode
+              }
 
             >
 
-              Estoy teniendo una crisis ahora
+              Registrar nueva migraña
 
             </button>
+
+
+          </div>
+
+
+        )
+
+      }
+
+
+
+
+
+
+
+
+
+      {
+
+        episode
+
+        &&
+
+        mode === 'crisis'
+
+        &&
+
+        (
+
+          <CrisisMode
+
+            onExit={
+              handleFinishCrisis
+            }
+
+          />
+
+        )
+
+      }
+
+
+
+
+
+
+
+
+
+      {
+
+        episode
+
+        &&
+
+        mode === 'normal'
+
+        &&
+
+        (
+
+          <>
+
+
+
+
+
+
+            {
+
+              !episode.crisis.active
+
+              &&
+
+              (
+
+
+                <button
+
+                  type="button"
+
+                  onClick={
+                    handleStartCrisis
+                  }
+
+                >
+
+                  Estoy entrando en crisis
+
+                </button>
+
+
+              )
+
+            }
+
+
+
+
+
+
+
+
+
+            {
+
+              showCrisisDate
+
+              &&
+
+              (
+
+
+                <PhaseDateSelector
+
+
+                  title="¿Cuándo empezó el dolor?"
+
+
+                  value={
+                    episode.crisis.startTime
+                  }
+
+
+                  onChange={
+                    handleCrisisDate
+                  }
+
+
+                />
+
+
+              )
+
+            }
+
+
+
+
 
 
 
@@ -215,61 +461,98 @@ export function MigrainePage() {
 
             <PremonitorySelector />
 
+
+
             <AuraSelector />
 
-            <PainScale />
-
-            <SymptomSelector />
-
-            <PostdromeSelector />
-
-            <TriggerSelector />
-
-            <TreatmentSelector />
 
 
 
 
 
 
-            <button
 
-              type="button"
 
-              onClick={finishEpisode}
+            {
 
-            >
+              episode.status === 'postdrome'
 
-              Finalizar episodio
+              &&
 
-            </button>
+              (
+
+
+                <>
+
+
+                  <h2>
+                    Recuperación después de la crisis
+                  </h2>
+
+
+
+                  <PostdromeSelector />
+
+
+
+                  <TriggerSelector />
+
+
+
+                  <TreatmentSelector />
+
+
+
+
+
+                  <button
+
+                    type="button"
+
+                    onClick={
+                      handleCompleteEpisode
+                    }
+
+                  >
+
+                    Finalizar episodio
+
+
+                  </button>
+
+
+                </>
+
+
+              )
+
+
+            }
+
+
+
+
+
+
+
+
+
+            <MigraineDevTools />
+
+
 
 
 
           </>
 
+
         )
+
       }
 
 
 
 
-
-
-
-      {
-        mode === 'crisis' && (
-
-          <CrisisMode
-
-            onExit={() =>
-              setMode('normal')
-            }
-
-          />
-
-        )
-      }
 
 
 
@@ -277,5 +560,6 @@ export function MigrainePage() {
 
 
   );
+
 
 }

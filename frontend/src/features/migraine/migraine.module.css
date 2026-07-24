@@ -141,3 +141,76 @@
   }
 
 }
+
+.dateSelector {
+
+  margin-top:var(--space-6);
+
+  padding:var(--space-4);
+
+  border:1px solid var(--color-border);
+
+  border-radius:var(--radius-md);
+
+  background:var(--color-surface);
+
+}
+
+
+.dateSelector h4 {
+
+  margin-bottom:var(--space-3);
+
+}
+
+
+.dateSelector div {
+
+  display:flex;
+
+  gap:var(--space-2);
+
+  flex-wrap:wrap;
+
+  margin-bottom:var(--space-4);
+
+}
+
+
+.dateSelector button {
+
+  padding:var(--space-2) var(--space-3);
+
+  border-radius:var(--radius-md);
+
+  border:1px solid var(--color-border);
+
+  background:var(--color-surface);
+
+  cursor:pointer;
+
+}
+
+
+.dateSelector label {
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:var(--space-2);
+
+  color:var(--color-text-secondary);
+
+}
+
+
+.dateSelector input {
+
+  padding:var(--space-2);
+
+  border-radius:var(--radius-md);
+
+  border:1px solid var(--color-border);
+
+}
