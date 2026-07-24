@@ -4,17 +4,13 @@ import type {
   PainIntensity,
 } from '../types/migraine.types';
 
-
 import {
   useMigraineStore,
 } from '../store/migraine.store';
 
 
 
-
-
 export function PainScale() {
-
 
 
   const intensity =
@@ -24,13 +20,11 @@ export function PainScale() {
     );
 
 
-
   const crisis =
     useMigraineStore(
       state =>
         state.episode.crisis,
     );
-
 
 
   const updateCrisis =
@@ -42,9 +36,6 @@ export function PainScale() {
 
 
 
-
-
-
   const handleChange = (
 
     level: PainIntensity,
@@ -52,48 +43,34 @@ export function PainScale() {
   ) => {
 
 
-
     updateCrisis({
 
-
       ...crisis,
-
 
 
       intensity:
         level,
 
 
-
       intensityHistory:[
-
 
         ...crisis.intensityHistory,
 
 
-
         {
-
 
           time:
             new Date().toISOString(),
 
 
-
           intensity:
             level,
 
-
-
         },
-
 
       ],
 
-
-
     });
-
 
 
   };
@@ -102,12 +79,7 @@ export function PainScale() {
 
 
 
-
-
-
   return (
-
-
 
     <div className={styles.painScale}>
 
@@ -115,7 +87,6 @@ export function PainScale() {
       <h3>
         Intensidad del dolor
       </h3>
-
 
 
 
@@ -132,23 +103,17 @@ export function PainScale() {
 
           )
 
-
-          .map((level) => (
-
+          .map((level)=>(
 
 
             <button
 
-
               key={level}
-
 
               type="button"
 
 
-
               onClick={() =>
-
 
                 handleChange(
 
@@ -156,9 +121,7 @@ export function PainScale() {
 
                 )
 
-
               }
-
 
 
               className={
@@ -176,15 +139,12 @@ export function PainScale() {
               }
 
 
-
             >
-
 
               {level}
 
 
             </button>
-
 
 
           ))
@@ -197,14 +157,12 @@ export function PainScale() {
 
 
 
-
       <div className={styles.scaleLabels}>
 
 
         <span>
           Sin dolor
         </span>
-
 
 
         <span>
@@ -216,10 +174,7 @@ export function PainScale() {
 
 
 
-
     </div>
-
-
 
   );
 

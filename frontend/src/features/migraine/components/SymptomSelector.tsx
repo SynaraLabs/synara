@@ -15,7 +15,6 @@ import {
 
 
 
-
 const symptoms: {
   value: CrisisSymptom;
   label: string;
@@ -108,7 +107,6 @@ export function SymptomSelector() {
 
 
 
-
   const selected =
     crisis.symptoms;
 
@@ -127,6 +125,7 @@ export function SymptomSelector() {
 
 
     const updated =
+
 
       selected.includes(symptom)
 
@@ -154,6 +153,7 @@ export function SymptomSelector() {
         symptom,
 
       ];
+
 
 
 

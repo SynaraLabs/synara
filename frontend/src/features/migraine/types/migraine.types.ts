@@ -1,5 +1,5 @@
 // ===============================
-// SYNARA MIGRAINE DOMAIN MODEL v3
+// SYNARA MIGRAINE DOMAIN MODEL v4
 // ===============================
 
 
@@ -10,6 +10,7 @@
 export type PainIntensity =
   | 0 | 1 | 2 | 3 | 4
   | 5 | 6 | 7 | 8 | 9 | 10;
+
 
 
 
@@ -42,6 +43,7 @@ export interface PremonitoryPhase {
   notes?:string;
 
 }
+
 
 
 
@@ -85,6 +87,7 @@ export type AuraTiming =
 
 
 
+
 export interface AuraPhase {
 
   present:boolean;
@@ -105,6 +108,8 @@ export interface AuraPhase {
 
 
 
+
+
 // -------------------------------
 // CRISIS
 // -------------------------------
@@ -119,11 +124,13 @@ export type PainLocation =
 
 
 
+
 export type PainQuality =
   | 'pulsating'
   | 'pressure'
   | 'stabbing'
   | 'burning';
+
 
 
 
@@ -140,6 +147,8 @@ export type CrisisSymptom =
 
 
 
+
+
 export interface PainRecord {
 
   time:string;
@@ -150,27 +159,53 @@ export interface PainRecord {
 
 
 
+
+
+
+
 export interface CrisisPhase {
+
 
   active:boolean;
 
+
   startTime:string;
+
+
+  endTime?:string;
+
+
 
   intensity:PainIntensity;
 
+
   intensityHistory: PainRecord[];
 
-  location: PainLocation[];
+
+
+  location:PainLocation[];
+
 
   quality: PainQuality;
 
+
+
   symptoms:CrisisSymptom[];
+
+
 
   unableToFunction?:boolean;
 
+
+
   durationMinutes?:number;
 
+
 }
+
+
+
+
 
 
 
@@ -189,15 +224,25 @@ export type PostdromeSymptom =
 
 
 
+
+
 export interface PostdromePhase {
+
 
   present:boolean;
 
+
   symptoms:PostdromeSymptom[];
+
 
   recoveryHours?:number;
 
+
 }
+
+
+
+
 
 
 
@@ -220,6 +265,10 @@ export type MigraineTrigger =
 
 
 
+
+
+
+
 // -------------------------------
 // TREATMENT
 // -------------------------------
@@ -233,19 +282,31 @@ export type TreatmentEffectiveness =
 
 
 
+
+
 export interface Treatment {
+
 
   medication?:string;
 
+
   dose?:string;
+
 
   takenAt?:string;
 
+
   effectiveness?:TreatmentEffectiveness;
+
 
   responseTimeMinutes?:number;
 
+
 }
+
+
+
+
 
 
 
@@ -256,12 +317,15 @@ export interface Treatment {
 
 export interface LifestyleContext {
 
+
   sleepHours?:number;
+
 
   sleepQuality?:
     | 'poor'
     | 'normal'
     | 'good';
+
 
 
   hydration?:
@@ -270,10 +334,14 @@ export interface LifestyleContext {
     | 'high';
 
 
+
   stressLevel?:PainIntensity;
 
 
+
   physicalActivity?:boolean;
+
+
 
 
   menstrualCyclePhase?:
@@ -283,7 +351,13 @@ export interface LifestyleContext {
     | 'luteal'
     | 'unknown';
 
+
+
 }
+
+
+
+
 
 
 
@@ -294,15 +368,24 @@ export interface LifestyleContext {
 
 export interface EpisodeImpact {
 
+
   interruptedActivities:boolean;
+
 
   missedWorkOrStudy:boolean;
 
+
   neededRest:boolean;
+
 
   neededDarkRoom:boolean;
 
+
 }
+
+
+
+
 
 
 
@@ -313,35 +396,48 @@ export interface EpisodeImpact {
 
 export interface MigraineEpisode {
 
+
   id?:string;
 
+
+
   createdAt:string;
+
 
 
   premonitory:PremonitoryPhase;
 
 
+
   aura:AuraPhase;
+
 
 
   crisis:CrisisPhase;
 
 
+
   postdrome:PostdromePhase;
+
 
 
   triggers:MigraineTrigger[];
 
 
+
   treatment:Treatment;
+
 
 
   lifestyle?:LifestyleContext;
 
 
+
   impact?:EpisodeImpact;
 
 
+
   notes?:string;
+
 
 }

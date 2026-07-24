@@ -19,57 +19,48 @@ import type {
 interface MigraineStore {
 
 
-  episode: MigraineEpisode;
+  episode:MigraineEpisode;
+
+
+  history:MigraineEpisode[];
 
 
 
-  updatePremonitory: (
-    premonitory: PremonitoryPhase,
-  ) => void;
+
+  updatePremonitory:
+    (premonitory:PremonitoryPhase)=>void;
 
 
-
-  updateAura: (
-    aura: AuraPhase,
-  ) => void;
+  updateAura:
+    (aura:AuraPhase)=>void;
 
 
-
-  updateCrisis: (
-    crisis: CrisisPhase,
-  ) => void;
+  updateCrisis:
+    (crisis:CrisisPhase)=>void;
 
 
-
-  updatePostdrome: (
-    postdrome: PostdromePhase,
-  ) => void;
+  updatePostdrome:
+    (postdrome:PostdromePhase)=>void;
 
 
-
-  updateTriggers: (
-    triggers: MigraineTrigger[],
-  ) => void;
+  updateTriggers:
+    (triggers:MigraineTrigger[])=>void;
 
 
-
-  updateTreatment: (
-    treatment: Treatment,
-  ) => void;
+  updateTreatment:
+    (treatment:Treatment)=>void;
 
 
-
-  updateNotes: (
-    notes:string,
-  ) => void;
+  updateNotes:
+    (notes:string)=>void;
 
 
+  completeEpisode:
+    ()=>void;
 
-  completeEpisode: () => void;
 
-
-
-  resetEpisode: () => void;
+  resetEpisode:
+    ()=>void;
 
 
 }
@@ -78,17 +69,45 @@ interface MigraineStore {
 
 
 
+const generateId = ()=>{
 
 
-const initialEpisode =
+  if(
+    typeof crypto !== 'undefined'
+    &&
+    crypto.randomUUID
+  ){
+
+    return crypto.randomUUID();
+
+  }
+
+
+  return Date.now().toString();
+
+
+};
+
+
+
+
+
+
+
+
+const createInitialEpisode =
 ():MigraineEpisode => ({
 
 
-  id:undefined,
+  id:
+    generateId(),
+
 
 
   createdAt:
     new Date().toISOString(),
+
+
 
 
 
@@ -102,6 +121,8 @@ const initialEpisode =
 
 
   },
+
+
 
 
 
@@ -124,6 +145,9 @@ const initialEpisode =
 
 
   },
+
+
+
 
 
 
@@ -155,6 +179,9 @@ const initialEpisode =
 
 
 
+
+
+
   postdrome:{
 
 
@@ -168,8 +195,10 @@ const initialEpisode =
 
 
 
-  triggers:[],
 
+
+
+  triggers:[],
 
 
   treatment:{},
@@ -183,71 +212,73 @@ const initialEpisode =
 
 
 
-console.log("STORE SYNARA ACTIVO");
+
 
 export const useMigraineStore = create<MigraineStore>()(
 
 
-  persist(
+persist(
 
 
-    (set) => ({
+(set)=>(
 
 
-      episode:
-        initialEpisode(),
+{
 
 
+episode:
+  createInitialEpisode(),
 
 
 
-      updatePremonitory:
+history:[],
 
-        (premonitory) =>
 
-          set(state => ({
 
 
-            episode:{
 
 
-              ...state.episode,
 
 
-              premonitory,
+updatePremonitory:
+(premonitory)=>
 
+set(state=>({
 
-            },
+episode:{
 
+...state.episode,
 
-          })),
+premonitory,
 
+},
 
+})),
 
 
 
 
 
-      updateAura:
 
-        (aura) =>
 
-          set(state => ({
 
 
-            episode:{
+updateAura:
+(aura)=>
 
+set(state=>({
 
-              ...state.episode,
+episode:{
 
+...state.episode,
 
-              aura,
+aura,
 
+},
 
-            },
+})),
 
 
-          })),
 
 
 
@@ -255,208 +286,242 @@ export const useMigraineStore = create<MigraineStore>()(
 
 
 
-      updateCrisis:
+updateCrisis:
+(crisis)=>
 
-        (crisis) =>
+set(state=>({
 
-          set(state => ({
+episode:{
 
+...state.episode,
 
-            episode:{
+crisis,
 
+},
 
-              ...state.episode,
+})),
 
 
-              crisis,
 
 
-            },
 
 
-          })),
 
 
 
+updatePostdrome:
+(postdrome)=>
 
+set(state=>({
 
+episode:{
 
+...state.episode,
 
-      updatePostdrome:
+postdrome,
 
-        (postdrome) =>
+},
 
-          set(state => ({
+})),
 
 
-            episode:{
 
 
-              ...state.episode,
 
 
-              postdrome,
 
 
-            },
 
+updateTriggers:
+(triggers)=>
 
-          })),
+set(state=>({
 
+episode:{
 
+...state.episode,
 
+triggers,
 
+},
 
+})),
 
 
-      updateTriggers:
 
-        (triggers) =>
 
-          set(state => ({
 
 
-            episode:{
 
 
-              ...state.episode,
 
+updateTreatment:
+(treatment)=>
 
-              triggers,
+set(state=>({
 
+episode:{
 
-            },
+...state.episode,
 
+treatment,
 
-          })),
+},
 
+})),
 
 
 
 
 
 
-      updateTreatment:
 
-        (treatment) =>
 
-          set(state => ({
 
+updateNotes:
+(notes)=>
 
-            episode:{
+set(state=>({
 
+episode:{
 
-              ...state.episode,
+...state.episode,
 
+notes,
 
-              treatment,
+},
 
+})),
 
-            },
 
 
-          })),
 
 
 
 
 
 
+completeEpisode:
+()=>
 
-      updateNotes:
 
-        (notes) =>
+set(state=>{
 
-          set(state => ({
 
 
-            episode:{
 
 
-              ...state.episode,
+const crisis =
+state.episode.crisis;
 
 
-              notes,
 
+let completedCrisis = crisis;
 
-            },
 
 
-          })),
+if(
+crisis.startTime
+&&
+crisis.endTime
+){
 
+const start =
+new Date(crisis.startTime).getTime();
 
 
+const end =
+new Date(crisis.endTime).getTime();
 
 
+completedCrisis={
 
+...crisis,
 
-      completeEpisode:
+durationMinutes:
 
+Math.round(
+(end-start)/(1000*60)
+),
 
-        () =>
+};
 
-          set(state => ({
+}
 
 
-            episode:{
 
 
-              ...state.episode,
 
+const completedEpisode:MigraineEpisode={
 
-              crisis:{
 
+...state.episode,
 
-                ...state.episode.crisis,
 
+crisis:completedCrisis,
 
-                active:false,
 
+};
 
-              },
 
 
-            },
+return{
 
 
-          })),
+history:[
 
+...state.history,
 
+completedEpisode,
 
+],
 
 
 
+episode:
+createInitialEpisode(),
 
-      resetEpisode:
 
+};
 
-        () =>
 
-          set({
+}),
 
 
-            episode:
-              initialEpisode(),
 
 
-          }),
 
 
 
-    }),
 
 
-    {
+resetEpisode:
+()=>
 
 
-      name:
-        'synara-migraine-storage',
+set({
 
+episode:
+createInitialEpisode(),
 
-    }
+}),
 
 
-  )
 
+
+}
+
+),
+
+
+{
+
+name:
+'synara-migraine-storage',
+
+}
+
+
+)
 
 );

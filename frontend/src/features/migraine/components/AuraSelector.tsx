@@ -8,10 +8,9 @@ import type {
   AuraTiming,
 } from '../types/migraine.types';
 
-
 import {
   useMigraineStore,
-} from '../store/migraine.store';
+}  from '../store/migraine.store';
 
 
 
@@ -138,18 +137,18 @@ export function AuraSelector() {
 
       aura.types.includes(type)
 
-        ?
+      ?
 
-        aura.types.filter(
-          item => item !== type,
-        )
+      aura.types.filter(
+        item => item !== type,
+      )
 
-        :
+      :
 
-        [
-          ...aura.types,
-          type,
-        ];
+      [
+        ...aura.types,
+        type,
+      ];
 
 
 
@@ -195,7 +194,6 @@ export function AuraSelector() {
         {
           auraTypes.map(item => (
 
-
             <label
 
               key={item.value}
@@ -206,7 +204,6 @@ export function AuraSelector() {
 
             >
 
-
               <input
 
                 type="checkbox"
@@ -216,7 +213,6 @@ export function AuraSelector() {
                     item.value,
                   )
                 }
-
 
                 onChange={() =>
                   toggleType(
@@ -234,7 +230,6 @@ export function AuraSelector() {
 
             </label>
 
-
           ))
         }
 
@@ -245,10 +240,8 @@ export function AuraSelector() {
 
 
 
-
       {
         aura.types.includes('visual') && (
-
 
           <AuraCheckboxGroup
 
@@ -259,7 +252,6 @@ export function AuraSelector() {
             selected={
               aura.visualSymptoms
             }
-
 
             onChange={(values)=>
 
@@ -276,18 +268,14 @@ export function AuraSelector() {
 
           />
 
-
         )
       }
 
 
 
 
-
-
       {
         aura.types.includes('sensory') && (
-
 
           <AuraCheckboxGroup
 
@@ -298,7 +286,6 @@ export function AuraSelector() {
             selected={
               aura.sensorySymptoms
             }
-
 
             onChange={(values)=>
 
@@ -315,18 +302,14 @@ export function AuraSelector() {
 
           />
 
-
         )
       }
 
 
 
 
-
-
       {
         aura.types.includes('language') && (
-
 
           <AuraCheckboxGroup
 
@@ -337,7 +320,6 @@ export function AuraSelector() {
             selected={
               aura.languageSymptoms
             }
-
 
             onChange={(values)=>
 
@@ -354,11 +336,8 @@ export function AuraSelector() {
 
           />
 
-
         )
       }
-
-
 
 
 
@@ -368,7 +347,6 @@ export function AuraSelector() {
         aura.types.length > 0 && (
 
           <>
-
 
             <label>
 
@@ -440,21 +418,17 @@ export function AuraSelector() {
                   Seleccionar
                 </option>
 
-
                 <option value="beforePain">
                   Antes del dolor
                 </option>
-
 
                 <option value="duringPain">
                   Durante el dolor
                 </option>
 
-
                 <option value="afterPain">
                   Después del dolor
                 </option>
-
 
               </select>
 
@@ -474,8 +448,6 @@ export function AuraSelector() {
   );
 
 }
-
-
 
 
 
@@ -536,7 +508,6 @@ function AuraCheckboxGroup<T extends string>({
       ];
 
 
-
     onChange(updated);
 
   };
@@ -554,13 +525,11 @@ function AuraCheckboxGroup<T extends string>({
       </h4>
 
 
-
       <div className={styles.symptomGrid}>
 
 
         {
           items.map(item => (
-
 
             <label
 
@@ -571,7 +540,6 @@ function AuraCheckboxGroup<T extends string>({
               }
 
             >
-
 
               <input
 
@@ -599,7 +567,6 @@ function AuraCheckboxGroup<T extends string>({
 
 
             </label>
-
 
           ))
         }

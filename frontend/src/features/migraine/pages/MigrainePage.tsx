@@ -9,7 +9,9 @@ import { PostdromeSelector } from '../components/PostdromeSelector';
 import { TriggerSelector } from '../components/TriggerSelector';
 import { TreatmentSelector } from '../components/TreatmentSelector';
 
-import { useMigraineStore } from '../store/migraine.store';
+import {
+  useMigraineStore,
+} from '../store/migraine.store';
 
 import styles from '../migraine.module.css';
 
@@ -33,11 +35,85 @@ export function MigrainePage() {
 
 
 
+
+
   const completeEpisode =
     useMigraineStore(
       state =>
         state.completeEpisode,
     );
+
+
+
+
+  const updateCrisis =
+    useMigraineStore(
+      state =>
+        state.updateCrisis,
+    );
+
+
+
+
+  const crisis =
+    useMigraineStore(
+      state =>
+        state.episode.crisis,
+    );
+
+
+
+
+
+
+
+  const startCrisis = () => {
+
+
+    updateCrisis({
+
+      ...crisis,
+
+
+      active:true,
+
+
+      startTime:
+        new Date().toISOString(),
+
+
+    });
+
+
+
+    setMode('crisis');
+
+
+  };
+
+
+
+
+
+
+
+
+  const finishEpisode = () => {
+
+
+    completeEpisode();
+
+
+    setMode('normal');
+
+
+  };
+
+
+
+
+
+
 
 
 
@@ -53,10 +129,13 @@ export function MigrainePage() {
 
 
 
+
       <p>
         Registrá tus episodios para comprender
         tus patrones a lo largo del tiempo.
       </p>
+
+
 
 
 
@@ -72,8 +151,8 @@ export function MigrainePage() {
 
               type="button"
 
-              onClick={() =>
-                setMode('crisis')
+              onClick={
+                startCrisis
               }
 
             >
@@ -116,12 +195,13 @@ export function MigrainePage() {
 
 
 
+
             <button
 
               type="button"
 
-              onClick={() =>
-                completeEpisode()
+              onClick={
+                finishEpisode
               }
 
             >
@@ -135,8 +215,9 @@ export function MigrainePage() {
           </>
 
         )
-
       }
+
+
 
 
 
@@ -163,6 +244,8 @@ export function MigrainePage() {
 
         )
       }
+
+
 
 
 

@@ -15,6 +15,8 @@ import {
 
 
 
+
+
 const symptoms: {
   value: PostdromeSymptom;
   label: string;
@@ -57,6 +59,8 @@ const symptoms: {
 
 
 
+
+
 export function PostdromeSelector() {
 
 
@@ -72,6 +76,7 @@ export function PostdromeSelector() {
     useMigraineStore(
       state => state.updatePostdrome,
     );
+
 
 
 
@@ -119,6 +124,8 @@ export function PostdromeSelector() {
 
 
 
+
+
     updatePostdrome({
 
       ...postdrome,
@@ -144,6 +151,9 @@ export function PostdromeSelector() {
 
 
 
+
+
+
   return (
 
     <section>
@@ -158,6 +168,8 @@ export function PostdromeSelector() {
         Algunas personas continúan con síntomas
         después de que baja el dolor.
       </p>
+
+
 
 
 
@@ -260,6 +272,7 @@ export function PostdromeSelector() {
 
 
 
+
           value={
 
             postdrome.recoveryHours ?? ''
@@ -269,21 +282,28 @@ export function PostdromeSelector() {
 
 
 
+
+
           onChange={(e)=>{
 
 
+
             updatePostdrome({
+
 
 
               ...postdrome,
 
 
 
+
               recoveryHours:
+
 
                 Number(
                   e.target.value,
                 ),
+
 
 
 

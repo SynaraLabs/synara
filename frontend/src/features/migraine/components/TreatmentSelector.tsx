@@ -11,6 +11,8 @@ import {
 
 
 
+
+
 export function TreatmentSelector() {
 
 
@@ -34,9 +36,13 @@ export function TreatmentSelector() {
 
 
   const update = (
+
     field: keyof typeof treatment,
+
     value: string | number | TreatmentEffectiveness,
+
   ) => {
+
 
 
     updateTreatment({
@@ -47,6 +53,7 @@ export function TreatmentSelector() {
         value,
 
     });
+
 
 
   };
@@ -86,6 +93,7 @@ export function TreatmentSelector() {
 
           type="text"
 
+
           value={
             treatment.medication ?? ''
           }
@@ -94,8 +102,11 @@ export function TreatmentSelector() {
           onChange={(e)=>
 
             update(
+
               'medication',
+
               e.target.value,
+
             )
 
           }
@@ -103,6 +114,8 @@ export function TreatmentSelector() {
         />
 
       </label>
+
+
 
 
 
@@ -119,6 +132,7 @@ export function TreatmentSelector() {
 
           type="text"
 
+
           value={
             treatment.dose ?? ''
           }
@@ -127,8 +141,11 @@ export function TreatmentSelector() {
           onChange={(e)=>
 
             update(
+
               'dose',
+
               e.target.value,
+
             )
 
           }
@@ -136,6 +153,8 @@ export function TreatmentSelector() {
         />
 
       </label>
+
+
 
 
 
@@ -152,6 +171,7 @@ export function TreatmentSelector() {
 
           type="time"
 
+
           value={
             treatment.takenAt ?? ''
           }
@@ -160,8 +180,11 @@ export function TreatmentSelector() {
           onChange={(e)=>
 
             update(
+
               'takenAt',
+
               e.target.value,
+
             )
 
           }
@@ -177,9 +200,14 @@ export function TreatmentSelector() {
 
 
 
+
       <h4>
         ¿Qué resultado tuvo?
       </h4>
+
+
+
+
 
 
 
@@ -243,6 +271,7 @@ export function TreatmentSelector() {
 
 
 
+
       <label>
 
         Tiempo hasta mejorar (minutos):
@@ -258,11 +287,13 @@ export function TreatmentSelector() {
 
 
 
+
           value={
 
             treatment.responseTimeMinutes ?? ''
 
           }
+
 
 
 
@@ -285,6 +316,8 @@ export function TreatmentSelector() {
 
 
       </label>
+
+
 
 
 

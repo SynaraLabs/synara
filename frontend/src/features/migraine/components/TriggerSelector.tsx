@@ -15,6 +15,8 @@ import {
 
 
 
+
+
 const triggers: {
   value: MigraineTrigger;
   label: string;
@@ -22,11 +24,13 @@ const triggers: {
 
 }[] = [
 
+
   {
     value:'stress',
     label:'Estrés',
     category:'Emocional',
   },
+
 
   {
     value:'lackOfSleep',
@@ -34,11 +38,13 @@ const triggers: {
     category:'Sueño',
   },
 
+
   {
     value:'food',
     label:'Alimentos desencadenantes',
     category:'Alimentación',
   },
+
 
   {
     value:'caffeine',
@@ -46,11 +52,13 @@ const triggers: {
     category:'Alimentación',
   },
 
+
   {
     value:'alcohol',
     label:'Alcohol',
     category:'Alimentación',
   },
+
 
   {
     value:'hormonal',
@@ -58,11 +66,13 @@ const triggers: {
     category:'Hormonal',
   },
 
+
   {
     value:'weather',
     label:'Cambios climáticos',
     category:'Ambiente',
   },
+
 
   {
     value:'smell',
@@ -70,11 +80,13 @@ const triggers: {
     category:'Ambiente',
   },
 
+
   {
     value:'noise',
     label:'Ruido',
     category:'Ambiente',
   },
+
 
   {
     value:'unknown',
@@ -82,7 +94,11 @@ const triggers: {
     category:'Otros',
   },
 
+
 ];
+
+
+
 
 
 
@@ -147,6 +163,7 @@ export function TriggerSelector() {
 
 
 
+
     updateTriggers(updated);
 
 
@@ -179,6 +196,7 @@ export function TriggerSelector() {
 
 
 
+
   return (
 
     <section>
@@ -187,6 +205,7 @@ export function TriggerSelector() {
       <h3>
         Posibles desencadenantes
       </h3>
+
 
 
 
@@ -202,6 +221,7 @@ export function TriggerSelector() {
             <h4>
               {category}
             </h4>
+
 
 
 
@@ -247,6 +267,7 @@ export function TriggerSelector() {
                       type="checkbox"
 
 
+
                       checked={
 
                         selected.includes(
@@ -270,6 +291,7 @@ export function TriggerSelector() {
 
 
                     />
+
 
 
 
@@ -302,6 +324,7 @@ export function TriggerSelector() {
 
         ))
       }
+
 
 
 

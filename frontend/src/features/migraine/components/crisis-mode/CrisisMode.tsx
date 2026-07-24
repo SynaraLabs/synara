@@ -13,6 +13,7 @@ import {
 
 
 
+
 interface Props {
 
   onExit?: () => void;
@@ -60,6 +61,8 @@ const quickSymptoms: {
 
 
 
+
+
 export function CrisisMode({
 
   onExit,
@@ -70,15 +73,18 @@ export function CrisisMode({
 
   const crisis =
     useMigraineStore(
-      state => state.episode.crisis,
+      state =>
+        state.episode.crisis,
     );
 
 
 
   const updateCrisis =
     useMigraineStore(
-      state => state.updateCrisis,
+      state =>
+        state.updateCrisis,
     );
+
 
 
 
@@ -87,7 +93,9 @@ export function CrisisMode({
 
 
   const updatePain = (
+
     value:string,
+
   )=>{
 
 
@@ -143,6 +151,7 @@ export function CrisisMode({
 
 
 
+
   const toggleSymptom = (
 
     symptom:CrisisSymptom,
@@ -163,7 +172,10 @@ export function CrisisMode({
 
 
       crisis.symptoms.filter(
-        item => item !== symptom,
+
+        item =>
+          item !== symptom,
+
       )
 
 
@@ -204,9 +216,50 @@ export function CrisisMode({
 
 
 
+
+  const finishCrisis = () => {
+
+
+
+    updateCrisis({
+
+      ...crisis,
+
+
+      active:false,
+
+
+      endTime:
+        new Date().toISOString(),
+
+
+    });
+
+
+
+    onExit?.();
+
+
+
+  };
+
+
+
+
+
+
+
+
+
+
+
+
   return (
 
+
+
     <section className={styles.container}>
+
 
 
       <header>
@@ -218,11 +271,13 @@ export function CrisisMode({
 
 
         <p>
-          Registro rápido durante una migraña.
+          Registrá cómo evoluciona tu migraña.
         </p>
 
 
       </header>
+
+
 
 
 
@@ -251,15 +306,20 @@ export function CrisisMode({
 
         <input
 
+
           type="range"
+
 
           min="0"
 
+
           max="10"
+
 
           value={
             crisis.intensity
           }
+
 
 
           onChange={(e)=>
@@ -284,6 +344,7 @@ export function CrisisMode({
 
 
 
+
       <div className={styles.card}>
 
 
@@ -298,72 +359,70 @@ export function CrisisMode({
         <div className={styles.grid}>
 
 
-        {
+          {
+
+            quickSymptoms.map(item=>(
 
 
-          quickSymptoms.map(item=>(
+              <button
 
 
-            <button
+                key={
+                  item.value
+                }
 
 
-              key={
-                item.value
-              }
-
-
-              type="button"
-
-
-
-              className={
-
-
-                crisis.symptoms.includes(
-                  item.value,
-                )
-
-
-                ?
-
-
-                styles.active
-
-
-                :
-
-
-                ''
-
-
-              }
+                type="button"
 
 
 
-              onClick={()=>
+                className={
 
 
-                toggleSymptom(
-                  item.value,
-                )
+                  crisis.symptoms.includes(
+                    item.value,
+                  )
 
 
-              }
+                  ?
 
 
-            >
+                  styles.active
 
 
-              {item.label}
+                  :
 
 
-            </button>
+                  ''
 
 
-          ))
+                }
 
 
-        }
+
+                onClick={()=>
+
+
+                  toggleSymptom(
+                    item.value,
+                  )
+
+
+                }
+
+
+              >
+
+
+                {item.label}
+
+
+              </button>
+
+
+            ))
+
+          }
 
 
 
@@ -382,22 +441,30 @@ export function CrisisMode({
 
       <button
 
+
         type="button"
+
 
         className={styles.primary}
 
 
+
         onClick={()=>{
+
 
           updateCrisis({
 
             ...crisis,
 
+
             active:true,
+
 
           });
 
+
         }}
+
 
       >
 
@@ -415,42 +482,37 @@ export function CrisisMode({
 
 
 
-      {
-
-        onExit &&
+      <button
 
 
-        (
-
-          <button
+        type="button"
 
 
-            type="button"
+        className={styles.secondary}
 
 
-            className={styles.secondary}
+
+        onClick={finishCrisis}
 
 
-            onClick={onExit}
+
+      >
 
 
-          >
-
-            Salir de crisis
+        Finalizar crisis
 
 
-          </button>
+      </button>
 
 
-        )
 
-      }
 
 
 
 
 
     </section>
+
 
   );
 

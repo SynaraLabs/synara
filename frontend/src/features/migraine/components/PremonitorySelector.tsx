@@ -8,8 +8,6 @@ import {
   useMigraineStore,
 } from '../store/migraine.store';
 
-
-
 const symptoms: {
   value: PremonitorySymptom;
   label: string;
@@ -67,30 +65,21 @@ const symptoms: {
 
 ];
 
-
-
-
 export function PremonitorySelector() {
-
 
   const premonitory =
     useMigraineStore(
       state => state.episode.premonitory,
     );
 
-
   const updatePremonitory =
     useMigraineStore(
       state => state.updatePremonitory,
     );
 
-
-
-
   const toggleSymptom = (
     symptom: PremonitorySymptom,
   ) => {
-
 
     const updated =
 
@@ -111,9 +100,6 @@ export function PremonitorySelector() {
         symptom,
       ];
 
-
-
-
     updatePremonitory({
 
       present:
@@ -124,36 +110,26 @@ export function PremonitorySelector() {
 
     });
 
-
   };
-
-
-
 
   return (
 
     <div className={styles.symptomSelector}>
 
-
       <h3>
         Señales antes de la migraña
       </h3>
-
 
       <p>
         ¿Notaste cambios antes de que empezara
         el dolor?
       </p>
 
-
-
-
       <div className={styles.symptomGrid}>
 
-
         {
-          symptoms.map((symptom) => (
 
+          symptoms.map((symptom) => (
 
             <label
 
@@ -165,11 +141,9 @@ export function PremonitorySelector() {
 
             >
 
-
               <input
 
                 type="checkbox"
-
 
                 checked={
 
@@ -179,31 +153,25 @@ export function PremonitorySelector() {
 
                 }
 
-
                 onChange={() =>
                   toggleSymptom(
                     symptom.value,
                   )
                 }
 
-
               />
-
 
               <span>
                 {symptom.label}
               </span>
 
-
             </label>
 
-
           ))
+
         }
 
-
       </div>
-
 
     </div>
 
