@@ -1,41 +1,131 @@
 import { AppLayout } from '../components/layout/AppLayout';
 
+
 import { Dashboard } from '../pages/Dashboard';
+
 import { MigrainePage } from '../features/migraine/pages/MigrainePage';
+
+import { ProfilePage } from '../features/profile/pages/ProfilePage';
+
+
 import { Anxiety } from '../pages/Anxiety';
+
 import { Panic } from '../pages/Panic';
+
 import { Journal } from '../pages/Journal';
+
 import { Reports } from '../pages/Reports';
 
 
+
+
+
 export const routes = [
+
+
   {
-    element: <AppLayout />,
-    children: [
+
+
+    element:<AppLayout />,
+
+
+    children:[
+
+
       {
-        path: '/',
-        element: <Dashboard />,
+
+
+        path:'/',
+
+
+        element:<Dashboard />,
+
+
       },
+
+
+
       {
-        path: '/migraine',
-        element: <MigrainePage />,
+
+
+        path:'/migraine',
+
+
+        element:<MigrainePage />,
+
+
       },
+
+
+
       {
-        path: '/anxiety',
-        element: <Anxiety />,
+
+
+        path:'/profile',
+
+
+        element:<ProfilePage />,
+
+
       },
+
+
+
       {
-        path: '/panic',
-        element: <Panic />,
+
+
+        path:'/anxiety',
+
+
+        element:<Anxiety />,
+
+
       },
+
+
+
       {
-        path: '/journal',
-        element: <Journal />,
+
+
+        path:'/panic',
+
+
+        element:<Panic />,
+
+
       },
+
+
+
       {
-        path: '/reports',
-        element: <Reports />,
+
+
+        path:'/journal',
+
+
+        element:<Journal />,
+
+
       },
+
+
+
+      {
+
+
+        path:'/reports',
+
+
+        element:<Reports />,
+
+
+      },
+
+
     ],
+
+
   },
+
+
 ];

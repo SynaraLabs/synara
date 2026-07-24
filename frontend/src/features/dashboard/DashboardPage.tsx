@@ -1,21 +1,36 @@
 import { WelcomeCard } from './components/WelcomeCard';
 import { QuickActions } from './components/QuickActions';
 import { HealthSummary } from './components/HealthSummary';
-import { RecentEpisodes } from './components/RecentEpisodes';
+import { RealRecentEpisodes } from './components/RealRecentEpisodes';
+import { InsightsSummary } from './components/InsightsSummary';
+
 
 
 export function DashboardPage() {
+
+
   return (
+
     <div>
+
 
       <WelcomeCard />
 
+
       <QuickActions />
+
 
       <HealthSummary />
 
-      <RecentEpisodes />
+
+      <InsightsSummary />
+
+
+      <RealRecentEpisodes />
+
 
     </div>
+
   );
+
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+
 import { PremonitorySelector } from '../components/PremonitorySelector';
 import { PainScale } from '../components/PainScale';
 import { SymptomSelector } from '../components/SymptomSelector';
@@ -9,9 +10,11 @@ import { PostdromeSelector } from '../components/PostdromeSelector';
 import { TriggerSelector } from '../components/TriggerSelector';
 import { TreatmentSelector } from '../components/TreatmentSelector';
 
+
 import {
   useMigraineStore,
 } from '../store/migraine.store';
+
 
 import styles from '../migraine.module.css';
 
@@ -39,26 +42,21 @@ export function MigrainePage() {
 
   const completeEpisode =
     useMigraineStore(
-      state =>
-        state.completeEpisode,
+      state => state.completeEpisode,
     );
-
 
 
 
   const updateCrisis =
     useMigraineStore(
-      state =>
-        state.updateCrisis,
+      state => state.updateCrisis,
     );
-
 
 
 
   const crisis =
     useMigraineStore(
-      state =>
-        state.episode.crisis,
+      state => state.episode.crisis,
     );
 
 
@@ -85,7 +83,6 @@ export function MigrainePage() {
     });
 
 
-
     setMode('crisis');
 
 
@@ -101,14 +98,70 @@ export function MigrainePage() {
   const finishEpisode = () => {
 
 
+    const now =
+      new Date();
+
+
+
+    if(crisis.startTime){
+
+
+      const start =
+        new Date(
+          crisis.startTime,
+        );
+
+
+
+      const duration =
+
+        Math.round(
+
+          (
+            now.getTime()
+            -
+            start.getTime()
+
+          )
+          /
+          60000
+
+        );
+
+
+
+      updateCrisis({
+
+
+        ...crisis,
+
+
+        active:false,
+
+
+        endTime:
+          now.toISOString(),
+
+
+        durationMinutes:
+          duration,
+
+
+      });
+
+
+    }
+
+
+
     completeEpisode();
+
 
 
     setMode('normal');
 
 
   };
-
 
 
 
@@ -129,13 +182,10 @@ export function MigrainePage() {
 
 
 
-
       <p>
         Registrá tus episodios para comprender
         tus patrones a lo largo del tiempo.
       </p>
-
-
 
 
 
@@ -151,9 +201,7 @@ export function MigrainePage() {
 
               type="button"
 
-              onClick={
-                startCrisis
-              }
+              onClick={startCrisis}
 
             >
 
@@ -167,27 +215,15 @@ export function MigrainePage() {
 
             <PremonitorySelector />
 
-
-
             <AuraSelector />
-
-
 
             <PainScale />
 
-
-
             <SymptomSelector />
-
-
 
             <PostdromeSelector />
 
-
-
             <TriggerSelector />
-
-
 
             <TreatmentSelector />
 
@@ -200,9 +236,7 @@ export function MigrainePage() {
 
               type="button"
 
-              onClick={
-                finishEpisode
-              }
+              onClick={finishEpisode}
 
             >
 
@@ -223,31 +257,19 @@ export function MigrainePage() {
 
 
 
-
-
       {
         mode === 'crisis' && (
 
-
           <CrisisMode
 
-
             onExit={() =>
-
               setMode('normal')
-
             }
-
 
           />
 
-
         )
       }
-
-
-
-
 
 
 

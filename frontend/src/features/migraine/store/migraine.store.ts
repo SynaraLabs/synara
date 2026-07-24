@@ -95,6 +95,7 @@ const generateId = ()=>{
 
 
 
+
 const createInitialEpisode =
 ():MigraineEpisode => ({
 
@@ -109,8 +110,6 @@ const createInitialEpisode =
 
 
 
-
-
   premonitory:{
 
 
@@ -121,8 +120,6 @@ const createInitialEpisode =
 
 
   },
-
-
 
 
 
@@ -145,9 +142,6 @@ const createInitialEpisode =
 
 
   },
-
-
-
 
 
 
@@ -179,9 +173,6 @@ const createInitialEpisode =
 
 
 
-
-
-
   postdrome:{
 
 
@@ -195,9 +186,6 @@ const createInitialEpisode =
 
 
 
-
-
-
   triggers:[],
 
 
@@ -205,6 +193,8 @@ const createInitialEpisode =
 
 
 });
+
+
 
 
 
@@ -227,12 +217,11 @@ persist(
 
 
 episode:
-  createInitialEpisode(),
+createInitialEpisode(),
 
 
 
 history:[],
-
 
 
 
@@ -254,7 +243,6 @@ premonitory,
 },
 
 })),
-
 
 
 
@@ -285,7 +273,6 @@ aura,
 
 
 
-
 updateCrisis:
 (crisis)=>
 
@@ -300,7 +287,6 @@ crisis,
 },
 
 })),
-
 
 
 
@@ -331,7 +317,6 @@ postdrome,
 
 
 
-
 updateTriggers:
 (triggers)=>
 
@@ -354,7 +339,6 @@ triggers,
 
 
 
-
 updateTreatment:
 (treatment)=>
 
@@ -369,7 +353,6 @@ treatment,
 },
 
 })),
-
 
 
 
@@ -401,6 +384,7 @@ notes,
 
 
 
+
 completeEpisode:
 ()=>
 
@@ -409,14 +393,14 @@ set(state=>{
 
 
 
-
-
 const crisis =
 state.episode.crisis;
 
 
 
-let completedCrisis = crisis;
+let completedCrisis =
+crisis;
+
 
 
 
@@ -426,29 +410,44 @@ crisis.startTime
 crisis.endTime
 ){
 
+
 const start =
-new Date(crisis.startTime).getTime();
+new Date(
+crisis.startTime,
+).getTime();
+
 
 
 const end =
-new Date(crisis.endTime).getTime();
+new Date(
+crisis.endTime,
+).getTime();
+
+
 
 
 completedCrisis={
 
+
 ...crisis,
+
 
 durationMinutes:
 
+Math.max(
+
+0,
+
 Math.round(
 (end-start)/(1000*60)
+)
+
 ),
+
 
 };
 
 }
-
-
 
 
 
@@ -458,10 +457,21 @@ const completedEpisode:MigraineEpisode={
 ...state.episode,
 
 
-crisis:completedCrisis,
+id:
+generateId(),
+
+
+createdAt:
+new Date().toISOString(),
+
+
+crisis:
+completedCrisis,
 
 
 };
+
+
 
 
 
@@ -485,9 +495,8 @@ createInitialEpisode(),
 };
 
 
+
 }),
-
-
 
 
 
@@ -508,7 +517,6 @@ createInitialEpisode(),
 
 
 
-
 }
 
 ),
@@ -516,12 +524,15 @@ createInitialEpisode(),
 
 {
 
+
 name:
 'synara-migraine-storage',
+
 
 }
 
 
 )
+
 
 );
