@@ -48,6 +48,7 @@ export function EpisodeCard({
 
 
 
+
   /*
     Tomamos el pico máximo de dolor
     registrado durante la crisis
@@ -66,8 +67,6 @@ export function EpisodeCard({
       :
 
       crisis.intensity;
-
-
 
 
 
@@ -112,6 +111,16 @@ export function EpisodeCard({
 
       'Sin síntomas registrados';
 
+
+
+
+
+
+  const medications =
+    crisis.events?.filter(
+      event =>
+        event.type === 'medication',
+    ) ?? [];
 
 
 
@@ -168,7 +177,6 @@ export function EpisodeCard({
       <div className={styles.episodeInfo}>
 
 
-
         <p>
 
           <b>
@@ -203,6 +211,7 @@ export function EpisodeCard({
 
 
               </p>
+
 
 
 
@@ -326,6 +335,95 @@ export function EpisodeCard({
 
 
         </p>
+
+
+
+
+
+
+
+
+
+        {
+          medications.length > 0 && (
+
+
+            <div>
+
+
+              <p>
+
+                <b>
+                  Medicación durante la crisis:
+                </b>
+
+
+              </p>
+
+
+
+
+
+              <ul>
+
+
+                {
+                  medications.map(
+                    (event,index)=>(
+
+
+                      <li
+                        key={index}
+                      >
+
+
+                        {
+                          new Date(
+                            event.timestamp,
+                          ).toLocaleTimeString(
+                            'es-AR',
+                            {
+                              hour:'2-digit',
+                              minute:'2-digit',
+                            },
+                          )
+                        }
+
+
+                        {' → '}
+
+
+                        {
+                          String(
+                            event.data.medication ?? '',
+                          )
+                        }
+
+
+                        {
+                          event.data.dose &&
+
+                          ` (${String(event.data.dose)})`
+
+                        }
+
+
+                      </li>
+
+
+                    )
+                  )
+                }
+
+
+              </ul>
+
+
+            </div>
+
+
+          )
+        }
 
 
 

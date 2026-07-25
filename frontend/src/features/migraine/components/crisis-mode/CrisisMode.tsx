@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import styles from './crisis-mode.module.css';
 
 import type {
@@ -20,9 +22,6 @@ interface Props {
   onExit?: () => void;
 
 }
-
-
-
 
 
 
@@ -82,13 +81,11 @@ export function CrisisMode({
 
 
 
-
   const crisis =
     useMigraineStore(
       state =>
         state.episode.crisis,
     );
-
 
 
 
@@ -99,6 +96,17 @@ export function CrisisMode({
         state.updateCrisis,
     );
 
+
+
+
+
+  const [medication,setMedication] =
+    useState('');
+
+
+
+  const [dose,setDose] =
+    useState('');
 
 
 
@@ -119,6 +127,11 @@ export function CrisisMode({
 
 
 
+    const now =
+      new Date().toISOString();
+
+
+
 
 
     const updated:CrisisPhase = {
@@ -133,8 +146,56 @@ export function CrisisMode({
       intensity,
 
 
-    };
 
+      intensityHistory:[
+
+        ...crisis.intensityHistory,
+
+
+        {
+
+          time:now,
+
+          intensity,
+
+        },
+
+      ],
+
+
+
+      events:[
+
+        ...(crisis.events ?? []),
+
+
+        {
+
+          id:
+            crypto.randomUUID(),
+
+
+          type:
+            'intensity',
+
+
+          timestamp:
+            now,
+
+
+          data:{
+
+            intensity,
+
+          },
+
+
+        },
+
+      ],
+
+
+    };
 
 
 
@@ -151,7 +212,11 @@ export function CrisisMode({
 
 
 
-  const registerPainUpdate = ()=>{
+  const registerMedication = ()=>{
+
+
+    if(!medication.trim()) return;
+
 
 
     const now =
@@ -160,41 +225,14 @@ export function CrisisMode({
 
 
 
-
-    const updated:CrisisPhase = {
+    updateCrisis({
 
 
       ...crisis,
 
 
 
-      intensityHistory:[
-
-
-        ...crisis.intensityHistory,
-
-
-
-        {
-
-          time:now,
-
-
-          intensity:
-            crisis.intensity,
-
-
-        },
-
-
-      ],
-
-
-
-
-
       events:[
-
 
         ...(crisis.events ?? []),
 
@@ -209,7 +247,7 @@ export function CrisisMode({
 
 
           type:
-            'intensity',
+            'medication',
 
 
 
@@ -221,8 +259,18 @@ export function CrisisMode({
           data:{
 
 
-            intensity:
-              crisis.intensity,
+            medication:
+
+
+              medication.trim(),
+
+
+
+            dose:
+
+
+              dose.trim(),
+
 
 
           },
@@ -234,18 +282,19 @@ export function CrisisMode({
       ],
 
 
-    };
+
+    });
 
 
 
 
+    setMedication('');
 
-    updateCrisis(updated);
+    setDose('');
 
 
 
   };
-
 
 
 
@@ -262,8 +311,6 @@ export function CrisisMode({
     symptom:CrisisSymptom,
 
   )=>{
-
-
 
 
 
@@ -301,6 +348,11 @@ export function CrisisMode({
 
 
 
+    const now =
+      new Date().toISOString();
+
+
+
 
     updateCrisis({
 
@@ -310,6 +362,45 @@ export function CrisisMode({
 
       symptoms:
         updatedSymptoms,
+
+
+
+      events:[
+
+        ...(crisis.events ?? []),
+
+
+
+        {
+
+
+          id:
+            crypto.randomUUID(),
+
+
+
+          type:
+            'symptom',
+
+
+
+          timestamp:
+            now,
+
+
+
+          data:{
+
+            symptom,
+
+          },
+
+
+        },
+
+
+      ],
+
 
 
     });
@@ -328,8 +419,7 @@ export function CrisisMode({
 
 
 
-
-  const finishCrisis = ()=>{
+  const finishCrisis = () => {
 
 
 
@@ -346,6 +436,7 @@ export function CrisisMode({
         new Date().toISOString(),
 
 
+
     });
 
 
@@ -355,7 +446,6 @@ export function CrisisMode({
 
 
   };
-
 
 
 
@@ -406,13 +496,11 @@ export function CrisisMode({
 
 
 
-
         <strong>
 
           {crisis.intensity}/10
 
         </strong>
-
 
 
 
@@ -438,14 +526,11 @@ export function CrisisMode({
 
           onChange={(e)=>
 
-
             updatePain(
               e.target.value,
             )
 
-
           }
-
 
 
         />
@@ -456,6 +541,93 @@ export function CrisisMode({
 
 
 
+
+
+
+
+
+
+      <div className={styles.card}>
+
+
+        <h2>
+          Medicación tomada
+        </h2>
+
+
+
+        <input
+
+
+          type="text"
+
+
+          placeholder="Medicamento"
+
+
+
+          value={medication}
+
+
+
+          onChange={(e)=>
+
+            setMedication(
+              e.target.value,
+            )
+
+          }
+
+
+        />
+
+
+
+        <input
+
+
+          type="text"
+
+
+          placeholder="Dosis (ej: 600 mg)"
+
+
+
+          value={dose}
+
+
+
+          onChange={(e)=>
+
+            setDose(
+              e.target.value,
+            )
+
+          }
+
+
+        />
+
+
+
+        <button
+
+
+          type="button"
+
+
+          onClick={registerMedication}
+
+
+        >
+
+          Registrar medicación
+
+        </button>
+
+
+
+      </div>
 
 
 
@@ -476,81 +648,75 @@ export function CrisisMode({
 
 
 
-
         <div className={styles.grid}>
 
 
-        {
+          {
 
 
-          quickSymptoms.map(item=>(
+            quickSymptoms.map(item=>(
 
 
-
-            <button
-
-
-              key={
-                item.value
-              }
+              <button
 
 
-              type="button"
+                key={
+                  item.value
+                }
 
 
-
-
-              className={
-
-
-                crisis.symptoms.includes(
-                  item.value,
-                )
-
-
-                ?
-
-
-                styles.active
-
-
-                :
-
-
-                ''
-
-
-              }
+                type="button"
 
 
 
-
-              onClick={()=>
-
-
-                toggleSymptom(
-                  item.value,
-                )
+                className={
 
 
-              }
+                  crisis.symptoms.includes(
+                    item.value,
+                  )
+
+
+                  ?
+
+
+                  styles.active
+
+
+                  :
+
+
+                  ''
+
+
+                }
 
 
 
-            >
+                onClick={()=>
 
 
-              {item.label}
+                  toggleSymptom(
+                    item.value,
+                  )
 
 
-            </button>
+                }
 
 
+              >
 
-          ))
+
+                {item.label}
 
 
-        }
+              </button>
+
+
+            ))
+
+
+          }
 
 
 
@@ -558,9 +724,6 @@ export function CrisisMode({
 
 
       </div>
-
-
-
 
 
 
@@ -580,9 +743,24 @@ export function CrisisMode({
 
 
 
-        onClick={
-          registerPainUpdate
-        }
+        onClick={()=>{
+
+
+          updateCrisis({
+
+
+            ...crisis,
+
+
+            active:true,
+
+
+
+          });
+
+
+
+        }}
 
 
 
@@ -602,9 +780,6 @@ export function CrisisMode({
 
 
 
-
-
-
       <button
 
 
@@ -615,9 +790,7 @@ export function CrisisMode({
 
 
 
-        onClick={
-          finishCrisis
-        }
+        onClick={finishCrisis}
 
 
 
