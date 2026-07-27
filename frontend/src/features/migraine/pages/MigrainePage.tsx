@@ -32,8 +32,8 @@ type MigraineMode =
 
 
 
-export function MigrainePage(){
 
+export function MigrainePage(){
 
 
   const [mode,setMode] =
@@ -46,7 +46,6 @@ export function MigrainePage(){
     setShowCrisisDate,
   ] =
     useState(false);
-
 
 
 
@@ -80,13 +79,6 @@ export function MigrainePage(){
 
 
 
-  const startCrisis =
-    useMigraineStore(
-      state=>state.startCrisis,
-    );
-
-
-
   const finishCrisis =
     useMigraineStore(
       state=>state.finishCrisis,
@@ -105,14 +97,13 @@ export function MigrainePage(){
 
 
 
-  const handleNewEpisode = ()=>{
 
+
+  const handleNewEpisode = ()=>{
 
     startEpisode();
 
-
   };
-
 
 
 
@@ -122,11 +113,10 @@ export function MigrainePage(){
 
   const handleStartCrisis = ()=>{
 
-
     setShowCrisisDate(true);
 
-
   };
+
 
 
 
@@ -146,8 +136,58 @@ export function MigrainePage(){
 
 
 
+    /*
+      Construimos la fecha como local.
+      Evita que JavaScript interprete
+      YYYY-MM-DD como UTC y reste un día
+      en Argentina.
+    */
+
+    const [
+      year,
+      month,
+      day,
+    ] = date.split('-');
+
+
+
+    const selectedDateObject =
+      new Date(
+
+        Number(year),
+
+        Number(month) - 1,
+
+        Number(day),
+
+      );
+
+
+
+    const now =
+      new Date();
+
+
+
+    selectedDateObject.setHours(
+
+      now.getHours(),
+
+      now.getMinutes(),
+
+      now.getSeconds(),
+
+      0,
+
+    );
+
+
+
     const selectedDate =
-      new Date(date).toISOString();
+      selectedDateObject.toISOString();
+
+
+
 
 
 
@@ -156,10 +196,21 @@ export function MigrainePage(){
     updateTimeline({
 
 
+
+      /*
+        Si hubo premonitorios,
+        episodeStart ya existe.
+
+        Si no hubo,
+        la crisis inicia el episodio.
+      */
+
       episodeStart:
 
         episode.timeline?.episodeStart
+
         ??
+
         selectedDate,
 
 
@@ -176,6 +227,7 @@ export function MigrainePage(){
 
 
     });
+
 
 
 
@@ -201,7 +253,16 @@ export function MigrainePage(){
 
 
 
-    startCrisis();
+
+
+    /*
+      No llamamos startCrisis()
+      porque ya actualizamos
+      directamente la fase crisis.
+    */
+
+
+
 
 
 
@@ -213,7 +274,17 @@ export function MigrainePage(){
     setMode('crisis');
 
 
+
   };
+
+
+
+
+
+
+
+
+
 
 
 
@@ -227,6 +298,11 @@ export function MigrainePage(){
 
 
   };
+
+
+
+
+
 
 
 
@@ -253,8 +329,12 @@ export function MigrainePage(){
 
 
 
-  return (
 
+
+
+
+
+  return (
 
 
     <section className={styles.container}>
@@ -287,7 +367,6 @@ export function MigrainePage(){
 
         (
 
-
           <div>
 
 
@@ -319,10 +398,12 @@ export function MigrainePage(){
 
           </div>
 
-
         )
 
       }
+
+
+
 
 
 
@@ -364,6 +445,9 @@ export function MigrainePage(){
 
 
 
+
+
+
       {
 
         episode
@@ -383,6 +467,7 @@ export function MigrainePage(){
 
 
 
+
             {
 
               !episode.crisis.active
@@ -390,7 +475,6 @@ export function MigrainePage(){
               &&
 
               (
-
 
                 <button
 
@@ -419,6 +503,9 @@ export function MigrainePage(){
 
 
 
+
+
+
             {
 
               showCrisisDate
@@ -426,7 +513,6 @@ export function MigrainePage(){
               &&
 
               (
-
 
                 <PhaseDateSelector
 
@@ -446,10 +532,12 @@ export function MigrainePage(){
 
                 />
 
-
               )
 
             }
+
+
+
 
 
 
@@ -473,6 +561,10 @@ export function MigrainePage(){
 
 
 
+
+
+
+
             {
 
               episode.status === 'postdrome'
@@ -480,7 +572,6 @@ export function MigrainePage(){
               &&
 
               (
-
 
                 <>
 
@@ -500,6 +591,9 @@ export function MigrainePage(){
 
 
                   <TreatmentSelector />
+
+
+
 
 
 
@@ -537,6 +631,9 @@ export function MigrainePage(){
 
 
 
+
+
+
             <MigraineDevTools />
 
 
@@ -549,6 +646,8 @@ export function MigrainePage(){
         )
 
       }
+
+
 
 
 

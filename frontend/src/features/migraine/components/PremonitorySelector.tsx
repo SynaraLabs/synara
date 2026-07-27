@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import styles from '../migraine.module.css';
 
 import type {
@@ -10,383 +8,308 @@ import {
   useMigraineStore,
 } from '../store/migraine.store';
 
-import {
-  PhaseDateSelector,
-} from './common/PhaseDateSelector';
-
-
-
-
-
-
 const symptoms: {
   value: PremonitorySymptom;
-  label:string;
+  label: string;
 }[] = [
-
   {
-    value:'fatigue',
-    label:'Fatiga o cansancio',
+    value: 'fatigue',
+    label: 'Fatiga o cansancio',
   },
-
   {
-    value:'yawning',
-    label:'Bostezos frecuentes',
+    value: 'yawning',
+    label: 'Bostezos frecuentes',
   },
-
   {
-    value:'moodChange',
-    label:'Cambios de ánimo',
+    value: 'moodChange',
+    label: 'Cambios de ánimo',
   },
-
   {
-    value:'irritability',
-    label:'Irritabilidad',
+    value: 'irritability',
+    label: 'Irritabilidad',
   },
-
   {
-    value:'brainFog',
-    label:'Niebla mental',
+    value: 'brainFog',
+    label: 'Niebla mental',
   },
-
   {
-    value:'foodCraving',
-    label:'Antojos alimentarios',
+    value: 'foodCraving',
+    label: 'Antojos alimentarios',
   },
-
   {
-    value:'neckStiffness',
-    label:'Rigidez cervical',
+    value: 'neckStiffness',
+    label: 'Rigidez cervical',
   },
-
   {
-    value:'thirst',
-    label:'Mayor sensación de sed',
+    value: 'thirst',
+    label: 'Mayor sensación de sed',
   },
-
   {
-    value:'sleepiness',
-    label:'Somnolencia',
+    value: 'sleepiness',
+    label: 'Somnolencia',
   },
-
   {
-    value:'concentrationDifficulty',
-    label:'Dificultad para concentrarse',
+    value: 'concentrationDifficulty',
+    label: 'Dificultad para concentrarse',
   },
-
 ];
 
+const toLocalDateTimeValue = (
+  isoDate?: string,
+): string => {
+  if (!isoDate) {
+    return '';
+  }
 
+  const date = new Date(isoDate);
 
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
 
+  const year = date.getFullYear();
 
+  const month = String(
+    date.getMonth() + 1,
+  ).padStart(2, '0');
 
+  const day = String(
+    date.getDate(),
+  ).padStart(2, '0');
 
+  const hours = String(
+    date.getHours(),
+  ).padStart(2, '0');
 
+  const minutes = String(
+    date.getMinutes(),
+  ).padStart(2, '0');
 
-export function PremonitorySelector(){
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
 
-
-
-  const [showDateSelector,setShowDateSelector] =
-    useState(false);
-
-
-
-
-
-  const premonitory =
-    useMigraineStore(
-      state=>state.episode.premonitory,
+const getCurrentLocalDateTimeValue =
+  (): string => {
+    return toLocalDateTimeValue(
+      new Date().toISOString(),
     );
+  };
 
+export function PremonitorySelector() {
+  const premonitory = useMigraineStore(
+    state => state.episode.premonitory,
+  );
 
-
-  const timeline =
-    useMigraineStore(
-      state=>state.episode.timeline,
-    );
-
-
+  const timeline = useMigraineStore(
+    state => state.episode.timeline,
+  );
 
   const updatePremonitory =
     useMigraineStore(
-      state=>state.updatePremonitory,
+      state => state.updatePremonitory,
     );
-
-
 
   const updateTimeline =
     useMigraineStore(
-      state=>state.updateTimeline,
+      state => state.updateTimeline,
     );
 
-
-
-
-
-
-
-
   const toggleSymptom = (
-
-    symptom:PremonitorySymptom,
-
-  )=>{
-
-
-
-    const updated =
-
+    symptom: PremonitorySymptom,
+  ) => {
+    const updatedSymptoms =
       premonitory.symptoms.includes(symptom)
+        ? premonitory.symptoms.filter(
+            item => item !== symptom,
+          )
+        : [
+            ...premonitory.symptoms,
+            symptom,
+          ];
 
-      ?
-
-      premonitory.symptoms.filter(
-
-        item=>item !== symptom,
-
-      )
-
-      :
-
-      [
-
-        ...premonitory.symptoms,
-
-        symptom,
-
-      ];
-
-
-
-
-
+    const hasSymptoms =
+      updatedSymptoms.length > 0;
 
     updatePremonitory({
+      ...premonitory,
 
       present:
-        updated.length > 0,
+        hasSymptoms,
 
       symptoms:
-        updated,
+        updatedSymptoms,
 
+      hoursBeforeAttack:
+        undefined,
     });
 
+    if (!hasSymptoms) {
+      updateTimeline({
+        premonitoryStart:
+          undefined,
 
+        premonitoryEnd:
+          undefined,
+      });
+    }
+  };
 
+  const handleStartChange = (
+    value: string,
+  ) => {
+    if (!value) {
+      updateTimeline({
+        premonitoryStart:
+          undefined,
 
+        premonitoryEnd:
+          undefined,
+      });
 
-
-
-
-    if(
-
-      updated.length > 0
-
-      &&
-
-      !timeline?.premonitoryStart
-
-    ){
-
-      setShowDateSelector(true);
-
+      return;
     }
 
+    const selectedDate =
+      new Date(value);
 
+    if (
+      Number.isNaN(
+        selectedDate.getTime(),
+      )
+    ) {
+      return;
+    }
 
-  };
+    const crisisStart =
+      timeline?.crisisStart
+        ? new Date(
+            timeline.crisisStart,
+          )
+        : undefined;
 
-
-
-
-
-
-
-
-
-  const handleDateChange = (
-
-    date:string,
-
-  )=>{
-
-
+    if (
+      crisisStart &&
+      selectedDate.getTime() >
+        crisisStart.getTime()
+    ) {
+      return;
+    }
 
     updateTimeline({
-
-
-
-      episodeStart:
-
-        timeline?.episodeStart
-        ??
-        date,
-
-
-
       premonitoryStart:
+        selectedDate.toISOString(),
 
-        date,
-
-
-
+      premonitoryEnd:
+        timeline?.crisisStart,
     });
-
-
-
-    setShowDateSelector(false);
-
-
-
   };
 
+  const premonitoryStartValue =
+    toLocalDateTimeValue(
+      timeline?.premonitoryStart,
+    );
 
-
-
-
-
-
-
-
-
-
-
+  const crisisStartLimit =
+    timeline?.crisisStart
+      ? toLocalDateTimeValue(
+          timeline.crisisStart,
+        )
+      : getCurrentLocalDateTimeValue();
 
   return (
-
-
-    <div className={styles.symptomSelector}>
-
-
+    <section
+      className={
+        styles.symptomSelector
+      }
+    >
       <h3>
         Señales antes de la migraña
       </h3>
 
-
-
       <p>
-        Podés registrar síntomas aunque los hayas notado días atrás.
+        Registrá las señales que
+        aparecieron antes del inicio del
+        dolor.
       </p>
 
-
-
-
-
-      <div className={styles.symptomGrid}>
-
-
-        {
-
-          symptoms.map((symptom)=>(
-
-
-            <label
-
-              key={symptom.value}
-
-              className={styles.symptomOption}
-
-            >
-
-
-              <input
-
-                type="checkbox"
-
-
-                checked={
-
-                  premonitory.symptoms.includes(
-
-                    symptom.value,
-
-                  )
-
-                }
-
-
-
-                onChange={()=>
-
-
-                  toggleSymptom(
-
-                    symptom.value,
-
-                  )
-
-                }
-
-
-              />
-
-
-
-              <span>
-
-                {symptom.label}
-
-              </span>
-
-
-            </label>
-
-
-          ))
-
+      <div
+        className={
+          styles.symptomGrid
         }
+      >
+        {symptoms.map(symptom => (
+          <label
+            key={symptom.value}
+            className={
+              styles.symptomOption
+            }
+          >
+            <input
+              type="checkbox"
+              checked={
+                premonitory.symptoms.includes(
+                  symptom.value,
+                )
+              }
+              onChange={() =>
+                toggleSymptom(
+                  symptom.value,
+                )
+              }
+            />
 
-
+            <span>
+              {symptom.label}
+            </span>
+          </label>
+        ))}
       </div>
 
+      {premonitory.symptoms.length >
+        0 && (
+        <div>
+          <label>
+            ¿Cuándo comenzaron estas
+            señales?
 
+            <input
+              type="datetime-local"
+              value={
+                premonitoryStartValue
+              }
+              max={
+                crisisStartLimit
+              }
+              onChange={event =>
+                handleStartChange(
+                  event.target.value,
+                )
+              }
+            />
+          </label>
 
+          <p>
+            El final del premonitorio se
+            calculará automáticamente
+            cuando comience la crisis.
+          </p>
 
-
-
-
-
-      {
-
-        showDateSelector
-
-        &&
-
-        (
-
-          <PhaseDateSelector
-
-
-            title="¿Cuándo empezaste a notar estas señales?"
-
-
-            value={
-              timeline?.premonitoryStart
-            }
-
-
-            onChange={
-              handleDateChange
-            }
-
-
-          />
-
-        )
-
-      }
-
-
-
-
-
-
-    </div>
-
-
+          {timeline?.crisisStart &&
+            timeline.premonitoryStart &&
+            new Date(
+              timeline.premonitoryStart,
+            ).getTime() >
+              new Date(
+                timeline.crisisStart,
+              ).getTime() && (
+              <p role="alert">
+                El premonitorio debe
+                comenzar antes de la
+                crisis.
+              </p>
+            )}
+        </div>
+      )}
+    </section>
   );
-
-
 }
