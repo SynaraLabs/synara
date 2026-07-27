@@ -97,6 +97,13 @@ export function CrisisMode({
     );
 
 
+  const startCrisis =
+  useMigraineStore(
+    state =>
+      state.startCrisis,
+  );
+
+
 
 
 
