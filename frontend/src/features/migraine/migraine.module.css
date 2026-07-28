@@ -1,216 +1,1298 @@
 .container {
+  width: 100%;
 
-  background:var(--color-surface);
-
-  border:1px solid var(--color-border);
-
-  border-radius:var(--radius-lg);
-
-  padding:var(--space-8);
-
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
 }
 
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-6);
 
-.container h1 {
+  padding: var(--space-8);
 
-  margin-bottom:var(--space-4);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-large);
 
+  background:
+    linear-gradient(
+      135deg,
+      var(--color-surface),
+      var(--color-primary-soft)
+    );
+
+  box-shadow: var(--shadow-medium);
 }
 
-
-.container p {
-
-  color:var(--color-text-secondary);
-
+.pageHeader > div:first-child {
+  min-width: 0;
 }
 
-.painScale {
+.pageEyebrow,
+.cardEyebrow {
+  margin-bottom: var(--space-2);
 
-  margin-top:var(--space-6);
+  color: var(--color-primary);
 
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
+.pageHeader h1 {
+  margin-bottom: var(--space-4);
+
+  font-size: clamp(
+    1.75rem,
+    4vw,
+    2.5rem
+  );
+}
+
+.pageDescription {
+  max-width: 620px;
+
+  color: var(--color-text-soft);
+
+  line-height: 1.65;
+}
+
+.episodeStatus {
+  min-width: 190px;
+
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+
+  padding: var(--space-4);
+
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-medium);
+
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.statusIndicator {
+  width: 12px;
+  height: 12px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: var(--color-primary);
+
+  box-shadow:
+    0 0 0 5px
+    var(--color-primary-soft);
+}
+
+.episodeStatus div {
+  display: grid;
+  gap: 2px;
+}
+
+.episodeStatus small {
+  color: var(--color-text-soft);
+
+  font-size: 0.75rem;
+}
+
+.episodeStatus strong {
+  color: var(--color-primary);
+
+  font-size: 0.9375rem;
+}
+
+.emptyEpisodeCard {
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-6);
+
+  padding: var(--space-8);
+
+  border: 1px dashed var(--color-primary-border);
+  border-radius: var(--radius-large);
+
+  background: var(--color-surface);
+
+  box-shadow: var(--shadow-small);
+}
+
+.emptyEpisodeIcon {
+  width: 60px;
+  height: 60px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: var(--radius-large);
+
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.emptyEpisodeContent {
+  min-width: 0;
+}
+
+.emptyEpisodeContent h2 {
+  margin-bottom: var(--space-3);
+}
+
+.emptyEpisodeContent > p:last-child {
+  max-width: 620px;
+
+  color: var(--color-text-soft);
+
+  line-height: 1.6;
+}
+
+.primaryAction,
+.crisisButton,
+.completeButton {
+  min-height: 50px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+
+  padding-inline: var(--space-5);
+
+  white-space: nowrap;
+}
+
+.primaryAction span {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.episodeWorkspace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.crisisEntryCard {
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-5);
+
+  padding: var(--space-6);
+
+  border: 1px solid rgba(162, 79, 85, 0.28);
+  border-radius: var(--radius-large);
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--color-danger-soft),
+      var(--color-surface)
+    );
+
+  box-shadow: var(--shadow-small);
+}
+
+.crisisEntryIcon {
+  width: 52px;
+  height: 52px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: var(--radius-medium);
+
+  color: #ffffff;
+  background: var(--color-danger);
+
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.crisisEntryContent h2 {
+  margin-bottom: var(--space-2);
+}
+
+.crisisEntryContent > p:last-child {
+  max-width: 560px;
+
+  color: var(--color-text-soft);
+
+  line-height: 1.55;
+}
+
+.crisisButton {
+  background: var(--color-danger);
+}
+
+.crisisButton:hover {
+  background: var(--color-danger-hover);
+}
+
+.phaseDateCard,
+.phaseSection,
+.recoverySection {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large);
+
+  background: var(--color-surface);
+
+  box-shadow: var(--shadow-small);
+}
+
+.phaseDateCard {
+  padding: var(--space-6);
+}
+
+.phaseDateHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+
+  margin-bottom: var(--space-5);
+}
+
+.secondaryButton {
+  min-height: 40px;
+
+  padding: 8px 12px;
+
+  border: 1px solid var(--color-border-strong);
+
+  color: var(--color-text-soft);
+  background: var(--color-surface);
+}
+
+.secondaryButton:hover {
+  color: var(--color-text-strong);
+  background: var(--color-surface-soft);
+}
+
+.phaseStack {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.phaseSection {
+  padding: var(--space-6);
+}
+
+.phaseHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.phaseNumber {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: var(--radius-medium);
+
+  color: #ffffff;
+  background: var(--color-primary);
+
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+
+.phaseHeader h2 {
+  font-size: 1.25rem;
+}
+
+.recoverySection {
+  overflow: hidden;
+}
+
+.recoveryHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+
+  padding: var(--space-6);
+
+  border-bottom: 1px solid var(--color-border);
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--color-success-soft),
+      var(--color-surface)
+    );
+}
+
+.recoveryIcon {
+  width: 46px;
+  height: 46px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: var(--radius-medium);
+
+  color: #ffffff;
+  background: var(--color-success);
+
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.recoveryHeader h2 {
+  margin-bottom: var(--space-2);
+}
+
+.recoveryHeader > div > p:last-child {
+  color: var(--color-text-soft);
+}
+
+.recoveryContent {
+  display: grid;
+  gap: var(--space-6);
+
+  padding: var(--space-6);
+}
+
+.completeEpisodeArea {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+
+  padding: var(--space-6);
+
+  border-top: 1px solid var(--color-border);
+
+  background: var(--color-surface-soft);
+}
+
+.completeEpisodeArea h3 {
+  margin-bottom: var(--space-2);
+}
+
+.completeEpisodeArea p {
+  color: var(--color-text-soft);
+}
+
+.completeButton {
+  background: var(--color-success);
+}
+
+.completeButton:hover {
+  background: #346352;
+}
+
+.crisisPage {
+  width: 100%;
+  min-height: calc(100svh - 140px);
+}
+
+/* Selectores compartidos */
+
+.painScale,
+.symptomSelector,
+.dateSelector {
+  margin-top: var(--space-5);
+}
+
+.symptomSelector,
+.triggerSelector {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.symptomSelector > div:first-child > h3,
+.triggerSelector > div:first-child > h3 {
+  margin-bottom: var(--space-2);
+}
+
+.symptomSelector > div:first-child > p,
+.triggerSelector > div:first-child > p {
+  max-width: 680px;
+
+  color: var(--color-text-soft);
+
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.painScale h3,
+.symptomSelector h3,
+.dateSelector h4 {
+  margin-bottom: var(--space-3);
+}
 
 .scaleButtons {
+  display: grid;
+  grid-template-columns:
+    repeat(11, minmax(42px, 1fr));
+  gap: var(--space-2);
 
-  display:flex;
-
-  gap:var(--space-2);
-
-  flex-wrap:wrap;
-
-  margin-top:var(--space-4);
-
+  margin-top: var(--space-4);
 }
-
 
 .scaleButtons button {
+  width: 100%;
+  min-width: 42px;
+  height: 44px;
+  min-height: 44px;
 
-  width:40px;
+  padding: 0;
 
-  height:40px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-medium);
 
-  border-radius:50%;
+  color: var(--color-text-strong);
+  background: var(--color-surface);
 
-  border:1px solid var(--color-border);
-
-  background:var(--color-surface);
-
-  cursor:pointer;
-
+  box-shadow: none;
 }
 
+.scaleButtons button:hover {
+  border-color: var(--color-primary-border);
+  background: var(--color-primary-soft);
+}
 
+.scaleButtons .selectedPain,
 .selectedPain {
+  border-color: var(--color-primary);
 
-  background:var(--color-primary);
-
-  color:white;
-
+  color: #ffffff;
+  background: var(--color-primary);
 }
-
 
 .scaleLabels {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
 
-  display:flex;
+  margin-top: var(--space-3);
 
-  justify-content:space-between;
+  color: var(--color-text-soft);
 
-  margin-top:var(--space-3);
-
-  color:var(--color-text-secondary);
-
-  font-size:.85rem;
-
+  font-size: 0.8125rem;
 }
-
-.symptomSelector {
-
-  margin-top:var(--space-6);
-
-}
-
 
 .symptomGrid {
-
-  display:grid;
-
-  grid-template-columns:repeat(2,1fr);
-
-  gap:var(--space-3);
-
-  margin-top:var(--space-4);
-
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
 }
-
 
 .symptomOption {
+  min-height: 52px;
 
-  display:flex;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 
-  align-items:center;
+  padding: var(--space-3) var(--space-4);
 
-  gap:var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
 
-  padding:var(--space-3);
+  color: var(--color-text);
+  background: var(--color-surface);
 
-  border:1px solid var(--color-border);
+  cursor: pointer;
 
-  border-radius:var(--radius-md);
-
-  cursor:pointer;
-
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
+.symptomOption:hover {
+  border-color: var(--color-primary-border);
+
+  background: var(--color-surface-soft);
+
+  transform: translateY(-1px);
+}
+
+.symptomOption:has(input:checked) {
+  border-color: var(--color-primary);
+
+  background: var(--color-primary-soft);
+
+  box-shadow:
+    inset 0 0 0 1px
+    var(--color-primary-border);
+}
 
 .symptomOption input {
-
-  width:18px;
-
-  height:18px;
-
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+  min-height: 20px;
 }
 
+.symptomOption span {
+  color: var(--color-text-strong);
 
-@media(max-width:600px){
-
-  .symptomGrid{
-
-    grid-template-columns:1fr;
-
-  }
-
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
+
+/* Aura */
+
+.auraGroup {
+  display: grid;
+  gap: var(--space-3);
+
+  padding: var(--space-5);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+
+  background: var(--color-surface-soft);
+}
+
+.auraGroup h4 {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-size: 0.9375rem;
+}
+
+.auraGroup .symptomOption {
+  background: var(--color-surface);
+}
+
+.auraDetailsGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+
+  margin-bottom: var(--space-4);
+}
+
+.auraDetailsGrid label {
+  align-content: start;
+}
+
+.auraDetailsGrid small {
+  color: var(--color-text-soft);
+
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Fechas */
 
 .dateSelector {
+  padding: var(--space-5);
 
-  margin-top:var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
 
-  padding:var(--space-4);
-
-  border:1px solid var(--color-border);
-
-  border-radius:var(--radius-md);
-
-  background:var(--color-surface);
-
+  background: var(--color-surface-soft);
 }
 
+.dateSelector > div:not(.auraDetailsGrid) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 
-.dateSelector h4 {
-
-  margin-bottom:var(--space-3);
-
+  margin-bottom: var(--space-4);
 }
 
+.dateSelector > p {
+  color: var(--color-text-soft);
 
-.dateSelector div {
-
-  display:flex;
-
-  gap:var(--space-2);
-
-  flex-wrap:wrap;
-
-  margin-bottom:var(--space-4);
-
+  font-size: 0.8125rem;
+  line-height: 1.5;
 }
 
+.dateSelector p[role='alert'] {
+  margin-top: var(--space-3);
+
+  padding: var(--space-3);
+
+  border: 1px solid rgba(162, 79, 85, 0.28);
+  border-radius: var(--radius-small);
+
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+
+  font-weight: 600;
+}
 
 .dateSelector button {
+  min-height: 40px;
 
-  padding:var(--space-2) var(--space-3);
+  padding: 8px 12px;
 
-  border-radius:var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
 
-  border:1px solid var(--color-border);
-
-  background:var(--color-surface);
-
-  cursor:pointer;
-
+  color: var(--color-text-soft);
+  background: var(--color-surface);
 }
 
+.dateSelector button:hover {
+  color: var(--color-primary);
+
+  border-color: var(--color-primary-border);
+
+  background: var(--color-primary-soft);
+}
 
 .dateSelector label {
+  display: grid;
+  gap: var(--space-2);
 
-  display:flex;
+  color: var(--color-text-strong);
+}
 
-  flex-direction:column;
+.dateSelector input {
+  max-width: 320px;
+}
 
-  gap:var(--space-2);
+.auraDetailsGrid input,
+.auraDetailsGrid select {
+  max-width: none;
+}
 
-  color:var(--color-text-secondary);
+/* Postdromo y recuperación */
 
+.phaseTimeInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+
+  padding: var(--space-4);
+
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-medium);
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--color-primary-soft),
+      var(--color-surface)
+    );
+}
+
+.phaseTimeIcon {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  color: var(--color-primary);
+  background: var(--color-surface);
+
+  font-size: 1rem;
+  font-weight: 800;
+
+  box-shadow: var(--shadow-small);
+}
+
+.phaseTimeInfo div {
+  min-width: 0;
+
+  display: grid;
+  gap: 2px;
+}
+
+.phaseTimeInfo small {
+  color: var(--color-text-soft);
+
+  font-size: 0.75rem;
+}
+
+.phaseTimeInfo strong {
+  color: var(--color-text-strong);
+
+  font-size: 0.875rem;
+}
+
+.recoveryAction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+
+  padding: var(--space-5);
+
+  border: 1px solid rgba(63, 117, 100, 0.25);
+  border-radius: var(--radius-medium);
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--color-success-soft),
+      var(--color-surface)
+    );
+}
+
+.recoveryAction h4 {
+  margin-bottom: var(--space-2);
+
+  color: var(--color-text-strong);
+}
+
+.recoveryAction p {
+  max-width: 560px;
+
+  color: var(--color-text-soft);
+
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.recoveryAction button {
+  flex-shrink: 0;
+
+  background: var(--color-success);
+}
+
+.recoveryAction button:hover {
+  background: #346352;
+}
+
+.recoveryDateArea {
+  display: grid;
+  gap: var(--space-4);
+
+  padding: var(--space-5);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+
+  background: var(--color-surface-soft);
+}
+
+.recoveryDateHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.recoveryDateHeader h4 {
+  margin: 0;
+
+  color: var(--color-text-strong);
+}
+
+.recoveryDateArea .dateSelector {
+  margin-top: 0;
+
+  background: var(--color-surface);
+}
+
+.recoveryCompleted {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+
+  padding: var(--space-4);
+
+  border: 1px solid rgba(63, 117, 100, 0.3);
+  border-radius: var(--radius-medium);
+
+  background: var(--color-success-soft);
+}
+
+.recoveryCompleted > span {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  color: #ffffff;
+  background: var(--color-success);
+
+  font-weight: 900;
+}
+
+.recoveryCompleted div {
+  min-width: 0;
+
+  display: grid;
+  gap: 2px;
+}
+
+.recoveryCompleted strong {
+  color: var(--color-success);
+
+  font-size: 0.9rem;
+}
+
+.recoveryCompleted small {
+  color: var(--color-text-soft);
+
+  font-size: 0.78rem;
+}
+
+/* Desencadenantes */
+
+.triggerCategory {
+  min-width: 0;
+
+  display: grid;
+  gap: var(--space-4);
+
+  margin: 0;
+  padding: var(--space-5);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+
+  background: var(--color-surface-soft);
+}
+
+.triggerCategory legend {
+  padding: 0 var(--space-2);
+
+  color: var(--color-primary);
+
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.triggerCategory .symptomOption {
+  background: var(--color-surface);
+}
+
+.selectionSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+
+  padding: var(--space-4);
+
+  border: 1px solid rgba(63, 117, 100, 0.28);
+  border-radius: var(--radius-medium);
+
+  background: var(--color-success-soft);
+}
+
+.selectionSummary > span {
+  width: 32px;
+  height: 32px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  color: #ffffff;
+  background: var(--color-success);
+
+  font-size: 0.875rem;
+  font-weight: 900;
+}
+
+.selectionSummary p {
+  color: var(--color-success);
+
+  font-size: 0.875rem;
+  font-weight: 700;
 }
 
 
-.dateSelector input {
 
-  padding:var(--space-2);
+/* Tratamiento */
 
-  border-radius:var(--radius-md);
+.treatmentSelector {
+  display: grid;
+  gap: var(--space-5);
+}
 
-  border:1px solid var(--color-border);
+.treatmentSelector > div:first-child h3 {
+  margin-bottom: var(--space-2);
+}
 
+.treatmentSelector > div:first-child p {
+  max-width: 680px;
+
+  color: var(--color-text-soft);
+
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.treatmentForm {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+
+  padding: var(--space-5);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+
+  background: var(--color-surface-soft);
+}
+
+.treatmentForm label {
+  align-content: start;
+}
+
+.responseTimeField {
+  grid-column: 1 / -1;
+}
+
+.numberInputGroup {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) auto;
+  align-items: center;
+
+  overflow: hidden;
+
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-small);
+
+  background: var(--color-surface);
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.numberInputGroup:focus-within {
+  border-color: var(--color-primary);
+
+  box-shadow:
+    0 0 0 4px
+    var(--color-focus);
+}
+
+.numberInputGroup input {
+  min-width: 0;
+
+  border: 0;
+  border-radius: 0;
+
+  box-shadow: none;
+}
+
+.numberInputGroup input:focus {
+  box-shadow: none;
+}
+
+.numberInputGroup span {
+  align-self: stretch;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 var(--space-4);
+
+  border-left: 1px solid var(--color-border);
+
+  color: var(--color-text-soft);
+  background: var(--color-surface-soft);
+
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.treatmentSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+
+  padding: var(--space-4);
+
+  border: 1px solid rgba(63, 117, 100, 0.28);
+  border-radius: var(--radius-medium);
+
+  background: var(--color-success-soft);
+}
+
+.treatmentSummary > span {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  color: #ffffff;
+  background: var(--color-success);
+
+  font-size: 0.875rem;
+  font-weight: 900;
+}
+
+.treatmentSummary div {
+  min-width: 0;
+
+  display: grid;
+  gap: 2px;
+}
+
+.treatmentSummary strong {
+  color: var(--color-success);
+
+  font-size: 0.875rem;
+}
+
+.treatmentSummary small {
+  color: var(--color-text-soft);
+
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+
+.devTools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-medium);
+
+  background: var(--color-surface-soft);
+}
+
+.devTools h3 {
+  margin-bottom: var(--space-2);
+
+  font-size: 1rem;
+}
+
+.devTools > div > p:last-child {
+  color: var(--color-text-soft);
+
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.devToolsButton {
+  flex-shrink: 0;
+
+  border: 1px solid rgba(162, 79, 85, 0.3);
+
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.devToolsButton:hover {
+  color: #ffffff;
+  background: var(--color-danger);
+}
+
+@media (max-width: 600px) {
+  .devTools {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .devToolsButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 1000px) {
+  .scaleButtons {
+    grid-template-columns:
+      repeat(6, minmax(42px, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .pageHeader,
+  .emptyEpisodeCard,
+  .crisisEntryCard {
+    grid-template-columns: 1fr;
+  }
+
+  .pageHeader {
+    flex-direction: column;
+    padding: var(--space-6);
+  }
+
+  .episodeStatus {
+    width: 100%;
+  }
+
+  .emptyEpisodeCard,
+  .crisisEntryCard {
+    align-items: flex-start;
+
+    padding: var(--space-6);
+  }
+
+  .primaryAction,
+  .crisisButton {
+    width: 100%;
+  }
+
+  .phaseDateHeader,
+  .completeEpisodeArea,
+  .recoveryAction {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .completeButton,
+  .recoveryAction button {
+    width: 100%;
+  }
+
+  .symptomGrid,
+  .auraDetailsGrid,
+  .treatmentForm {
+    grid-template-columns: 1fr;
+  }
+
+  .responseTimeField {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    gap: var(--space-6);
+  }
+
+  .pageHeader,
+  .phaseDateCard,
+  .phaseSection,
+  .recoveryHeader,
+  .recoveryContent,
+  .completeEpisodeArea {
+    padding: var(--space-5);
+  }
+
+  .pageHeader h1 {
+    font-size: 1.75rem;
+  }
+
+  .phaseHeader {
+    align-items: flex-start;
+  }
+
+  .phaseNumber {
+    width: 38px;
+    height: 38px;
+  }
+
+  .scaleButtons {
+    grid-template-columns:
+      repeat(4, minmax(42px, 1fr));
+  }
+
+  .scaleLabels {
+    font-size: 0.75rem;
+  }
+
+  .dateSelector,
+  .auraGroup,
+  .recoveryAction,
+  .recoveryDateArea,
+  .triggerCategory,
+  .treatmentForm {
+    padding: var(--space-4);
+  }
+
+  .dateSelector input {
+    max-width: none;
+  }
+
+  .recoveryDateHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .recoveryDateHeader .secondaryButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 390px) {
+  .pageHeader,
+  .emptyEpisodeCard,
+  .crisisEntryCard,
+  .phaseDateCard,
+  .phaseSection,
+  .recoveryHeader,
+  .recoveryContent,
+  .completeEpisodeArea {
+    padding: var(--space-4);
+  }
+
+  .scaleButtons {
+    grid-template-columns:
+      repeat(3, minmax(42px, 1fr));
+  }
+
+  .symptomOption {
+    padding: var(--space-3);
+  }
+
+  .phaseTimeInfo,
+  .recoveryCompleted,
+  .treatmentSummary {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .symptomOption,
+  .scaleButtons button,
+  .dateSelector button {
+    transition: none;
+  }
 }

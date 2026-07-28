@@ -8,12 +8,16 @@ import type {
   VisualAura,
 } from '../types/migraine.types';
 
-import { useMigraineStore } from '../store/migraine.store';
+import {
+  useMigraineStore,
+} from '../store/migraine.store';
 
-const auraTypes: {
-  value: AuraType;
+type SelectableOption<T extends string> = {
+  value: T;
   label: string;
-}[] = [
+};
+
+const auraTypes: SelectableOption<AuraType>[] = [
   {
     value: 'visual',
     label: 'Visual',
@@ -28,10 +32,7 @@ const auraTypes: {
   },
 ];
 
-const visualSymptoms: {
-  value: VisualAura;
-  label: string;
-}[] = [
+const visualSymptoms: SelectableOption<VisualAura>[] = [
   {
     value: 'flashes',
     label: 'Destellos de luz',
@@ -50,10 +51,7 @@ const visualSymptoms: {
   },
 ];
 
-const sensorySymptoms: {
-  value: SensoryAura;
-  label: string;
-}[] = [
+const sensorySymptoms: SelectableOption<SensoryAura>[] = [
   {
     value: 'tingling',
     label: 'Hormigueo',
@@ -68,10 +66,7 @@ const sensorySymptoms: {
   },
 ];
 
-const languageSymptoms: {
-  value: LanguageAura;
-  label: string;
-}[] = [
+const languageSymptoms: SelectableOption<LanguageAura>[] = [
   {
     value: 'wordFindingDifficulty',
     label: 'Dificultad para encontrar palabras',
@@ -82,10 +77,7 @@ const languageSymptoms: {
   },
 ];
 
-const auraTimingOptions: {
-  value: AuraTiming;
-  label: string;
-}[] = [
+const auraTimingOptions: SelectableOption<AuraTiming>[] = [
   {
     value: 'beforePain',
     label: 'Antes de que comenzara el dolor',
@@ -109,10 +101,23 @@ export function AuraSelector() {
     state => state.updateAura,
   );
 
-  const toggleType = (type: AuraType) => {
-    const updatedTypes = aura.types.includes(type)
-      ? aura.types.filter(item => item !== type)
-      : [...aura.types, type];
+  const hasAura = aura.types.length > 0;
+
+  const toggleType = (
+    type: AuraType,
+  ) => {
+    const isSelected =
+      aura.types.includes(type);
+
+    const updatedTypes = isSelected
+      ? aura.types.filter(
+          currentType =>
+            currentType !== type,
+        )
+      : [
+          ...aura.types,
+          type,
+        ];
 
     updateAura({
       ...aura,
@@ -124,18 +129,27 @@ export function AuraSelector() {
   const handleDurationChange = (
     value: string,
   ) => {
+    if (value === '') {
+      updateAura({
+        ...aura,
+        durationMinutes: undefined,
+      });
+
+      return;
+    }
+
     const parsedValue = Number(value);
 
-    const durationMinutes =
-      value === '' ||
+    if (
       Number.isNaN(parsedValue) ||
-      parsedValue < 0
-        ? undefined
-        : parsedValue;
+      parsedValue < 1
+    ) {
+      return;
+    }
 
     updateAura({
       ...aura,
-      durationMinutes,
+      durationMinutes: parsedValue,
     });
   };
 
@@ -152,14 +166,27 @@ export function AuraSelector() {
   };
 
   return (
-    <section className={styles.symptomSelector}>
-      <h3>Aura</h3>
+    <section
+      className={styles.symptomSelector}
+      aria-labelledby="aura-title"
+    >
+      <div>
+        <h3 id="aura-title">
+          Síntomas de aura
+        </h3>
 
-      <p>
-        ¿Experimentaste síntomas de aura?
-      </p>
+        <p>
+          Seleccioná el tipo de aura que
+          experimentaste durante este
+          episodio.
+        </p>
+      </div>
 
-      <div className={styles.symptomGrid}>
+      <div
+        className={styles.symptomGrid}
+        role="group"
+        aria-label="Tipos de aura"
+      >
         {auraTypes.map(item => (
           <label
             key={item.value}
@@ -183,12 +210,14 @@ export function AuraSelector() {
       {aura.types.includes('visual') && (
         <AuraCheckboxGroup
           title="Síntomas visuales"
+          ariaLabel="Síntomas visuales del aura"
           items={visualSymptoms}
           selected={aura.visualSymptoms}
-          onChange={values =>
+          onChange={visualValues =>
             updateAura({
               ...aura,
-              visualSymptoms: values,
+              visualSymptoms:
+                visualValues,
             })
           }
         />
@@ -197,12 +226,14 @@ export function AuraSelector() {
       {aura.types.includes('sensory') && (
         <AuraCheckboxGroup
           title="Síntomas sensitivos"
+          ariaLabel="Síntomas sensitivos del aura"
           items={sensorySymptoms}
           selected={aura.sensorySymptoms}
-          onChange={values =>
+          onChange={sensoryValues =>
             updateAura({
               ...aura,
-              sensorySymptoms: values,
+              sensorySymptoms:
+                sensoryValues,
             })
           }
         />
@@ -211,71 +242,84 @@ export function AuraSelector() {
       {aura.types.includes('language') && (
         <AuraCheckboxGroup
           title="Síntomas de lenguaje"
+          ariaLabel="Síntomas de lenguaje del aura"
           items={languageSymptoms}
           selected={aura.languageSymptoms}
-          onChange={values =>
+          onChange={languageValues =>
             updateAura({
               ...aura,
-              languageSymptoms: values,
+              languageSymptoms:
+                languageValues,
             })
           }
         />
       )}
 
-      {aura.types.length > 0 && (
-        <div>
-          <label>
-            Duración del aura en minutos
+      {hasAura && (
+        <div className={styles.dateSelector}>
+          <div
+            className={styles.auraDetailsGrid}
+          >
+            <label>
+              Duración del aura
 
-            <input
-              type="number"
-              min="1"
-              step="1"
-              inputMode="numeric"
-              value={
-                aura.durationMinutes ?? ''
-              }
-              placeholder="Ejemplo: 30"
-              onChange={event =>
-                handleDurationChange(
-                  event.target.value,
-                )
-              }
-            />
-          </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                inputMode="numeric"
+                value={
+                  aura.durationMinutes ??
+                  ''
+                }
+                placeholder="Ejemplo: 30"
+                onChange={event =>
+                  handleDurationChange(
+                    event.target.value,
+                  )
+                }
+              />
 
-          <label>
-            ¿Cuándo ocurrió?
+              <small>
+                Ingresá la duración en
+                minutos.
+              </small>
+            </label>
 
-            <select
-              value={aura.timing ?? ''}
-              onChange={event =>
-                handleTimingChange(
-                  event.target.value,
-                )
-              }
-            >
-              <option value="">
-                Seleccionar
-              </option>
+            <label>
+              ¿Cuándo ocurrió?
 
-              {auraTimingOptions.map(
-                option => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                  >
-                    {option.label}
-                  </option>
-                ),
-              )}
-            </select>
-          </label>
+              <select
+                value={aura.timing ?? ''}
+                onChange={event =>
+                  handleTimingChange(
+                    event.target.value,
+                  )
+                }
+              >
+                <option value="">
+                  Seleccionar momento
+                </option>
+
+                {auraTimingOptions.map(
+                  option => (
+                    <option
+                      key={option.value}
+                      value={option.value}
+                    >
+                      {option.label}
+                    </option>
+                  ),
+                )}
+              </select>
+            </label>
+          </div>
 
           <p>
-            SYNARA calculará automáticamente
-            el inicio y el final del aura
-            tomando como referencia la crisis.
+            SYNARA calculará
+            automáticamente el inicio y
+            el final del aura tomando
+            como referencia la crisis.
           </p>
         </div>
       )}
@@ -287,14 +331,9 @@ interface AuraCheckboxGroupProps<
   T extends string,
 > {
   title: string;
-
-  items: {
-    value: T;
-    label: string;
-  }[];
-
+  ariaLabel: string;
+  items: SelectableOption<T>[];
   selected: T[];
-
   onChange: (values: T[]) => void;
 }
 
@@ -302,26 +341,39 @@ function AuraCheckboxGroup<
   T extends string,
 >({
   title,
+  ariaLabel,
   items,
   selected,
   onChange,
 }: AuraCheckboxGroupProps<T>) {
-  const toggleValue = (value: T) => {
-    const updatedValues =
-      selected.includes(value)
-        ? selected.filter(
-            item => item !== value,
-          )
-        : [...selected, value];
+  const toggleValue = (
+    value: T,
+  ) => {
+    const isSelected =
+      selected.includes(value);
+
+    const updatedValues = isSelected
+      ? selected.filter(
+          currentValue =>
+            currentValue !== value,
+        )
+      : [
+          ...selected,
+          value,
+        ];
 
     onChange(updatedValues);
   };
 
   return (
-    <div>
+    <div className={styles.auraGroup}>
       <h4>{title}</h4>
 
-      <div className={styles.symptomGrid}>
+      <div
+        className={styles.symptomGrid}
+        role="group"
+        aria-label={ariaLabel}
+      >
         {items.map(item => (
           <label
             key={item.value}

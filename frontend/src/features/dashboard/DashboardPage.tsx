@@ -4,33 +4,20 @@ import { HealthSummary } from './components/HealthSummary';
 import { RealRecentEpisodes } from './components/RealRecentEpisodes';
 import { InsightsSummary } from './components/InsightsSummary';
 
-
+import styles from './dashboard.module.css';
 
 export function DashboardPage() {
-
-
   return (
-
-    <div>
-
-
+    <section className={styles.dashboard}>
       <WelcomeCard />
-
 
       <QuickActions />
 
-
       <HealthSummary />
-
 
       <InsightsSummary />
 
-
       <RealRecentEpisodes />
-
-
-    </div>
-
+    </section>
   );
-
 }

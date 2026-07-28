@@ -8,10 +8,12 @@ import {
   useMigraineStore,
 } from '../store/migraine.store';
 
-const symptoms: {
+type PremonitorySymptomOption = {
   value: PremonitorySymptom;
   label: string;
-}[] = [
+};
+
+const symptoms: PremonitorySymptomOption[] = [
   {
     value: 'fatigue',
     label: 'Fatiga o cansancio',
@@ -54,9 +56,9 @@ const symptoms: {
   },
 ];
 
-const toLocalDateTimeValue = (
+function toLocalDateTimeValue(
   isoDate?: string,
-): string => {
+): string {
   if (!isoDate) {
     return '';
   }
@@ -86,14 +88,13 @@ const toLocalDateTimeValue = (
   ).padStart(2, '0');
 
   return `${year}-${month}-${day}T${hours}:${minutes}`;
-};
+}
 
-const getCurrentLocalDateTimeValue =
-  (): string => {
-    return toLocalDateTimeValue(
-      new Date().toISOString(),
-    );
-  };
+function getCurrentLocalDateTimeValue(): string {
+  return toLocalDateTimeValue(
+    new Date().toISOString(),
+  );
+}
 
 export function PremonitorySelector() {
   const premonitory = useMigraineStore(
@@ -114,13 +115,46 @@ export function PremonitorySelector() {
       state => state.updateTimeline,
     );
 
+  const hasPremonitorySymptoms =
+    premonitory.symptoms.length > 0;
+
+  const premonitoryStartValue =
+    toLocalDateTimeValue(
+      timeline?.premonitoryStart,
+    );
+
+  const maximumStartDate =
+    timeline?.crisisStart
+      ? toLocalDateTimeValue(
+          timeline.crisisStart,
+        )
+      : getCurrentLocalDateTimeValue();
+
+  const hasInvalidTimeline =
+    Boolean(
+      timeline?.premonitoryStart &&
+        timeline?.crisisStart &&
+        new Date(
+          timeline.premonitoryStart,
+        ).getTime() >
+          new Date(
+            timeline.crisisStart,
+          ).getTime(),
+    );
+
   const toggleSymptom = (
     symptom: PremonitorySymptom,
   ) => {
+    const symptomIsSelected =
+      premonitory.symptoms.includes(
+        symptom,
+      );
+
     const updatedSymptoms =
-      premonitory.symptoms.includes(symptom)
+      symptomIsSelected
         ? premonitory.symptoms.filter(
-            item => item !== symptom,
+            currentSymptom =>
+              currentSymptom !== symptom,
           )
         : [
             ...premonitory.symptoms,
@@ -132,24 +166,15 @@ export function PremonitorySelector() {
 
     updatePremonitory({
       ...premonitory,
-
-      present:
-        hasSymptoms,
-
-      symptoms:
-        updatedSymptoms,
-
-      hoursBeforeAttack:
-        undefined,
+      present: hasSymptoms,
+      symptoms: updatedSymptoms,
+      hoursBeforeAttack: undefined,
     });
 
     if (!hasSymptoms) {
       updateTimeline({
-        premonitoryStart:
-          undefined,
-
-        premonitoryEnd:
-          undefined,
+        premonitoryStart: undefined,
+        premonitoryEnd: undefined,
       });
     }
   };
@@ -159,18 +184,14 @@ export function PremonitorySelector() {
   ) => {
     if (!value) {
       updateTimeline({
-        premonitoryStart:
-          undefined,
-
-        premonitoryEnd:
-          undefined,
+        premonitoryStart: undefined,
+        premonitoryEnd: undefined,
       });
 
       return;
     }
 
-    const selectedDate =
-      new Date(value);
+    const selectedDate = new Date(value);
 
     if (
       Number.isNaN(
@@ -180,94 +201,87 @@ export function PremonitorySelector() {
       return;
     }
 
-    const crisisStart =
+    const crisisStartDate =
       timeline?.crisisStart
         ? new Date(
             timeline.crisisStart,
           )
-        : undefined;
+        : null;
 
-    if (
-      crisisStart &&
+    const startsAfterCrisis =
+      crisisStartDate &&
       selectedDate.getTime() >
-        crisisStart.getTime()
-    ) {
+        crisisStartDate.getTime();
+
+    if (startsAfterCrisis) {
       return;
     }
 
     updateTimeline({
       premonitoryStart:
         selectedDate.toISOString(),
-
       premonitoryEnd:
         timeline?.crisisStart,
     });
   };
 
-  const premonitoryStartValue =
-    toLocalDateTimeValue(
-      timeline?.premonitoryStart,
-    );
-
-  const crisisStartLimit =
-    timeline?.crisisStart
-      ? toLocalDateTimeValue(
-          timeline.crisisStart,
-        )
-      : getCurrentLocalDateTimeValue();
-
   return (
     <section
-      className={
-        styles.symptomSelector
-      }
+      className={styles.symptomSelector}
+      aria-labelledby="premonitory-title"
     >
-      <h3>
-        Señales antes de la migraña
-      </h3>
+      <div>
+        <h3 id="premonitory-title">
+          Señales antes de la migraña
+        </h3>
 
-      <p>
-        Registrá las señales que
-        aparecieron antes del inicio del
-        dolor.
-      </p>
-
-      <div
-        className={
-          styles.symptomGrid
-        }
-      >
-        {symptoms.map(symptom => (
-          <label
-            key={symptom.value}
-            className={
-              styles.symptomOption
-            }
-          >
-            <input
-              type="checkbox"
-              checked={
-                premonitory.symptoms.includes(
-                  symptom.value,
-                )
-              }
-              onChange={() =>
-                toggleSymptom(
-                  symptom.value,
-                )
-              }
-            />
-
-            <span>
-              {symptom.label}
-            </span>
-          </label>
-        ))}
+        <p>
+          Seleccioná las señales que
+          aparecieron antes del inicio
+          del dolor.
+        </p>
       </div>
 
-      {premonitory.symptoms.length >
-        0 && (
-        <div>
+      <div
+        className={styles.symptomGrid}
+        role="group"
+        aria-label="Síntomas premonitorios"
+      >
+        {symptoms.map(symptom => {
+          const isSelected =
+            premonitory.symptoms.includes(
+              symptom.value,
+            );
+
+          return (
+            <label
+              key={symptom.value}
+              className={
+                styles.symptomOption
+              }
+            >
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() =>
+                  toggleSymptom(
+                    symptom.value,
+                  )
+                }
+              />
+
+              <span>
+                {symptom.label}
+              </span>
+            </label>
+          );
+        })}
+      </div>
+
+      {hasPremonitorySymptoms && (
+        <div
+          className={styles.dateSelector}
+        >
           <label>
             ¿Cuándo comenzaron estas
             señales?
@@ -277,9 +291,7 @@ export function PremonitorySelector() {
               value={
                 premonitoryStartValue
               }
-              max={
-                crisisStartLimit
-              }
+              max={maximumStartDate}
               onChange={event =>
                 handleStartChange(
                   event.target.value,
@@ -289,25 +301,18 @@ export function PremonitorySelector() {
           </label>
 
           <p>
-            El final del premonitorio se
+            El final de esta fase se
             calculará automáticamente
             cuando comience la crisis.
           </p>
 
-          {timeline?.crisisStart &&
-            timeline.premonitoryStart &&
-            new Date(
-              timeline.premonitoryStart,
-            ).getTime() >
-              new Date(
-                timeline.crisisStart,
-              ).getTime() && (
-              <p role="alert">
-                El premonitorio debe
-                comenzar antes de la
-                crisis.
-              </p>
-            )}
+          {hasInvalidTimeline && (
+            <p role="alert">
+              Las señales premonitorias
+              deben comenzar antes de la
+              crisis.
+            </p>
+          )}
         </div>
       )}
     </section>

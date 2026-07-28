@@ -1,25 +1,25 @@
 import { Outlet } from 'react-router-dom';
+
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
-import styles from './layout.module.css';
 
+import styles from './layout.module.css';
 
 export function AppLayout() {
   return (
     <div className={styles.container}>
-
       <Sidebar />
 
       <div className={styles.content}>
-
         <Header />
 
-        <main className={styles.main}>
+        <main
+          className={styles.main}
+          id="main-content"
+        >
           <Outlet />
         </main>
-
       </div>
-
     </div>
   );
 }
