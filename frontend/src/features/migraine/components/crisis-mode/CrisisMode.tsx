@@ -1,34 +1,70 @@
 import styles from './crisis-mode.module.css';
 
 import type {
+  CrisisPhase,
   CrisisSymptom,
   PainIntensity,
-  CrisisPhase,
 } from '../../types/migraine.types';
 
-import {
-  useMigraineStore,
-} from '../../store/migraine.store';
-
-import {
-  PainCard,
-} from './PainCard';
-
-import {
-  MedicationCard,
-} from './MedicationCard';
-
-import {
-  SymptomsCard,
-} from './SymptomsCard';
+import { useMigraineStore } from '../../store/migraine.store';
 
 import {
   FinishCrisisButton,
+  type CrisisEndSelection,
 } from './FinishCrisisButton';
+import { MedicationCard } from './MedicationCard';
+import { PainCard } from './PainCard';
+import { SymptomsCard } from './SymptomsCard';
 
 interface Props {
   onExit?: () => void;
 }
+
+const generateId = (): string => {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID ===
+      'function'
+  ) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random()
+    .toString(16)
+    .slice(2)}`;
+};
+
+const formatCrisisStart = (
+  value?: string,
+): string => {
+  if (!value) {
+    return 'Hora de inicio no registrada';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Hora de inicio no registrada';
+  }
+
+  return date.toLocaleString('es-AR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const isValidPainIntensity = (
+  value: number,
+): value is PainIntensity => {
+  return (
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= 10
+  );
+};
 
 export function CrisisMode({
   onExit,
@@ -41,20 +77,40 @@ export function CrisisMode({
     state => state.episode.timeline,
   );
 
-  const updateCrisis = useMigraineStore(
-    state => state.updateCrisis,
-  );
+  const updateCrisis =
+    useMigraineStore(
+      state => state.updateCrisis,
+    );
 
-  const startCrisis = useMigraineStore(
-    state => state.startCrisis,
-  );
+  const startCrisis =
+    useMigraineStore(
+      state => state.startCrisis,
+    );
 
-  const finishCrisis = useMigraineStore(
-    state => state.finishCrisis,
-  );
+  const finishCrisis =
+    useMigraineStore(
+      state => state.finishCrisis,
+    );
+
+  const intensityHistory =
+    crisis.intensityHistory ?? [];
+
+  const events =
+    crisis.events ?? [];
+
+  const symptoms =
+    crisis.symptoms ?? [];
+
+  const crisisStart =
+    timeline?.crisisStart ||
+    crisis.startTime ||
+    crisis.time?.start?.value;
 
   const ensureCrisisStarted = () => {
-    if (!timeline?.crisisStart) {
+    if (
+      !timeline?.crisisStart ||
+      !crisis.active
+    ) {
       startCrisis();
     }
   };
@@ -62,18 +118,27 @@ export function CrisisMode({
   const handlePainChange = (
     value: string,
   ) => {
-    const intensity =
-      Number(value) as PainIntensity;
+    const numericValue =
+      Number(value);
+
+    if (
+      !isValidPainIntensity(
+        numericValue,
+      )
+    ) {
+      return;
+    }
 
     ensureCrisisStarted();
 
-    const updated: CrisisPhase = {
+    const updatedCrisis:
+      CrisisPhase = {
       ...crisis,
       active: true,
-      intensity,
+      intensity: numericValue,
     };
 
-    updateCrisis(updated);
+    updateCrisis(updatedCrisis);
   };
 
   const handlePainRegister = () => {
@@ -85,22 +150,26 @@ export function CrisisMode({
     updateCrisis({
       ...crisis,
 
+      active: true,
+
       intensityHistory: [
-        ...crisis.intensityHistory,
+        ...intensityHistory,
         {
+          id: generateId(),
           time: now,
           intensity: crisis.intensity,
         },
       ],
 
       events: [
-        ...crisis.events,
+        ...events,
         {
-          id: crypto.randomUUID(),
+          id: generateId(),
           type: 'intensity',
           timestamp: now,
           data: {
-            intensity: crisis.intensity,
+            intensity:
+              crisis.intensity,
           },
         },
       ],
@@ -111,6 +180,16 @@ export function CrisisMode({
     medication: string,
     dose: string,
   ) => {
+    const normalizedMedication =
+      medication.trim();
+
+    const normalizedDose =
+      dose.trim();
+
+    if (!normalizedMedication) {
+      return;
+    }
+
     const now =
       new Date().toISOString();
 
@@ -119,15 +198,18 @@ export function CrisisMode({
     updateCrisis({
       ...crisis,
 
+      active: true,
+
       events: [
-        ...crisis.events,
+        ...events,
         {
-          id: crypto.randomUUID(),
+          id: generateId(),
           type: 'medication',
           timestamp: now,
           data: {
-            medication,
-            dose,
+            medication:
+              normalizedMedication,
+            dose: normalizedDose,
           },
         },
       ],
@@ -137,55 +219,88 @@ export function CrisisMode({
   const handleSymptomToggle = (
     symptom: CrisisSymptom,
   ) => {
-    const symptoms =
-      crisis.symptoms.includes(symptom)
-        ? crisis.symptoms.filter(
-            item => item !== symptom,
+    ensureCrisisStarted();
+
+    const updatedSymptoms =
+      symptoms.includes(symptom)
+        ? symptoms.filter(
+            currentSymptom =>
+              currentSymptom !==
+              symptom,
           )
         : [
-            ...crisis.symptoms,
+            ...symptoms,
             symptom,
           ];
 
     updateCrisis({
       ...crisis,
-      symptoms,
+      active: true,
+      symptoms: updatedSymptoms,
     });
   };
 
-  const handleFinish = () => {
-    finishCrisis();
+  const handleFinish = (
+    selection?: CrisisEndSelection,
+  ) => {
+    if (!selection) {
+      return;
+    }
+
+    finishCrisis({
+      endTime: selection.endTime,
+      precision:
+        selection.precision,
+    });
+
     onExit?.();
   };
 
   return (
-    <section className={styles.container}>
+    <section
+      className={styles.container}
+    >
       <header>
-        <h1>
-          Crisis activa
-        </h1>
+        <h1>Crisis activa</h1>
 
         <p>
-          Registrá cómo evoluciona tu migraña.
+          Desde{' '}
+          {formatCrisisStart(
+            crisisStart,
+          )}
+        </p>
+
+        <p>
+          Registrá cómo evoluciona tu
+          migraña.
         </p>
       </header>
 
       <PainCard
         crisis={crisis}
-        onChange={handlePainChange}
-        onRegister={handlePainRegister}
+        onChange={
+          handlePainChange
+        }
+        onRegister={
+          handlePainRegister
+        }
       />
 
       <MedicationCard
-        onRegister={handleMedicationRegister}
+        onRegister={
+          handleMedicationRegister
+        }
       />
 
       <SymptomsCard
-        symptoms={crisis.symptoms}
-        onToggle={handleSymptomToggle}
+        symptoms={symptoms}
+        onToggle={
+          handleSymptomToggle
+        }
       />
 
       <FinishCrisisButton
+        crisisStart={crisisStart}
         onFinish={handleFinish}
       />
     </section>

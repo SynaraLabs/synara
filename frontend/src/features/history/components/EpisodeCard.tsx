@@ -1,14 +1,10 @@
 import styles from '../history.module.css';
 
 import type {
-  AuraType,
-  CrisisSymptom,
-  LanguageAura,
   MigraineEpisode,
-  MigraineTrigger,
-  PostdromeSymptom,
-  SensoryAura,
-  VisualAura,
+  PremonitorySymptom,
+  RecoveryLevel,
+  TimePrecision,
 } from '../../migraine/types/migraine.types';
 
 import {
@@ -21,115 +17,146 @@ import {
   getPremonitoryDuration,
 } from '../../migraine/utils/episodeCalculations';
 
+import {
+  auraTypeLabels,
+  crisisSymptomLabels,
+  languageAuraLabels,
+  motorAuraLabels,
+  postdromeSymptomLabels,
+  sensoryAuraLabels,
+  triggerLabels,
+  vestibularAuraLabels,
+  visualAuraLabels,
+} from '../utils/migraineLabels';
+
 interface Props {
   episode: MigraineEpisode;
 }
 
-const triggerLabels: Record<
-  MigraineTrigger,
+const recoveryLevelLabels: Record<
+  RecoveryLevel,
   string
 > = {
-  stress: 'Estrés',
-  lackOfSleep: 'Falta de sueño',
-  food: 'Alimentación',
-  caffeine: 'Cafeína',
-  alcohol: 'Alcohol',
-  hormonal: 'Hormonal',
-  weather: 'Clima',
-  smell: 'Olores',
-  noise: 'Ruido',
-  unknown: 'Desconocido',
+  minimal: 'Recuperación mínima',
+  partial: 'Recuperación parcial',
+  mostlyRecovered:
+    'Casi completamente recuperada',
+  fullyRecovered:
+    'Recuperación completa',
 };
 
-const crisisSymptomLabels: Record<
-  CrisisSymptom,
-  string
-> = {
-  nausea: 'Náuseas',
-  vomiting: 'Vómitos',
+const premonitorySymptomLabels:
+  Partial<
+    Record<
+      PremonitorySymptom,
+      string
+    >
+  > = {
+  fatigue: 'Fatiga o cansancio',
+  yawning: 'Bostezos frecuentes',
+  moodChange: 'Cambios de ánimo',
+  irritability: 'Irritabilidad',
+  brainFog: 'Niebla mental',
+  foodCraving:
+    'Antojos alimentarios',
+  neckStiffness:
+    'Rigidez cervical',
+  neckPain: 'Dolor cervical',
+  thirst:
+    'Mayor sensación de sed',
+  sleepiness: 'Somnolencia',
+  concentrationDifficulty:
+    'Dificultad para concentrarse',
+  mentalSlowness:
+    'Lentitud mental',
+  jawTension:
+    'Tensión mandibular',
+  shoulderTension:
+    'Tensión en hombros',
+  trapeziusTension:
+    'Tensión en trapecios',
   lightSensitivity:
     'Sensibilidad a la luz',
   soundSensitivity:
     'Sensibilidad al sonido',
   smellSensitivity:
     'Sensibilidad a olores',
-  dizziness: 'Mareos',
-  confusion: 'Confusión',
-  neckPain: 'Dolor cervical',
-  jawTension: 'Tensión mandibular',
+  mildNausea: 'Náuseas leves',
+  frequentUrination:
+    'Orinar con más frecuencia',
 };
 
-const postdromeSymptomLabels: Record<
-  PostdromeSymptom,
-  string
-> = {
-  fatigue: 'Fatiga',
-  brainFog: 'Niebla mental',
-  weakness: 'Debilidad',
-  moodChange: 'Cambios de ánimo',
-  residualSensitivity:
-    'Sensibilidad residual',
-  neckDiscomfort:
-    'Molestia cervical',
-};
+function parseValidDate(
+  value?: string,
+): Date | undefined {
+  if (!value) {
+    return undefined;
+  }
 
-const auraTypeLabels: Record<
-  AuraType,
-  string
-> = {
-  visual: 'Visual',
-  sensory: 'Sensitiva',
-  language: 'Lenguaje',
-};
+  const date = new Date(value);
 
-const visualAuraLabels: Record<
-  VisualAura,
-  string
-> = {
-  flashes: 'Destellos de luz',
-  zigzagLines: 'Líneas zigzag',
-  blindSpots: 'Puntos ciegos',
-  blurredVision: 'Visión borrosa',
-};
+  if (Number.isNaN(date.getTime())) {
+    return undefined;
+  }
 
-const sensoryAuraLabels: Record<
-  SensoryAura,
-  string
-> = {
-  tingling: 'Hormigueo',
-  numbness: 'Entumecimiento',
-  electricSensation:
-    'Sensación eléctrica',
-};
+  return date;
+}
 
-const languageAuraLabels: Record<
-  LanguageAura,
-  string
-> = {
-  wordFindingDifficulty:
-    'Dificultad para encontrar palabras',
-  speechDifficulty:
-    'Dificultad al hablar',
-};
+function isValidDate(
+  value?: string,
+): value is string {
+  return Boolean(parseValidDate(value));
+}
+
+function formatCreatedDate(
+  value?: string,
+): string {
+  const date = parseValidDate(value);
+
+  if (!date) {
+    return 'Fecha sin registrar';
+  }
+
+  return date.toLocaleDateString(
+    'es-AR',
+    {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    },
+  );
+}
 
 function formatDateTime(
-  date?: string,
+  value?: string,
+  precision?: TimePrecision,
 ): string {
+  const date = parseValidDate(value);
+
   if (!date) {
     return 'Sin registrar';
   }
 
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return 'Sin registrar';
+  if (
+    precision === 'dateOnly' ||
+    precision === 'unknown'
+  ) {
+    return date.toLocaleDateString(
+      'es-AR',
+      {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      },
+    );
   }
 
-  return parsedDate.toLocaleString(
+  return date.toLocaleString(
     'es-AR',
     {
       day: 'numeric',
       month: 'short',
+      year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
     },
@@ -137,19 +164,15 @@ function formatDateTime(
 }
 
 function formatTime(
-  date?: string,
+  value?: string,
 ): string {
+  const date = parseValidDate(value);
+
   if (!date) {
-    return 'Sin hora';
+    return 'Hora sin registrar';
   }
 
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return 'Sin hora';
-  }
-
-  return parsedDate.toLocaleTimeString(
+  return date.toLocaleTimeString(
     'es-AR',
     {
       hour: '2-digit',
@@ -158,55 +181,117 @@ function formatTime(
   );
 }
 
+function getTimestamp(
+  value?: string,
+): number {
+  return (
+    parseValidDate(value)?.getTime() ??
+    Number.MAX_SAFE_INTEGER
+  );
+}
+
 function getMedicationData(
-  data?: Record<string, unknown>,
-) {
+  data: unknown,
+): {
+  medication: string;
+  dose: string;
+} {
+  if (
+    typeof data !== 'object' ||
+    data === null
+  ) {
+    return {
+      medication:
+        'Medicamento no especificado',
+      dose: '',
+    };
+  }
+
+  const record = data as Record<
+    string,
+    unknown
+  >;
+
   return {
     medication:
-      typeof data?.medication === 'string'
-        ? data.medication
+      typeof record.medication ===
+      'string'
+        ? record.medication
         : 'Medicamento no especificado',
 
     dose:
-      typeof data?.dose === 'string'
-        ? data.dose
+      typeof record.dose === 'string'
+        ? record.dose
         : '',
   };
+}
+
+function getLabels<
+  Value extends string,
+>(
+  values:
+    | readonly Value[]
+    | undefined,
+  labels: Readonly<
+    Record<Value, string>
+  >,
+): string[] {
+  return (values ?? []).map(
+    value => labels[value] ?? value,
+  );
+}
+
+function getPremonitoryLabels(
+  symptoms:
+    | readonly PremonitorySymptom[]
+    | undefined,
+): string[] {
+  return (symptoms ?? []).map(
+    symptom =>
+      premonitorySymptomLabels[
+        symptom
+      ] ?? symptom,
+  );
 }
 
 function getAuraDetails(
   episode: MigraineEpisode,
 ): string[] {
-  const auraTypes =
-    episode.aura?.types ?? [];
+  const aura = episode.aura;
 
-  const visualSymptoms =
-    episode.aura?.visualSymptoms ?? [];
-
-  const sensorySymptoms =
-    episode.aura?.sensorySymptoms ?? [];
-
-  const languageSymptoms =
-    episode.aura?.languageSymptoms ?? [];
+  if (!aura) {
+    return [];
+  }
 
   return [
-    ...auraTypes.map(
-      type => auraTypeLabels[type],
+    ...getLabels(
+      aura.types,
+      auraTypeLabels,
     ),
 
-    ...visualSymptoms.map(
-      symptom =>
-        visualAuraLabels[symptom],
+    ...getLabels(
+      aura.visualSymptoms,
+      visualAuraLabels,
     ),
 
-    ...sensorySymptoms.map(
-      symptom =>
-        sensoryAuraLabels[symptom],
+    ...getLabels(
+      aura.sensorySymptoms,
+      sensoryAuraLabels,
     ),
 
-    ...languageSymptoms.map(
-      symptom =>
-        languageAuraLabels[symptom],
+    ...getLabels(
+      aura.languageSymptoms,
+      languageAuraLabels,
+    ),
+
+    ...getLabels(
+      aura.motorSymptoms,
+      motorAuraLabels,
+    ),
+
+    ...getLabels(
+      aura.vestibularSymptoms,
+      vestibularAuraLabels,
     ),
   ];
 }
@@ -214,42 +299,104 @@ function getAuraDetails(
 function getPostdromeDetails(
   episode: MigraineEpisode,
 ): string[] {
-  const symptoms =
-    episode.postdrome?.symptoms ?? [];
-
-  return symptoms.map(
-    symptom =>
-      postdromeSymptomLabels[symptom],
+  return getLabels(
+    episode.postdrome?.symptoms,
+    postdromeSymptomLabels,
   );
 }
 
 export function EpisodeCard({
   episode,
 }: Props) {
+  const premonitory =
+    episode.premonitory;
+
+  const aura = episode.aura;
   const crisis = episode.crisis;
+  const postdrome =
+    episode.postdrome;
 
-  const timeline =
-    episode.timeline ?? {};
+  const timeline = episode.timeline;
 
-  const intensityHistory =
-    crisis?.intensityHistory ?? [];
+  const createdDate =
+    formatCreatedDate(
+      episode.createdAt,
+    );
 
-  const crisisEvents =
-    crisis?.events ?? [];
+  const crisisStart =
+    timeline?.crisisStart ??
+    crisis.startTime ??
+    crisis.time?.start?.value;
 
-  const crisisSymptoms =
-    crisis?.symptoms ?? [];
+  const crisisEnd =
+    timeline?.crisisEnd ??
+    crisis.endTime ??
+    crisis.time?.end?.value;
 
-  const triggers =
-    episode.triggers ?? [];
+  const hasCrisis =
+    crisis.active === true ||
+    isValidDate(crisisStart) ||
+    isValidDate(crisisEnd);
 
-  const createdDate = new Date(
-    episode.createdAt,
-  ).toLocaleDateString('es-AR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+  const auraStart =
+    timeline?.auraStart ??
+    aura.time?.start?.value;
+
+  const auraEnd =
+    timeline?.auraEnd ??
+    aura.time?.end?.value;
+
+  const auraDetails =
+    getAuraDetails(episode);
+
+  const hasAura =
+    aura.present === true ||
+    auraDetails.length > 0 ||
+    isValidDate(auraStart) ||
+    isValidDate(auraEnd);
+
+  const premonitoryStart =
+    timeline?.premonitoryStart ??
+    premonitory.time?.start?.value;
+
+  const premonitoryEnd =
+    timeline?.premonitoryEnd ??
+    premonitory.time?.end?.value;
+
+  const premonitoryEndUnknown =
+    premonitory.time?.end
+      ?.precision === 'unknown' &&
+    !isValidDate(premonitoryEnd);
+
+  const isUncertainRecord =
+    episode.status ===
+      'incomplete' ||
+    premonitory.status ===
+      'uncertain';
+
+  const endedWithoutCrisis =
+    premonitory
+      .endedWithoutCrisis === true ||
+    episode.completionReason ===
+      'phaseEndedWithoutCrisis';
+
+  const recordTitle = hasCrisis
+    ? 'Migraña'
+    : endedWithoutCrisis
+      ? 'Señales previas sin crisis'
+      : isUncertainRecord
+        ? 'Registro de señales — desenlace incierto'
+        : hasAura
+          ? 'Aura sin crisis confirmada'
+          : 'Registro de señales previas';
+
+  const headerStatus = hasCrisis
+    ? `${getMaxPainIntensity(
+        episode,
+      )}/10`
+    : isUncertainRecord
+      ? 'Incierto'
+      : 'Sin crisis';
 
   const maxIntensity =
     getMaxPainIntensity(episode);
@@ -269,33 +416,122 @@ export function EpisodeCard({
   const episodeDuration =
     getEpisodeDuration(episode);
 
+  const triggers =
+    episode.triggers ?? [];
+
+  const crisisSymptoms =
+    crisis.symptoms ?? [];
+
+  const intensityHistory =
+    crisis.intensityHistory ?? [];
+
+  const crisisEvents =
+    crisis.events ?? [];
+
+  const premonitoryUpdates =
+    [
+      ...(premonitory.updates ?? []),
+    ].sort(
+      (
+        firstUpdate,
+        secondUpdate,
+      ) => {
+        const firstDate =
+          firstUpdate.occurredAt
+            ?.value ??
+          firstUpdate.createdAt;
+
+        const secondDate =
+          secondUpdate.occurredAt
+            ?.value ??
+          secondUpdate.createdAt;
+
+        return (
+          getTimestamp(firstDate) -
+          getTimestamp(secondDate)
+        );
+      },
+    );
+
+  const postdromeUpdates =
+    [...(postdrome.updates ?? [])]
+      .filter(update => {
+        const symptoms =
+          update.data?.symptoms ?? [];
+
+        return (
+          symptoms.length > 0 ||
+          Boolean(
+            update.data
+              ?.recoveryLevel,
+          ) ||
+          update.data
+            ?.symptomsStillActive ===
+            false ||
+          Boolean(
+            update.notes?.trim(),
+          )
+        );
+      })
+      .sort(
+        (
+          firstUpdate,
+          secondUpdate,
+        ) => {
+          const firstDate =
+            firstUpdate.occurredAt
+              ?.value ??
+            firstUpdate.createdAt;
+
+          const secondDate =
+            secondUpdate.occurredAt
+              ?.value ??
+            secondUpdate.createdAt;
+
+          return (
+            getTimestamp(firstDate) -
+            getTimestamp(secondDate)
+          );
+        },
+      );
+
   const formattedTriggers =
     triggers.length > 0
-      ? triggers
-          .map(
-            trigger =>
-              triggerLabels[trigger],
-          )
-          .join(', ')
+      ? getLabels(
+          triggers,
+          triggerLabels,
+        ).join(', ')
       : 'Sin triggers registrados';
 
   const formattedCrisisSymptoms =
     crisisSymptoms.length > 0
-      ? crisisSymptoms
-          .map(
-            symptom =>
-              crisisSymptomLabels[
-                symptom
-              ],
-          )
-          .join(', ')
+      ? getLabels(
+          crisisSymptoms,
+          crisisSymptomLabels,
+        ).join(', ')
       : 'Sin síntomas registrados';
-
-  const auraDetails =
-    getAuraDetails(episode);
 
   const postdromeDetails =
     getPostdromeDetails(episode);
+
+  const postdromeStart =
+    timeline?.postdromeStart ??
+    postdrome.startTime ??
+    postdrome.time?.start?.value;
+
+  const postdromeEnd =
+    timeline?.postdromeEnd ??
+    postdrome.endTime ??
+    postdrome.time?.end?.value;
+
+  const hasPostdrome =
+    postdrome.present === true ||
+    postdromeDetails.length > 0 ||
+    postdromeUpdates.length > 0 ||
+    Boolean(
+      postdromeStart ||
+        postdromeEnd,
+    );
 
   const medicationEvents =
     crisisEvents
@@ -304,14 +540,68 @@ export function EpisodeCard({
           event.type === 'medication',
       )
       .sort(
-        (a, b) =>
-          new Date(
-            a.timestamp,
-          ).getTime() -
-          new Date(
-            b.timestamp,
-          ).getTime(),
+        (firstEvent, secondEvent) =>
+          getTimestamp(
+            firstEvent.timestamp,
+          ) -
+          getTimestamp(
+            secondEvent.timestamp,
+          ),
       );
+
+  const getPremonitoryResult =
+    (): string | undefined => {
+      if (
+        premonitory
+          .endedWithoutCrisis
+      ) {
+        return 'Las señales terminaron sin evolucionar a crisis.';
+      }
+
+      if (
+        premonitory.evolvedToCrisis
+      ) {
+        if (
+          premonitory.status ===
+            'active' &&
+          hasCrisis
+        ) {
+          return 'Las señales continuaron durante la crisis.';
+        }
+
+        return 'Las señales evolucionaron a crisis.';
+      }
+
+      if (
+        premonitory.evolvedToAura
+      ) {
+        if (
+          premonitory.status ===
+            'active' &&
+          hasAura
+        ) {
+          return 'Las señales continuaron durante el aura.';
+        }
+
+        return 'Las señales evolucionaron a aura.';
+      }
+
+      if (isUncertainRecord) {
+        return 'No se pudo confirmar si las señales estuvieron relacionadas con una migraña.';
+      }
+
+      if (
+        premonitory.status ===
+        'active'
+      ) {
+        return 'Las señales permanecían abiertas al momento del registro.';
+      }
+
+      return undefined;
+    };
+
+  const premonitoryResult =
+    getPremonitoryResult();
 
   return (
     <article
@@ -321,12 +611,13 @@ export function EpisodeCard({
         className={styles.episodeHeader}
       >
         <div>
-          <h3>Migraña</h3>
+          <h3>{recordTitle}</h3>
+
           <span>{createdDate}</span>
         </div>
 
         <strong>
-          {maxIntensity}/10
+          {headerStatus}
         </strong>
       </header>
 
@@ -334,82 +625,371 @@ export function EpisodeCard({
         className={styles.episodeInfo}
       >
         <p>
-          <b>Inicio del episodio:</b>{' '}
+          <b>
+            Inicio del registro:
+          </b>{' '}
           {formatDateTime(
-            timeline.episodeStart,
+            timeline?.episodeStart ??
+              premonitoryStart ??
+              auraStart ??
+              crisisStart,
           )}
         </p>
 
-        {timeline.premonitoryStart && (
-          <>
+        {premonitory.present && (
+          <section>
+            <h4>
+              Señales previas
+            </h4>
+
             <p>
               <b>
-                Inicio premonitorio:
+                Inicio de las señales:
               </b>{' '}
               {formatDateTime(
-                timeline.premonitoryStart,
+                premonitoryStart,
+                premonitory.time
+                  ?.start?.precision,
               )}
             </p>
+
+            {isValidDate(
+              premonitoryEnd,
+            ) && (
+              <p>
+                <b>
+                  Final de las señales:
+                </b>{' '}
+                {formatDateTime(
+                  premonitoryEnd,
+                  premonitory.time
+                    ?.end?.precision,
+                )}
+              </p>
+            )}
+
+            {premonitoryEndUnknown && (
+              <p>
+                <b>
+                  Final de las señales:
+                </b>{' '}
+                Hora desconocida
+              </p>
+            )}
 
             {premonitoryDuration !==
               undefined && (
               <p>
                 <b>
-                  Duración premonitoria:
+                  Duración:
                 </b>{' '}
                 {formatDuration(
                   premonitoryDuration,
                 )}
               </p>
             )}
-          </>
+
+            {premonitoryUpdates.length >
+              0 && (
+              <div>
+                <p>
+                  <b>
+                    Evolución de las
+                    señales:
+                  </b>
+                </p>
+
+                <ul>
+                  {premonitoryUpdates.map(
+                    (
+                      update,
+                      index,
+                    ) => {
+                      const updateTime =
+                        update.occurredAt
+                          ?.value ??
+                        update.createdAt;
+
+                      const symptoms =
+                        getPremonitoryLabels(
+                          update.data
+                            ?.symptoms ??
+                            [],
+                        );
+
+                      const intensity =
+                        update.data
+                          ?.intensity;
+
+                      return (
+                        <li
+                          key={
+                            update.id ??
+                            `${
+                              updateTime ??
+                              'sin-fecha'
+                            }-${index}`
+                          }
+                        >
+                          <p>
+                            <b>
+                              {formatDateTime(
+                                updateTime,
+                                update
+                                  .occurredAt
+                                  ?.precision,
+                              )}
+                            </b>
+                          </p>
+
+                          <p>
+                            <b>
+                              Señales:
+                            </b>{' '}
+                            {symptoms.length >
+                            0
+                              ? symptoms.join(
+                                  ', ',
+                                )
+                              : 'Sin señales seleccionadas'}
+                          </p>
+
+                          {intensity !==
+                            undefined && (
+                            <p>
+                              <b>
+                                Intensidad:
+                              </b>{' '}
+                              {intensity}
+                              /10
+                            </p>
+                          )}
+
+                          {update.notes && (
+                            <p>
+                              <b>
+                                Nota:
+                              </b>{' '}
+                              {update.notes}
+                            </p>
+                          )}
+                        </li>
+                      );
+                    },
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {premonitoryResult && (
+              <p>
+                <b>Resultado:</b>{' '}
+                {premonitoryResult}
+              </p>
+            )}
+          </section>
         )}
 
-        {timeline.auraStart && (
-          <>
-            <p>
-              <b>Inicio aura:</b>{' '}
-              {formatDateTime(
-                timeline.auraStart,
-              )}
-            </p>
+        {hasAura && (
+          <section>
+            <h4>Aura</h4>
+
+            {isValidDate(
+              auraStart,
+            ) && (
+              <p>
+                <b>
+                  Inicio del aura:
+                </b>{' '}
+                {formatDateTime(
+                  auraStart,
+                  aura.time?.start
+                    ?.precision,
+                )}
+              </p>
+            )}
 
             {auraDuration !==
               undefined && (
               <p>
-                <b>Duración aura:</b>{' '}
+                <b>
+                  Duración:
+                </b>{' '}
                 {formatDuration(
                   auraDuration,
                 )}
               </p>
             )}
-          </>
+
+            {auraDetails.length >
+              0 && (
+              <ul>
+                {auraDetails.map(
+                  (detail, index) => (
+                    <li
+                      key={`${detail}-${index}`}
+                    >
+                      {detail}
+                    </li>
+                  ),
+                )}
+              </ul>
+            )}
+          </section>
         )}
 
-        <p>
-          <b>Inicio de crisis:</b>{' '}
-          {formatDateTime(
-            timeline.crisisStart,
-          )}
-        </p>
+        {hasCrisis && (
+          <section>
+            <h4>Crisis</h4>
 
-        <p>
-          <b>
-            Duración de crisis:
-          </b>{' '}
-          {formatDuration(
-            crisisDuration,
-          )}
-        </p>
-
-        {timeline.postdromeStart && (
-          <>
             <p>
               <b>
-                Inicio postdromo:
+                Inicio de la crisis:
               </b>{' '}
               {formatDateTime(
-                timeline.postdromeStart,
+                crisisStart,
+                crisis.time?.start
+                  ?.precision,
+              )}
+            </p>
+
+            <p>
+              <b>
+                Duración de la crisis:
+              </b>{' '}
+              {formatDuration(
+                crisisDuration,
+              )}
+            </p>
+
+            <p>
+              <b>
+                Dolor máximo:
+              </b>{' '}
+              {maxIntensity}/10
+            </p>
+
+            {intensityHistory.length >
+              0 && (
+              <div>
+                <p>
+                  <b>
+                    Evolución del dolor:
+                  </b>
+                </p>
+
+                <ul>
+                  {intensityHistory.map(
+                    (record, index) => (
+                      <li
+                        key={
+                          record.id ??
+                          `${
+                            record.time ??
+                            'sin-hora'
+                          }-${index}`
+                        }
+                      >
+                        {formatTime(
+                          record.time,
+                        )}
+                        {' → '}
+                        {
+                          record.intensity
+                        }
+                        /10
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {medicationEvents.length >
+              0 && (
+              <div>
+                <p>
+                  <b>
+                    Medicación durante
+                    la crisis:
+                  </b>
+                </p>
+
+                <ul>
+                  {medicationEvents.map(
+                    (
+                      event,
+                      index,
+                    ) => {
+                      const medication =
+                        getMedicationData(
+                          event.data,
+                        );
+
+                      return (
+                        <li
+                          key={
+                            event.id ??
+                            `${
+                              event.timestamp ??
+                              'sin-hora'
+                            }-${index}`
+                          }
+                        >
+                          {formatTime(
+                            event.timestamp,
+                          )}
+                          {' → '}
+                          {
+                            medication.medication
+                          }
+                          {medication.dose
+                            ? ` (${medication.dose})`
+                            : ''}
+                        </li>
+                      );
+                    },
+                  )}
+                </ul>
+              </div>
+            )}
+
+            <p>
+              <b>
+                Síntomas de crisis:
+              </b>{' '}
+              {formattedCrisisSymptoms}
+            </p>
+
+            <p>
+              <b>Triggers:</b>{' '}
+              {formattedTriggers}
+            </p>
+          </section>
+        )}
+
+        {!hasCrisis &&
+          triggers.length > 0 && (
+            <p>
+              <b>
+                Factores registrados:
+              </b>{' '}
+              {formattedTriggers}
+            </p>
+          )}
+
+        {hasPostdrome && (
+          <section>
+            <h4>Postdromo</h4>
+
+            <p>
+              <b>
+                Inicio del postdromo:
+              </b>{' '}
+              {formatDateTime(
+                postdromeStart,
+                postdrome.time?.start
+                  ?.precision,
               )}
             </p>
 
@@ -417,7 +997,7 @@ export function EpisodeCard({
               undefined && (
               <p>
                 <b>
-                  Duración postdromo:
+                  Duración:
                 </b>{' '}
                 {formatDuration(
                   postdromeDuration,
@@ -425,134 +1005,22 @@ export function EpisodeCard({
               </p>
             )}
 
-            {timeline.postdromeEnd && (
+            {postdromeEnd && (
               <p>
                 <b>
                   Recuperación completa:
                 </b>{' '}
                 {formatDateTime(
-                  timeline.postdromeEnd,
+                  postdromeEnd,
+                  postdrome.time?.end
+                    ?.precision,
                 )}
               </p>
             )}
-          </>
-        )}
 
-        <p>
-          <b>
-            Duración total del episodio:
-          </b>{' '}
-          {formatDuration(
-            episodeDuration,
-          )}
-        </p>
-
-        <p>
-          <b>Dolor máximo:</b>{' '}
-          {maxIntensity}/10
-        </p>
-
-        {intensityHistory.length >
-          0 && (
-          <div>
             <p>
               <b>
-                Evolución del dolor:
-              </b>
-            </p>
-
-            <ul>
-              {intensityHistory.map(
-                (record, index) => (
-                  <li
-                    key={`${record.time}-${index}`}
-                  >
-                    {formatTime(
-                      record.time,
-                    )}
-                    {' → '}
-                    {record.intensity}/10
-                  </li>
-                ),
-              )}
-            </ul>
-          </div>
-        )}
-
-        {medicationEvents.length > 0 && (
-          <div>
-            <p>
-              <b>
-                Medicación durante la
-                crisis:
-              </b>
-            </p>
-
-            <ul>
-              {medicationEvents.map(
-                event => {
-                  const medication =
-                    getMedicationData(
-                      event.data,
-                    );
-
-                  return (
-                    <li key={event.id}>
-                      {formatTime(
-                        event.timestamp,
-                      )}
-                      {' → '}
-                      {
-                        medication.medication
-                      }
-                      {medication.dose
-                        ? ` (${medication.dose})`
-                        : ''}
-                    </li>
-                  );
-                },
-              )}
-            </ul>
-          </div>
-        )}
-
-        {auraDetails.length > 0 && (
-          <div>
-            <p>
-              <b>Aura:</b>
-            </p>
-
-            <ul>
-              {auraDetails.map(
-                (detail, index) => (
-                  <li
-                    key={`${detail}-${index}`}
-                  >
-                    {detail}
-                  </li>
-                ),
-              )}
-            </ul>
-          </div>
-        )}
-
-        <p>
-          <b>
-            Síntomas de crisis:
-          </b>{' '}
-          {formattedCrisisSymptoms}
-        </p>
-
-        <p>
-          <b>Triggers:</b>{' '}
-          {formattedTriggers}
-        </p>
-
-        {episode.postdrome?.present && (
-          <div>
-            <p>
-              <b>
-                Síntomas postdromo:
+                Último estado:
               </b>
             </p>
 
@@ -560,8 +1028,10 @@ export function EpisodeCard({
             0 ? (
               <ul>
                 {postdromeDetails.map(
-                  symptom => (
-                    <li key={symptom}>
+                  (symptom, index) => (
+                    <li
+                      key={`${symptom}-${index}`}
+                    >
                       {symptom}
                     </li>
                   ),
@@ -569,11 +1039,147 @@ export function EpisodeCard({
               </ul>
             ) : (
               <p>
-                Sin síntomas registrados.
+                Sin síntomas activos al
+                finalizar.
               </p>
             )}
-          </div>
+
+            {postdromeUpdates.length >
+              0 && (
+              <div>
+                <p>
+                  <b>
+                    Evolución del
+                    postdromo:
+                  </b>
+                </p>
+
+                <ul>
+                  {postdromeUpdates.map(
+                    (
+                      update,
+                      index,
+                    ) => {
+                      const updateTime =
+                        update.occurredAt
+                          ?.value ??
+                        update.createdAt;
+
+                      const symptoms =
+                        getLabels(
+                          update.data
+                            ?.symptoms ??
+                            [],
+                          postdromeSymptomLabels,
+                        );
+
+                      const recoveryLevel =
+                        update.data
+                          ?.recoveryLevel;
+
+                      const isRecoveryComplete =
+                        update.data
+                          ?.symptomsStillActive ===
+                        false;
+
+                      return (
+                        <li
+                          key={
+                            update.id ??
+                            `${
+                              updateTime ??
+                              'sin-fecha'
+                            }-${index}`
+                          }
+                        >
+                          <p>
+                            <b>
+                              {isRecoveryComplete
+                                ? 'Cierre — '
+                                : 'Actualización — '}
+
+                              {formatDateTime(
+                                updateTime,
+                                update
+                                  .occurredAt
+                                  ?.precision,
+                              )}
+                            </b>
+                          </p>
+
+                          <p>
+                            <b>
+                              Síntomas:
+                            </b>{' '}
+                            {symptoms.length >
+                            0
+                              ? symptoms.join(
+                                  ', ',
+                                )
+                              : 'Sin síntomas seleccionados'}
+                          </p>
+
+                          {recoveryLevel && (
+                            <p>
+                              <b>
+                                Recuperación:
+                              </b>{' '}
+                              {
+                                recoveryLevelLabels[
+                                  recoveryLevel
+                                ]
+                              }
+                            </p>
+                          )}
+
+                          {update.notes && (
+                            <p>
+                              <b>
+                                Nota:
+                              </b>{' '}
+                              {update.notes}
+                            </p>
+                          )}
+
+                          {isRecoveryComplete && (
+                            <p>
+                              Recuperación
+                              completa.
+                            </p>
+                          )}
+                        </li>
+                      );
+                    },
+                  )}
+                </ul>
+              </div>
+            )}
+          </section>
         )}
+
+        {episodeDuration !==
+          undefined && (
+          <p>
+            <b>
+              Duración total del
+              registro:
+            </b>{' '}
+            {formatDuration(
+              episodeDuration,
+            )}
+          </p>
+        )}
+
+        {episodeDuration ===
+          undefined &&
+          isUncertainRecord && (
+            <p>
+              <b>
+                Duración total:
+              </b>{' '}
+              No determinada
+            </p>
+          )}
       </div>
     </article>
   );

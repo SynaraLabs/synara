@@ -8,10 +8,37 @@ import type {
   MigraineEpisodeStatus,
   MigraineTimeline,
   MigraineTrigger,
+  PhaseTime,
   PostdromePhase,
   PremonitoryPhase,
+  RecordMode,
+  TimePrecision,
   Treatment,
 } from '../types/migraine.types';
+
+export interface FinishCrisisInput {
+  endTime: string;
+  precision: TimePrecision;
+  recordMode?: RecordMode;
+}
+
+export type PremonitoryResolution =
+  | 'endedWithoutCrisis'
+  | 'evolvedToAura'
+  | 'evolvedToCrisis'
+  | 'continuesWithAura'
+  | 'continuesWithCrisis'
+  | 'uncertain';
+
+export interface ResolvePremonitoryInput {
+  outcome: PremonitoryResolution;
+
+  endTime?: string;
+
+  precision?: TimePrecision;
+
+  recordMode?: RecordMode;
+}
 
 interface MigraineStore {
   episode: MigraineEpisode;
@@ -20,7 +47,14 @@ interface MigraineStore {
 
   startEpisode: () => void;
   startCrisis: () => void;
-  finishCrisis: () => void;
+
+  finishCrisis: (
+    input?: FinishCrisisInput,
+  ) => void;
+
+  resolvePremonitory: (
+    input: ResolvePremonitoryInput,
+  ) => void;
 
   updatePremonitory: (
     premonitory: PremonitoryPhase,
@@ -63,6 +97,11 @@ interface MigraineStore {
   resetEpisode: () => void;
 }
 
+const STORAGE_NAME =
+  'synara-migraine-storage';
+
+const STORAGE_VERSION = 8;
+
 const generateId = (): string => {
   if (
     typeof crypto !== 'undefined' &&
@@ -71,7 +110,31 @@ const generateId = (): string => {
     return crypto.randomUUID();
   }
 
-  return Date.now().toString();
+  return `${Date.now()}-${Math.random()
+    .toString(16)
+    .slice(2)}`;
+};
+
+const isValidDate = (
+  value: unknown,
+): value is string => {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    !Number.isNaN(
+      new Date(value).getTime(),
+    )
+  );
+};
+
+const isRecord = (
+  value: unknown,
+): value is Record<string, unknown> => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value)
+  );
 };
 
 const addMinutes = (
@@ -79,6 +142,12 @@ const addMinutes = (
   minutes: number,
 ): string => {
   const result = new Date(date);
+
+  if (
+    Number.isNaN(result.getTime())
+  ) {
+    return date;
+  }
 
   result.setMinutes(
     result.getMinutes() + minutes,
@@ -98,11 +167,7 @@ const getEarliestDate = (
   dates: Array<string | undefined>,
 ): string | undefined => {
   const validDates = dates.filter(
-    (date): date is string =>
-      typeof date === 'string' &&
-      !Number.isNaN(
-        new Date(date).getTime(),
-      ),
+    isValidDate,
   );
 
   if (validDates.length === 0) {
@@ -118,6 +183,26 @@ const getEarliestDate = (
   );
 };
 
+const getLatestDate = (
+  dates: Array<string | undefined>,
+): string | undefined => {
+  const validDates = dates.filter(
+    isValidDate,
+  );
+
+  if (validDates.length === 0) {
+    return undefined;
+  }
+
+  return validDates.reduce(
+    (latest, current) =>
+      new Date(current).getTime() >
+      new Date(latest).getTime()
+        ? current
+        : latest,
+  );
+};
+
 const calculateEpisodeStart = (
   timeline: MigraineTimeline,
 ): string | undefined => {
@@ -125,6 +210,7 @@ const calculateEpisodeStart = (
     timeline.premonitoryStart,
     timeline.auraStart,
     timeline.crisisStart,
+    timeline.postdromeStart,
   ]);
 };
 
@@ -139,27 +225,45 @@ const calculatePremonitoryTimeline = (
     };
   }
 
-  if (!timeline.premonitoryStart) {
-    return {
-      premonitoryEnd: undefined,
-    };
-  }
+  const premonitoryStart =
+    premonitory.time?.start?.value ??
+    timeline.premonitoryStart;
 
-  if (!timeline.crisisStart) {
-    return {
-      premonitoryStart:
-        timeline.premonitoryStart,
+  const storedPremonitoryEnd =
+    premonitory.time?.end?.value;
 
-      premonitoryEnd: undefined,
-    };
-  }
+  const isPremonitoryClosed =
+    premonitory.status === 'ended' ||
+    premonitory.status ===
+      'uncertain' ||
+    Boolean(storedPremonitoryEnd);
+
+  /*
+   * Una crisis o un aura no cierran el
+   * premonitorio automáticamente.
+   *
+   * Solo conservamos un final cuando
+   * la fase fue resuelta de manera
+   * explícita.
+   */
+  const premonitoryEnd =
+    isPremonitoryClosed
+      ? (
+          storedPremonitoryEnd ??
+          timeline.premonitoryEnd
+        )
+      : undefined;
 
   return {
     premonitoryStart:
-      timeline.premonitoryStart,
+      isValidDate(premonitoryStart)
+        ? premonitoryStart
+        : undefined,
 
     premonitoryEnd:
-      timeline.crisisStart,
+      isValidDate(premonitoryEnd)
+        ? premonitoryEnd
+        : undefined,
   };
 };
 
@@ -170,16 +274,29 @@ const calculateAuraTimeline = (
   const duration =
     aura.durationMinutes;
 
-  if (
-    !aura.present ||
-    !aura.timing ||
-    !duration ||
-    duration <= 0
-  ) {
+  if (!aura.present) {
     return {
       auraStart: undefined,
       auraEnd: undefined,
     };
+  }
+
+  if (
+    timeline.auraStart ||
+    timeline.auraEnd
+  ) {
+    return {
+      auraStart: timeline.auraStart,
+      auraEnd: timeline.auraEnd,
+    };
+  }
+
+  if (
+    !aura.timing ||
+    !duration ||
+    duration <= 0
+  ) {
+    return {};
   }
 
   if (
@@ -227,10 +344,7 @@ const calculateAuraTimeline = (
     };
   }
 
-  return {
-    auraStart: undefined,
-    auraEnd: undefined,
-  };
+  return {};
 };
 
 const buildCalculatedTimeline = (
@@ -268,6 +382,8 @@ const buildCalculatedTimeline = (
 
 const createInitialEpisode =
   (): MigraineEpisode => ({
+    schemaVersion: 6,
+
     id: generateId(),
 
     createdAt:
@@ -276,11 +392,14 @@ const createInitialEpisode =
     status:
       'tracking' as MigraineEpisodeStatus,
 
+    recordMode: 'realTime',
+
     timeline: {},
 
     premonitory: {
       present: false,
       symptoms: [],
+      updates: [],
     },
 
     aura: {
@@ -289,6 +408,8 @@ const createInitialEpisode =
       visualSymptoms: [],
       sensorySymptoms: [],
       languageSymptoms: [],
+      motorSymptoms: [],
+      vestibularSymptoms: [],
     },
 
     crisis: {
@@ -305,6 +426,7 @@ const createInitialEpisode =
     postdrome: {
       present: false,
       symptoms: [],
+      updates: [],
     },
 
     triggers: [],
@@ -312,17 +434,488 @@ const createInitialEpisode =
     treatment: {},
   });
 
+const isLegacyEmptyPostdrome = (
+  episode: Partial<MigraineEpisode>,
+): boolean => {
+  const postdrome =
+    episode.postdrome;
+
+  if (!postdrome?.present) {
+    return false;
+  }
+
+  const hasMeaningfulData =
+    (postdrome.symptoms?.length ??
+      0) > 0 ||
+    (postdrome.updates?.length ??
+      0) > 0 ||
+    postdrome.status === 'active' ||
+    postdrome.status === 'ended' ||
+    isValidDate(
+      postdrome.startTime,
+    ) ||
+    isValidDate(
+      postdrome.endTime,
+    ) ||
+    isValidDate(
+      postdrome.time?.start?.value,
+    ) ||
+    isValidDate(
+      postdrome.time?.end?.value,
+    ) ||
+    Boolean(
+      postdrome.recoveryLevel,
+    ) ||
+    typeof postdrome.recoveryHours ===
+      'number' ||
+    Boolean(
+      postdrome.notes?.trim(),
+    );
+
+  if (hasMeaningfulData) {
+    return false;
+  }
+
+  const crisisEnd =
+    episode.timeline?.crisisEnd ??
+    episode.crisis?.endTime ??
+    episode.crisis?.time?.end?.value;
+
+  const postdromeStart =
+    episode.timeline
+      ?.postdromeStart;
+
+  const hasNoPostdromeEnd =
+    !isValidDate(
+      episode.timeline
+        ?.postdromeEnd,
+    );
+
+  if (
+    !isValidDate(crisisEnd) ||
+    !isValidDate(postdromeStart) ||
+    !hasNoPostdromeEnd
+  ) {
+    return false;
+  }
+
+  const difference =
+    Math.abs(
+      new Date(
+        postdromeStart,
+      ).getTime() -
+        new Date(
+          crisisEnd,
+        ).getTime(),
+    );
+
+  return difference <= 1_000;
+};
+
+const normalizeEpisode = (
+  value: unknown,
+): MigraineEpisode => {
+  const initialEpisode =
+    createInitialEpisode();
+
+  if (!isRecord(value)) {
+    return initialEpisode;
+  }
+
+  const persistedEpisode =
+    value as Partial<MigraineEpisode>;
+
+  const clearLegacyPostdrome =
+    isLegacyEmptyPostdrome(
+      persistedEpisode,
+    );
+
+  const persistedCreatedAt =
+    persistedEpisode.createdAt;
+
+  const createdAt = isValidDate(
+    persistedCreatedAt,
+  )
+    ? persistedCreatedAt
+    : initialEpisode.createdAt;
+
+  const id =
+    typeof persistedEpisode.id ===
+      'string' &&
+    persistedEpisode.id.length > 0
+      ? persistedEpisode.id
+      : initialEpisode.id;
+
+  const normalizedTimeline:
+    MigraineTimeline = {
+    ...initialEpisode.timeline,
+    ...(persistedEpisode.timeline ??
+      {}),
+
+    ...(clearLegacyPostdrome
+      ? {
+          postdromeStart:
+            undefined,
+
+          postdromeEnd:
+            undefined,
+        }
+      : {}),
+  };
+
+  const normalizedPostdrome:
+    PostdromePhase =
+    clearLegacyPostdrome
+      ? {
+          ...initialEpisode.postdrome,
+        }
+      : {
+          ...initialEpisode.postdrome,
+          ...(persistedEpisode
+            .postdrome ?? {}),
+
+          symptoms:
+            persistedEpisode
+              .postdrome?.symptoms ??
+            [],
+
+          updates:
+            persistedEpisode
+              .postdrome?.updates ??
+            [],
+        };
+
+  return {
+    ...initialEpisode,
+    ...persistedEpisode,
+
+    schemaVersion: 6,
+
+    id,
+    createdAt,
+
+    status:
+      persistedEpisode.status ??
+      initialEpisode.status,
+
+    timeline:
+      normalizedTimeline,
+
+    premonitory: {
+      ...initialEpisode.premonitory,
+      ...(persistedEpisode.premonitory ??
+        {}),
+
+      symptoms:
+        persistedEpisode.premonitory
+          ?.symptoms ?? [],
+
+      updates:
+        persistedEpisode.premonitory
+          ?.updates ?? [],
+    },
+
+    aura: {
+      ...initialEpisode.aura,
+      ...(persistedEpisode.aura ?? {}),
+
+      types:
+        persistedEpisode.aura?.types ??
+        [],
+
+      visualSymptoms:
+        persistedEpisode.aura
+          ?.visualSymptoms ?? [],
+
+      sensorySymptoms:
+        persistedEpisode.aura
+          ?.sensorySymptoms ?? [],
+
+      languageSymptoms:
+        persistedEpisode.aura
+          ?.languageSymptoms ?? [],
+
+      motorSymptoms:
+        persistedEpisode.aura
+          ?.motorSymptoms ?? [],
+
+      vestibularSymptoms:
+        persistedEpisode.aura
+          ?.vestibularSymptoms ?? [],
+    },
+
+    crisis: {
+      ...initialEpisode.crisis,
+      ...(persistedEpisode.crisis ?? {}),
+
+      active:
+        persistedEpisode.crisis
+          ?.active === true,
+
+      intensityHistory:
+        persistedEpisode.crisis
+          ?.intensityHistory ?? [],
+
+      events:
+        persistedEpisode.crisis
+          ?.events ?? [],
+
+      location:
+        persistedEpisode.crisis
+          ?.location ?? [],
+
+      symptoms:
+        persistedEpisode.crisis
+          ?.symptoms ?? [],
+    },
+
+    postdrome:
+      normalizedPostdrome,
+
+    triggers:
+      persistedEpisode.triggers ?? [],
+
+    treatment: {
+      ...initialEpisode.treatment,
+      ...(persistedEpisode.treatment ??
+        {}),
+    },
+  };
+};
+
+const normalizeHistory = (
+  value: unknown,
+): MigraineEpisode[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map(normalizeEpisode);
+};
+
+const isTerminalEpisode = (
+  episode: MigraineEpisode,
+): boolean => {
+  return (
+    episode.status === 'completed' ||
+    episode.status === 'discarded' ||
+    episode.status === 'incomplete'
+  );
+};
+
+const hasRecoverableOpenPhase = (
+  episode: MigraineEpisode,
+): boolean => {
+  const premonitoryOpen =
+    episode.premonitory.present &&
+    episode.premonitory.status !==
+      'ended' &&
+    episode.premonitory.status !==
+      'uncertain';
+
+  const auraOpen =
+    episode.aura.present &&
+    episode.aura.status !== 'ended' &&
+    episode.aura.status !==
+      'uncertain';
+
+  const postdromeOpen =
+    episode.postdrome.present &&
+    episode.postdrome.status !==
+      'ended' &&
+    !episode.postdrome.endTime &&
+    !episode.postdrome.time?.end
+      ?.value;
+
+  return (
+    premonitoryOpen ||
+    auraOpen ||
+    episode.crisis.active ||
+    postdromeOpen ||
+    episode.status === 'crisis' ||
+    episode.status === 'postdrome'
+  );
+};
+
+const resolveActiveEpisode = (
+  episode: MigraineEpisode,
+  previousActiveEpisode:
+    | MigraineEpisode
+    | null,
+): MigraineEpisode | null => {
+  if (isTerminalEpisode(episode)) {
+    return null;
+  }
+
+  if (episode.crisis.active) {
+    return episode;
+  }
+
+  if (
+    previousActiveEpisode?.id ===
+    episode.id
+  ) {
+    return episode;
+  }
+
+  /*
+   * Recupera fases activas aunque una
+   * versión anterior haya persistido
+   * activeEpisode como null.
+   */
+  if (
+    hasRecoverableOpenPhase(episode)
+  ) {
+    return episode;
+  }
+
+  return null;
+};
+
 const synchronizeEpisode = (
   state: MigraineStore,
   episode: MigraineEpisode,
-) => ({
-  episode,
+): Pick<
+  MigraineStore,
+  'episode' | 'activeEpisode'
+> => {
+  return {
+    episode,
 
-  activeEpisode:
-    state.activeEpisode
-      ? episode
-      : null,
-});
+    activeEpisode:
+      resolveActiveEpisode(
+        episode,
+        state.activeEpisode,
+      ),
+  };
+};
+
+const getCrisisStart = (
+  episode: MigraineEpisode,
+): string | undefined => {
+  const candidates = [
+    episode.timeline?.crisisStart,
+    episode.crisis.startTime,
+    episode.crisis.time?.start
+      ?.value,
+  ];
+
+  return candidates.find(
+    isValidDate,
+  );
+};
+
+const getPremonitoryStart = (
+  episode: MigraineEpisode,
+): string | undefined => {
+  const candidates = [
+    episode.timeline
+      ?.premonitoryStart,
+
+    episode.premonitory.time
+      ?.start?.value,
+
+    episode.premonitory.updates?.[0]
+      ?.occurredAt.value,
+  ];
+
+  return candidates.find(
+    isValidDate,
+  );
+};
+
+const inferRecordMode = (
+  eventTime: string,
+  requestedMode?: RecordMode,
+): RecordMode => {
+  if (requestedMode) {
+    return requestedMode;
+  }
+
+  const eventTimestamp =
+    new Date(eventTime).getTime();
+
+  const difference =
+    Math.abs(
+      Date.now() - eventTimestamp,
+    );
+
+  return difference <= 60_000
+    ? 'realTime'
+    : 'retrospective';
+};
+
+const calculateDurationMinutes = (
+  startTime?: string,
+  endTime?: string,
+): number | undefined => {
+  if (
+    !isValidDate(startTime) ||
+    !isValidDate(endTime)
+  ) {
+    return undefined;
+  }
+
+  const difference =
+    new Date(endTime).getTime() -
+    new Date(startTime).getTime();
+
+  if (difference < 0) {
+    return undefined;
+  }
+
+  return Math.round(
+    difference / 60_000,
+  );
+};
+
+const buildPhaseTime = (
+  value: string | undefined,
+  precision: TimePrecision,
+  recordMode: RecordMode,
+): PhaseTime => {
+  return {
+    value,
+    precision,
+    recordMode,
+  };
+};
+
+const requiresPremonitoryEnd =
+  (
+    outcome: PremonitoryResolution,
+  ): boolean => {
+    return (
+      outcome ===
+        'endedWithoutCrisis' ||
+      outcome ===
+        'evolvedToAura' ||
+      outcome ===
+        'evolvedToCrisis' ||
+      outcome === 'uncertain'
+    );
+  };
+
+const evolvesToAura = (
+  outcome: PremonitoryResolution,
+): boolean => {
+  return (
+    outcome === 'evolvedToAura' ||
+    outcome ===
+      'continuesWithAura'
+  );
+};
+
+const evolvesToCrisis = (
+  outcome: PremonitoryResolution,
+): boolean => {
+  return (
+    outcome ===
+      'evolvedToCrisis' ||
+    outcome ===
+      'continuesWithCrisis'
+  );
+};
 
 export const useMigraineStore =
   create<MigraineStore>()(
@@ -356,30 +949,111 @@ export const useMigraineStore =
 
             const crisisStart =
               currentTimeline.crisisStart ??
-              now;
+              (
+                state.episode.crisis
+                  .startTime || now
+              );
+
+            const premonitoryIsOpen =
+              state.episode.premonitory
+                .present &&
+              state.episode.premonitory
+                .status !== 'ended' &&
+              state.episode.premonitory
+                .status !==
+                'uncertain' &&
+              !state.episode.premonitory
+                .time?.end;
 
             const baseTimeline:
               MigraineTimeline = {
               ...currentTimeline,
+
               crisisStart,
+
+              crisisEnd: undefined,
+
+              /*
+               * Protege el premonitorio
+               * activo frente a la
+               * lógica antigua de la
+               * pantalla, que utilizaba
+               * crisisStart como final.
+               */
+              ...(premonitoryIsOpen
+                ? {
+                    premonitoryEnd:
+                      undefined,
+                  }
+                : {}),
             };
+
+            const startRecordMode =
+              state.episode.recordMode ??
+              'realTime';
+
+            const existingCrisisTime =
+              state.episode.crisis.time;
+
+            const premonitory =
+              state.episode.premonitory
+                .present
+                ? {
+                    ...state.episode
+                      .premonitory,
+
+                    status:
+                      premonitoryIsOpen
+                        ? 'active' as const
+                        : state.episode
+                            .premonitory
+                            .status,
+
+                    evolvedToCrisis:
+                      true,
+                  }
+                : state.episode
+                    .premonitory;
 
             const episodeBeforeCalculation:
               MigraineEpisode = {
               ...state.episode,
 
+              updatedAt: now,
+
               status:
                 'crisis' as MigraineEpisodeStatus,
+
+              premonitory,
 
               crisis: {
                 ...state.episode.crisis,
 
                 active: true,
 
+                status: 'active',
+
                 startTime:
                   state.episode.crisis
                     .startTime ||
                   crisisStart,
+
+                endTime: undefined,
+
+                time: {
+                  ...existingCrisisTime,
+
+                  start:
+                    existingCrisisTime
+                      ?.start ??
+                    buildPhaseTime(
+                      crisisStart,
+                      'exact',
+                      startRecordMode,
+                    ),
+
+                  end: undefined,
+                },
               },
             };
 
@@ -400,10 +1074,57 @@ export const useMigraineStore =
             );
           }),
 
-        finishCrisis: () =>
+        finishCrisis: input =>
           set(state => {
             const now =
               new Date().toISOString();
+
+            const requestedEndTime =
+              input?.endTime ?? now;
+
+            const precision =
+              input?.precision ?? 'exact';
+
+            if (
+              !isValidDate(
+                requestedEndTime,
+              )
+            ) {
+              return state;
+            }
+
+            const endTimestamp =
+              new Date(
+                requestedEndTime,
+              ).getTime();
+
+            if (
+              endTimestamp >
+              Date.now()
+            ) {
+              return state;
+            }
+
+            const crisisStart =
+              getCrisisStart(
+                state.episode,
+              );
+
+            if (
+              crisisStart &&
+              endTimestamp <
+                new Date(
+                  crisisStart,
+                ).getTime()
+            ) {
+              return state;
+            }
+
+            const recordMode =
+              inferRecordMode(
+                requestedEndTime,
+                input?.recordMode,
+              );
 
             const currentTimeline =
               state.episode.timeline ?? {};
@@ -412,14 +1133,49 @@ export const useMigraineStore =
               MigraineTimeline = {
               ...currentTimeline,
 
-              crisisEnd: now,
-
-              postdromeStart: now,
+              crisisEnd:
+                requestedEndTime,
             };
+
+            const existingCrisisTime =
+              state.episode.crisis.time;
+
+            const crisisStartTime =
+              crisisStart
+                ? buildPhaseTime(
+                    crisisStart,
+                    existingCrisisTime
+                      ?.start
+                      ?.precision ??
+                      'exact',
+                    existingCrisisTime
+                      ?.start
+                      ?.recordMode ??
+                      state.episode
+                        .recordMode ??
+                      'realTime',
+                  )
+                : existingCrisisTime
+                    ?.start;
+
+            const crisisEndTime =
+              buildPhaseTime(
+                requestedEndTime,
+                precision,
+                recordMode,
+              );
+
+            const durationMinutes =
+              calculateDurationMinutes(
+                crisisStart,
+                requestedEndTime,
+              );
 
             const episodeBeforeCalculation:
               MigraineEpisode = {
               ...state.episode,
+
+              updatedAt: now,
 
               status:
                 'postdrome' as MigraineEpisodeStatus,
@@ -429,13 +1185,22 @@ export const useMigraineStore =
 
                 active: false,
 
-                endTime: now,
+                status: 'ended',
+
+                endTime:
+                  requestedEndTime,
+
+                durationMinutes,
+
+                time: {
+                  ...existingCrisisTime,
+                  start: crisisStartTime,
+                  end: crisisEndTime,
+                },
               },
 
               postdrome: {
                 ...state.episode.postdrome,
-
-                present: true,
               },
             };
 
@@ -448,6 +1213,297 @@ export const useMigraineStore =
             const episode: MigraineEpisode = {
               ...episodeBeforeCalculation,
               timeline,
+            };
+
+            return synchronizeEpisode(
+              state,
+              episode,
+            );
+          }),
+
+        resolvePremonitory: input =>
+          set(state => {
+            const premonitory =
+              state.episode.premonitory;
+
+            if (!premonitory.present) {
+              return state;
+            }
+
+            const now =
+              new Date().toISOString();
+
+            const {
+              outcome,
+            } = input;
+
+            const shouldClose =
+              requiresPremonitoryEnd(
+                outcome,
+              );
+
+            const requestedPrecision =
+              input.precision ??
+              (
+                input.endTime
+                  ? 'exact'
+                  : 'unknown'
+              );
+
+            const endTime =
+              isValidDate(
+                input.endTime,
+              )
+                ? input.endTime
+                : undefined;
+
+            if (
+              shouldClose &&
+              requestedPrecision !==
+                'unknown' &&
+              !endTime
+            ) {
+              return state;
+            }
+
+            if (
+              endTime &&
+              new Date(
+                endTime,
+              ).getTime() >
+                Date.now()
+            ) {
+              return state;
+            }
+
+            const premonitoryStart =
+              getPremonitoryStart(
+                state.episode,
+              );
+
+            if (
+              endTime &&
+              premonitoryStart &&
+              new Date(
+                endTime,
+              ).getTime() <
+                new Date(
+                  premonitoryStart,
+                ).getTime()
+            ) {
+              return state;
+            }
+
+            const recordMode =
+              input.recordMode ??
+              (
+                endTime
+                  ? inferRecordMode(
+                      endTime,
+                    )
+                  : 'retrospective'
+              );
+
+            const currentTimeline =
+              state.episode.timeline ?? {};
+
+            const startPhaseTime =
+              premonitory.time?.start ??
+              (
+                premonitoryStart
+                  ? buildPhaseTime(
+                      premonitoryStart,
+                      'exact',
+                      state.episode
+                        .recordMode ??
+                        'realTime',
+                    )
+                  : undefined
+              );
+
+            const endPhaseTime =
+              shouldClose
+                ? buildPhaseTime(
+                    endTime,
+                    requestedPrecision,
+                    recordMode,
+                  )
+                : undefined;
+
+            const phaseStatus =
+              outcome === 'uncertain'
+                ? 'uncertain' as const
+                : shouldClose
+                  ? 'ended' as const
+                  : 'active' as const;
+
+            const updatedPremonitory:
+              PremonitoryPhase = {
+              ...premonitory,
+
+              status: phaseStatus,
+
+              evolvedToAura:
+                evolvesToAura(
+                  outcome,
+                ),
+
+              evolvedToCrisis:
+                evolvesToCrisis(
+                  outcome,
+                ),
+
+              endedWithoutCrisis:
+                outcome ===
+                'endedWithoutCrisis',
+
+              time: {
+                ...premonitory.time,
+
+                start:
+                  startPhaseTime,
+
+                end:
+                  endPhaseTime,
+              },
+            };
+
+            const updatedTimeline:
+              MigraineTimeline = {
+              ...currentTimeline,
+
+              premonitoryStart:
+                premonitoryStart,
+
+              premonitoryEnd:
+                shouldClose &&
+                endTime
+                  ? endTime
+                  : undefined,
+
+              premonitory: {
+                ...currentTimeline
+                  .premonitory,
+
+                start:
+                  startPhaseTime,
+
+                end:
+                  endPhaseTime,
+              },
+            };
+
+            updatedTimeline.episodeStart =
+              calculateEpisodeStart(
+                updatedTimeline,
+              );
+
+            if (
+              outcome ===
+              'endedWithoutCrisis'
+            ) {
+              const completed:
+                MigraineEpisode = {
+                ...state.episode,
+
+                updatedAt: now,
+
+                status:
+                  'completed',
+
+                completionReason:
+                  'phaseEndedWithoutCrisis',
+
+                premonitory:
+                  updatedPremonitory,
+
+                timeline: {
+                  ...updatedTimeline,
+
+                  ...(endTime
+                    ? {
+                        episodeEnd:
+                          endTime,
+                      }
+                    : {}),
+                },
+              };
+
+              return {
+                history: [
+                  ...state.history,
+                  completed,
+                ],
+
+                episode:
+                  createInitialEpisode(),
+
+                activeEpisode: null,
+              };
+            }
+
+            if (
+              outcome === 'uncertain'
+            ) {
+              const incomplete:
+                MigraineEpisode = {
+                ...state.episode,
+
+                updatedAt: now,
+
+                status:
+                  'incomplete',
+
+                completionReason:
+                  'other',
+
+                premonitory:
+                  updatedPremonitory,
+
+                timeline: {
+                  ...updatedTimeline,
+
+                  ...(endTime
+                    ? {
+                        episodeEnd:
+                          endTime,
+                      }
+                    : {}),
+                },
+              };
+
+              return {
+                history: [
+                  ...state.history,
+                  incomplete,
+                ],
+
+                episode:
+                  createInitialEpisode(),
+
+                activeEpisode: null,
+              };
+            }
+
+            const nextStatus:
+              MigraineEpisodeStatus =
+              state.episode.crisis.active
+                ? 'crisis'
+                : state.episode.status;
+
+            const episode:
+              MigraineEpisode = {
+              ...state.episode,
+
+              updatedAt: now,
+
+              status: nextStatus,
+
+              premonitory:
+                updatedPremonitory,
+
+              timeline:
+                updatedTimeline,
             };
 
             return synchronizeEpisode(
@@ -464,6 +1520,10 @@ export const useMigraineStore =
             const episodeBeforeCalculation:
               MigraineEpisode = {
               ...state.episode,
+
+              updatedAt:
+                new Date().toISOString(),
+
               premonitory,
             };
 
@@ -492,6 +1552,10 @@ export const useMigraineStore =
             const episodeBeforeCalculation:
               MigraineEpisode = {
               ...state.episode,
+
+              updatedAt:
+                new Date().toISOString(),
+
               aura,
             };
 
@@ -516,6 +1580,10 @@ export const useMigraineStore =
           set(state => {
             const episode: MigraineEpisode = {
               ...state.episode,
+
+              updatedAt:
+                new Date().toISOString(),
+
               crisis,
             };
 
@@ -529,6 +1597,10 @@ export const useMigraineStore =
           set(state => {
             const episode: MigraineEpisode = {
               ...state.episode,
+
+              updatedAt:
+                new Date().toISOString(),
+
               postdrome,
             };
 
@@ -542,6 +1614,10 @@ export const useMigraineStore =
           set(state => {
             const episode: MigraineEpisode = {
               ...state.episode,
+
+              updatedAt:
+                new Date().toISOString(),
+
               triggers,
             };
 
@@ -555,6 +1631,10 @@ export const useMigraineStore =
           set(state => {
             const episode: MigraineEpisode = {
               ...state.episode,
+
+              updatedAt:
+                new Date().toISOString(),
+
               treatment,
             };
 
@@ -568,6 +1648,10 @@ export const useMigraineStore =
           set(state => {
             const episode: MigraineEpisode = {
               ...state.episode,
+
+              updatedAt:
+                new Date().toISOString(),
+
               notes,
             };
 
@@ -597,6 +1681,10 @@ export const useMigraineStore =
 
               const episode: MigraineEpisode = {
                 ...state.episode,
+
+                updatedAt:
+                  new Date().toISOString(),
+
                 timeline,
               };
 
@@ -610,6 +1698,10 @@ export const useMigraineStore =
           set(state => {
             const episode: MigraineEpisode = {
               ...state.episode,
+
+              updatedAt:
+                new Date().toISOString(),
+
               status,
             };
 
@@ -627,43 +1719,157 @@ export const useMigraineStore =
             const currentTimeline =
               state.episode.timeline ?? {};
 
+            const hasPostdrome =
+              state.episode.postdrome
+                .present ||
+              Boolean(
+                currentTimeline
+                  .postdromeStart ||
+                  state.episode
+                    .postdrome
+                    .startTime ||
+                  state.episode
+                    .postdrome.time
+                    ?.start?.value,
+              );
+
             const postdromeStart =
-              currentTimeline.postdromeStart;
+              currentTimeline
+                .postdromeStart ??
+              state.episode.postdrome
+                .startTime ??
+              state.episode.postdrome
+                .time?.start?.value;
 
             const requestedPostdromeEnd =
-              currentTimeline.postdromeEnd;
+              currentTimeline
+                .postdromeEnd ??
+              state.episode.postdrome
+                .endTime ??
+              state.episode.postdrome
+                .time?.end?.value;
 
             const hasValidPostdromeEnd =
               Boolean(
-                postdromeStart &&
-                  requestedPostdromeEnd &&
-                  new Date(
-                    requestedPostdromeEnd,
-                  ).getTime() >=
-                    new Date(
+                isValidDate(
+                  requestedPostdromeEnd,
+                ) &&
+                  (
+                    !isValidDate(
                       postdromeStart,
-                    ).getTime(),
+                    ) ||
+                    new Date(
+                      requestedPostdromeEnd,
+                    ).getTime() >=
+                      new Date(
+                        postdromeStart,
+                      ).getTime()
+                  ),
               );
 
-            const episodeEnd =
-              hasValidPostdromeEnd
+            if (
+              hasPostdrome &&
+              !hasValidPostdromeEnd
+            ) {
+              return state;
+            }
+
+            const postdromeEnd =
+              hasPostdrome
                 ? requestedPostdromeEnd
-                : now;
+                : undefined;
+
+            const episodeEnd =
+              postdromeEnd ??
+              getLatestDate([
+                currentTimeline
+                  .crisisEnd,
+
+                state.episode.crisis
+                  .endTime,
+
+                state.episode.crisis
+                  .time?.end?.value,
+
+                currentTimeline.auraEnd,
+
+                state.episode.aura
+                  .time?.end?.value,
+
+                currentTimeline
+                  .premonitoryEnd,
+
+                state.episode
+                  .premonitory.time
+                  ?.end?.value,
+              ]) ??
+              now;
+
+            const completionReason =
+              state.episode
+                .completionReason ??
+              (
+                hasPostdrome
+                  ? 'recovered'
+                  : currentTimeline
+                        .crisisEnd ||
+                      state.episode
+                        .crisis.endTime ||
+                      state.episode
+                        .crisis.time
+                        ?.end?.value
+                    ? 'crisisWithoutPostdrome'
+                    : undefined
+              );
+
+            const completedTimeline:
+              MigraineTimeline = {
+              ...currentTimeline,
+
+              episodeEnd,
+
+              ...(postdromeEnd
+                ? {
+                    postdromeEnd,
+                  }
+                : {}),
+            };
 
             const completed: MigraineEpisode = {
               ...state.episode,
 
+              updatedAt: now,
+
               status:
                 'completed' as MigraineEpisodeStatus,
 
-              timeline: {
-                ...currentTimeline,
+              completionReason,
 
-                postdromeEnd:
-                  episodeEnd,
+              crisis: {
+                ...state.episode.crisis,
 
-                episodeEnd,
+                active: false,
               },
+
+              postdrome: hasPostdrome
+                ? {
+                    ...state.episode
+                      .postdrome,
+
+                    endTime:
+                      postdromeEnd,
+
+                    status: 'ended',
+                  }
+                : {
+                    ...state.episode
+                      .postdrome,
+
+                    present: false,
+                  },
+
+              timeline:
+                completedTimeline,
             };
 
             return {
@@ -694,8 +1900,61 @@ export const useMigraineStore =
       }),
 
       {
-        name:
-          'synara-migraine-storage',
+        name: STORAGE_NAME,
+
+        version: STORAGE_VERSION,
+
+        migrate: persistedState =>
+          persistedState,
+
+        merge: (
+          persistedState,
+          currentState,
+        ) => {
+          if (
+            !isRecord(persistedState)
+          ) {
+            return currentState;
+          }
+
+          const persistedEpisode =
+            normalizeEpisode(
+              persistedState.episode,
+            );
+
+          const persistedActiveEpisode =
+            persistedState.activeEpisode
+              ? normalizeEpisode(
+                  persistedState
+                    .activeEpisode,
+                )
+              : null;
+
+          const episode =
+            persistedActiveEpisode
+              ?.crisis.active
+              ? persistedActiveEpisode
+              : persistedEpisode;
+
+          const history =
+            normalizeHistory(
+              persistedState.history,
+            );
+
+          return {
+            ...currentState,
+
+            episode,
+
+            history,
+
+            activeEpisode:
+              resolveActiveEpisode(
+                episode,
+                persistedActiveEpisode,
+              ),
+          };
+        },
       },
     ),
   );
