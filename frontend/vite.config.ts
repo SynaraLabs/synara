@@ -12,7 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
 
       includeAssets: [
-        'favicon.ico',
+        'favicon.svg',
+        'icons.svg',
         'apple-touch-icon.png',
         'pwa-192x192.png',
         'pwa-512x512.png',
@@ -29,7 +30,6 @@ export default defineConfig({
         background_color: '#f7f8fa',
 
         display: 'standalone',
-
         orientation: 'portrait',
 
         start_url: '/synara/',
@@ -72,9 +72,7 @@ export default defineConfig({
           '/synara/index.html',
 
         cleanupOutdatedCaches: true,
-
         clientsClaim: true,
-
         skipWaiting: true,
       },
 
