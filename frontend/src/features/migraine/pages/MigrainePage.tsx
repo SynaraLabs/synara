@@ -223,10 +223,7 @@ export function MigrainePage() {
 
   const canCompleteEpisode =
     !hasOpenPremonitory &&
-    (
-      !hasPostdrome ||
-      isPostdromeEnded
-    );
+    !isPostdromeActive;
 
   const resetCrisisStartFlow =
     () => {
@@ -947,12 +944,23 @@ export function MigrainePage() {
                 la crisis
               </h2>
 
-              <p>
-                La crisis terminó. Ahora
-                podés registrar síntomas
-                posteriores o finalizar
-                el episodio.
-              </p>
+              {hasPostdrome ? (
+                <p>
+                  La crisis terminó y el
+                  postdromo comenzó en ese
+                  mismo momento. Registrá
+                  su evolución hasta
+                  recuperarte por completo.
+                </p>
+              ) : (
+                <p>
+                  La crisis terminó y
+                  registraste que no hubo
+                  postdromo. Podés completar
+                  los datos restantes y
+                  finalizar el episodio.
+                </p>
+              )}
             </section>
 
             {hasOpenPremonitory && (
@@ -1116,9 +1124,7 @@ export function MigrainePage() {
                 handleCompleteEpisode
               }
             >
-              {hasPostdrome
-                ? 'Finalizar episodio'
-                : 'Finalizar episodio sin postdromo'}
+              Finalizar episodio
             </button>
 
             <MigraineDevTools />

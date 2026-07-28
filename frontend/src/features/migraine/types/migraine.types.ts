@@ -1,5 +1,5 @@
 // ==========================================
-// SYNARA MIGRAINE DOMAIN MODEL v6
+// SYNARA MIGRAINE DOMAIN MODEL v7 FOUNDATION
 // ==========================================
 //
 // Principles:
@@ -7,7 +7,9 @@
 // - Records can be created in real time or retrospectively.
 // - Dates can be exact, approximate or unknown.
 // - Active phases can receive multiple updates.
-// - Previous v5 fields remain available during migration.
+// - Anatomical region and laterality are separate.
+// - Clinical vocabularies can be shared across phases.
+// - Previous v6 fields remain available during migration.
 //
 // ==========================================
 
@@ -58,6 +60,32 @@ export type PhaseStatus =
   | 'uncertain';
 
 
+export type ClinicalPhase =
+  | 'premonitory'
+  | 'aura'
+  | 'crisis'
+  | 'postdrome';
+
+
+export type ClinicalSymptomCategory =
+  | 'cognitive'
+  | 'emotional'
+  | 'energy'
+  | 'sleep'
+  | 'appetite'
+  | 'digestive'
+  | 'musculoskeletal'
+  | 'sensory'
+  | 'visual'
+  | 'language'
+  | 'motor'
+  | 'vestibular'
+  | 'autonomic'
+  | 'pain'
+  | 'general'
+  | 'other';
+
+
 export interface PhaseTime {
   value?: string;
 
@@ -92,6 +120,69 @@ export interface PhaseUpdate<
 
 
 // ------------------------------------------
+// CLINICAL SYMPTOM VOCABULARY
+// ------------------------------------------
+
+export interface SymptomDefinition<
+  TSymptom extends string = string,
+> {
+  value: TSymptom;
+
+  label: string;
+
+  category: ClinicalSymptomCategory;
+
+  phases: ClinicalPhase[];
+
+  description?: string;
+
+  searchTerms?: string[];
+
+  frequent?: boolean;
+
+  uncommon?: boolean;
+
+  requiresClinicalAttention?: boolean;
+
+  clinicalAttentionMessage?: string;
+}
+
+
+export interface SymptomSelection<
+  TSymptom extends string = string,
+> {
+  symptom: TSymptom;
+
+  intensity?: PainIntensity;
+
+  side?: BodySide;
+
+  firstObservedAt?: PhaseTime;
+
+  stillPresent?: boolean;
+
+  notes?: string;
+}
+
+
+export interface CustomSymptomRecord {
+  id: string;
+
+  label: string;
+
+  category?: ClinicalSymptomCategory;
+
+  phase: ClinicalPhase;
+
+  intensity?: PainIntensity;
+
+  side?: BodySide;
+
+  notes?: string;
+}
+
+
+// ------------------------------------------
 // EPISODE STATUS
 // ------------------------------------------
 
@@ -120,6 +211,19 @@ export type EpisodeCompletionReason =
   | 'retrospectiveRecord'
   | 'cancelled'
   | 'other';
+
+
+// ------------------------------------------
+// BODY SIDE
+// ------------------------------------------
+
+export type BodySide =
+  | 'left'
+  | 'right'
+  | 'bilateral'
+  | 'alternating'
+  | 'central'
+  | 'unknown';
 
 
 // ------------------------------------------
@@ -199,15 +303,58 @@ export type PremonitorySymptom =
   | 'sweating'
   | 'temperatureChange'
   | 'paleness'
-  | 'nasalCongestion'
+  | 'nasalCongestion';
 
-  // Compatibility
-  | 'neckStiffness'
-  | 'concentrationDifficulty';
+
+/*
+ * Expanded vocabulary prepared for the
+ * clinical catalogue. It is not used by
+ * the current selectors yet.
+ */
+export type ExtendedPremonitorySymptom =
+  | PremonitorySymptom
+
+  // Pain and pressure
+  | 'mildHeadache'
+  | 'headPressure'
+  | 'eyePressure'
+  | 'earPressure'
+  | 'facialPressure'
+
+  // Additional cognitive
+  | 'decisionDifficulty'
+  | 'reducedAttention'
+  | 'slowReaction'
+  | 'spatialDisorientation'
+
+  // Additional digestive
+  | 'constipation'
+  | 'diarrhea'
+  | 'abdominalBloating'
+  | 'indigestion'
+  | 'specificFoodAversion'
+
+  // Additional sensory and vestibular
+  | 'dizziness'
+  | 'imbalance'
+  | 'visualDiscomfort'
+  | 'skinSensitivity'
+  | 'earFullness'
+  | 'tinnitus'
+
+  // Additional general symptoms
+  | 'muscleAches'
+  | 'bodyHeaviness'
+  | 'generalWeakness'
+  | 'reducedCoordination';
 
 
 export interface PremonitoryUpdateData {
   symptoms: PremonitorySymptom[];
+
+  clinicalSymptoms?: SymptomSelection<
+    ExtendedPremonitorySymptom
+  >[];
 
   symptomsStillActive?: boolean;
 
@@ -224,7 +371,15 @@ export interface PremonitoryPhase {
 
   symptoms: PremonitorySymptom[];
 
-  updates?: PhaseUpdate<PremonitoryUpdateData>[];
+  clinicalSymptoms?: SymptomSelection<
+    ExtendedPremonitorySymptom
+  >[];
+
+  customSymptoms?: CustomSymptomRecord[];
+
+  updates?: PhaseUpdate<
+    PremonitoryUpdateData
+  >[];
 
   hoursBeforeAttack?: number;
 
@@ -264,12 +419,37 @@ export type VisualAura =
   | 'objectsAppearSmaller';
 
 
+export type ExtendedVisualAura =
+  | VisualAura
+  | 'scintillatingScotoma'
+  | 'fortificationSpectra'
+  | 'shimmeringVision'
+  | 'wavyVision'
+  | 'fragmentedVision'
+  | 'colorDistortion'
+  | 'visualSnow'
+  | 'temporaryMonocularVisionLoss'
+  | 'temporaryHemifieldLoss';
+
+
 export type SensoryAura =
   | 'tingling'
   | 'numbness'
   | 'electricSensation'
   | 'reducedSensation'
   | 'spreadingParesthesia';
+
+
+export type ExtendedSensoryAura =
+  | SensoryAura
+  | 'facialTingling'
+  | 'tongueNumbness'
+  | 'lipNumbness'
+  | 'handTingling'
+  | 'armTingling'
+  | 'legTingling'
+  | 'unilateralSensorySpread'
+  | 'alteredTemperatureSensation';
 
 
 export type LanguageAura =
@@ -281,12 +461,29 @@ export type LanguageAura =
   | 'writingDifficulty';
 
 
+export type ExtendedLanguageAura =
+  | LanguageAura
+  | 'slurredSpeech'
+  | 'inabilityToSpeak'
+  | 'sentenceFormationDifficulty'
+  | 'repetitionDifficulty'
+  | 'nameRecognitionDifficulty';
+
+
 export type MotorAura =
   | 'handWeakness'
   | 'armWeakness'
   | 'facialWeakness'
   | 'coordinationDifficulty'
   | 'walkingDifficulty';
+
+
+export type ExtendedMotorAura =
+  | MotorAura
+  | 'legWeakness'
+  | 'oneSidedWeakness'
+  | 'reducedGripStrength'
+  | 'fineMotorDifficulty';
 
 
 export type VestibularAura =
@@ -298,21 +495,30 @@ export type VestibularAura =
   | 'faintFeeling';
 
 
+export type ExtendedVestibularAura =
+  | VestibularAura
+  | 'oscillopsia'
+  | 'motionSensitivity'
+  | 'tiltingSensation'
+  | 'floatingSensation'
+  | 'earFullness'
+  | 'hearingChange';
+
+
+export type AuraClinicalSymptom =
+  | ExtendedVisualAura
+  | ExtendedSensoryAura
+  | ExtendedLanguageAura
+  | ExtendedMotorAura
+  | ExtendedVestibularAura;
+
+
 export type AuraTiming =
   | 'beforePain'
   | 'duringPain'
   | 'afterPain'
   | 'withoutPain'
   | 'overlappingPain'
-  | 'unknown';
-
-
-export type BodySide =
-  | 'left'
-  | 'right'
-  | 'bilateral'
-  | 'alternating'
-  | 'central'
   | 'unknown';
 
 
@@ -328,6 +534,10 @@ export interface AuraUpdateData {
   motorSymptoms: MotorAura[];
 
   vestibularSymptoms: VestibularAura[];
+
+  clinicalSymptoms?: SymptomSelection<
+    AuraClinicalSymptom
+  >[];
 
   symptomsStillActive?: boolean;
 }
@@ -352,7 +562,15 @@ export interface AuraPhase {
 
   vestibularSymptoms?: VestibularAura[];
 
-  updates?: PhaseUpdate<AuraUpdateData>[];
+  clinicalSymptoms?: SymptomSelection<
+    AuraClinicalSymptom
+  >[];
+
+  customSymptoms?: CustomSymptomRecord[];
+
+  updates?: PhaseUpdate<
+    AuraUpdateData
+  >[];
 
   durationMinutes?: number;
 
@@ -367,8 +585,12 @@ export interface AuraPhase {
 
 
 // ------------------------------------------
-// PAIN LOCATION
+// LEGACY PAIN LOCATION
 // ------------------------------------------
+//
+// These values remain available while
+// current components are migrated.
+//
 
 export type PainLocation =
   // Compatibility values
@@ -443,7 +665,139 @@ export type PainSpreadPattern =
   | 'unknown';
 
 
+// ------------------------------------------
+// ANATOMICAL PAIN MAPPING v7
+// ------------------------------------------
+
+export type PainRegionCategory =
+  | 'head'
+  | 'eye'
+  | 'face'
+  | 'ear'
+  | 'jaw'
+  | 'neck'
+  | 'upperBody'
+  | 'diffuse'
+  | 'other';
+
+
+export type PainAnatomicalRegion =
+  // Head
+  | 'forehead'
+  | 'temple'
+  | 'crown'
+  | 'parietal'
+  | 'occipital'
+  | 'baseOfSkull'
+  | 'wholeHead'
+
+  // Eye
+  | 'aroundEye'
+  | 'behindEye'
+  | 'eyebrow'
+  | 'eyeSocket'
+
+  // Face
+  | 'cheek'
+  | 'sinus'
+  | 'nose'
+  | 'face'
+  | 'teeth'
+
+  // Ear and jaw
+  | 'ear'
+  | 'aroundEar'
+  | 'jaw'
+  | 'temporomandibularJoint'
+
+  // Neck and upper body
+  | 'upperNeck'
+  | 'middleNeck'
+  | 'lowerNeck'
+  | 'trapezius'
+  | 'shoulder'
+  | 'shoulderBlade'
+
+  // Other
+  | 'diffuse'
+  | 'other';
+
+
+export type PainLocationRole =
+  | 'primary'
+  | 'additional'
+  | 'origin'
+  | 'radiationTarget';
+
+
+export interface PainLocationPoint {
+  region: PainAnatomicalRegion;
+
+  category?: PainRegionCategory;
+
+  side?: BodySide;
+
+  role?: PainLocationRole;
+
+  intensity?: PainIntensity;
+
+  notes?: string;
+}
+
+
+export type PainRadiationDirection =
+  | 'frontToBack'
+  | 'backToFront'
+  | 'eyeToTemple'
+  | 'templeToEye'
+  | 'headToNeck'
+  | 'neckToHead'
+  | 'neckToShoulder'
+  | 'shoulderToNeck'
+  | 'changesSide'
+  | 'diffuseSpread'
+  | 'other'
+  | 'unknown';
+
+
+export interface PainRadiationPath {
+  from: PainLocationPoint;
+
+  to: PainLocationPoint;
+
+  direction?:
+    PainRadiationDirection;
+
+  notes?: string;
+}
+
+
+export interface AnatomicalPainMap {
+  primary?: PainLocationPoint;
+
+  additional: PainLocationPoint[];
+
+  origin?: PainLocationPoint;
+
+  radiation?: PainRadiationPath[];
+
+  spreadPattern?: PainSpreadPattern;
+
+  changesSide?: boolean;
+
+  notes?: string;
+}
+
+
+// ------------------------------------------
+// COMPATIBLE LOCATION RECORD
+// ------------------------------------------
+
 export interface PainLocationRecord {
+  /*
+   * Legacy fields used by the current
+   * interface.
+   */
   primary?: PainLocation;
 
   additional: PainLocation[];
@@ -453,6 +807,31 @@ export interface PainLocationRecord {
   origin?: PainOrigin;
 
   spreadPattern?: PainSpreadPattern;
+
+  notes?: string;
+
+  /*
+   * New structured anatomical model.
+   */
+  anatomicalMap?: AnatomicalPainMap;
+
+  anatomicalPoints?: PainLocationPoint[];
+
+  onsetPoint?: PainLocationPoint;
+
+  radiationPaths?:
+    PainRadiationPath[];
+
+  changedOverTime?: boolean;
+}
+
+
+export interface PainLocationSnapshot {
+  id: string;
+
+  occurredAt: PhaseTime;
+
+  location: PainLocationRecord;
 
   notes?: string;
 }
@@ -551,11 +930,66 @@ export type CrisisSymptom =
   // Emotional
   | 'anxiety'
   | 'irritability'
-  | 'fear'
+  | 'fear';
 
-  // Compatibility
-  | 'neckPain'
-  | 'jawTension';
+
+export type ExtendedCrisisSymptom =
+  | CrisisSymptom
+
+  // Additional digestive
+  | 'constipation'
+  | 'abdominalBloating'
+  | 'reflux'
+  | 'foodAversion'
+  | 'inabilityToEat'
+  | 'inabilityToDrink'
+
+  // Additional sensory
+  | 'scalpTenderness'
+  | 'facialSensitivity'
+  | 'temperatureSensitivity'
+  | 'visualDistortion'
+  | 'doubleVision'
+  | 'eyePain'
+  | 'earFullness'
+  | 'tinnitus'
+
+  // Additional vestibular
+  | 'motionSensitivity'
+  | 'floatingSensation'
+  | 'tiltingSensation'
+  | 'walkingInstability'
+
+  // Additional cognitive
+  | 'mentalSlowness'
+  | 'memoryDifficulty'
+  | 'wordFindingDifficulty'
+  | 'decisionDifficulty'
+  | 'timePerceptionChange'
+  | 'depersonalization'
+  | 'derealization'
+
+  // Additional muscular and motor
+  | 'facialTingling'
+  | 'facialWeakness'
+  | 'armWeakness'
+  | 'legWeakness'
+  | 'generalWeakness'
+  | 'reducedGripStrength'
+  | 'muscleTremor'
+
+  // Additional autonomic
+  | 'eyelidSwelling'
+  | 'facialRedness'
+  | 'coldSweating'
+  | 'palpitations'
+  | 'temperatureFluctuation'
+  | 'frequentUrination'
+
+  // Additional emotional
+  | 'panic'
+  | 'agitation'
+  | 'emotionalSensitivity';
 
 
 export interface PainRecord {
@@ -587,9 +1021,16 @@ export interface CrisisUpdateData {
 
   location?: PainLocationRecord;
 
+  anatomicalLocation?:
+    AnatomicalPainMap;
+
   quality?: PainQuality;
 
   symptoms?: CrisisSymptom[];
+
+  clinicalSymptoms?: SymptomSelection<
+    ExtendedCrisisSymptom
+  >[];
 
   unableToFunction?: boolean;
 }
@@ -608,7 +1049,9 @@ export interface CrisisPhase {
 
   events: MigraineEvent[];
 
-  updates?: PhaseUpdate<CrisisUpdateData>[];
+  updates?: PhaseUpdate<
+    CrisisUpdateData
+  >[];
 
   intensity: PainIntensity;
 
@@ -616,11 +1059,24 @@ export interface CrisisPhase {
 
   location: PainLocation[];
 
-  locationDetails?: PainLocationRecord;
+  locationDetails?:
+    PainLocationRecord;
+
+  anatomicalLocation?:
+    AnatomicalPainMap;
+
+  locationHistory?:
+    PainLocationSnapshot[];
 
   quality: PainQuality;
 
   symptoms: CrisisSymptom[];
+
+  clinicalSymptoms?: SymptomSelection<
+    ExtendedCrisisSymptom
+  >[];
+
+  customSymptoms?: CustomSymptomRecord[];
 
   unableToFunction?: boolean;
 
@@ -688,6 +1144,49 @@ export type PostdromeSymptom =
   | 'difficultyReturningToActivities';
 
 
+export type ExtendedPostdromeSymptom =
+  | PostdromeSymptom
+
+  // Additional energy and general
+  | 'generalWeakness'
+  | 'bodyHeaviness'
+  | 'reducedStamina'
+  | 'dehydrationFeeling'
+  | 'bodyAches'
+
+  // Additional cognitive
+  | 'memoryDifficulty'
+  | 'wordFindingDifficulty'
+  | 'decisionDifficulty'
+  | 'slowReaction'
+  | 'disconnectionFeeling'
+
+  // Additional sensory
+  | 'visualDiscomfort'
+  | 'blurredVision'
+  | 'residualVisualDisturbance'
+  | 'motionSensitivity'
+  | 'imbalance'
+  | 'earFullness'
+  | 'tinnitus'
+
+  // Additional muscular
+  | 'jawTension'
+  | 'trapeziusPain'
+  | 'shoulderTension'
+
+  // Additional emotional
+  | 'anxiety'
+  | 'apathy'
+  | 'emotionalSensitivity'
+
+  // Additional digestive
+  | 'nausea'
+  | 'lossOfAppetite'
+  | 'increasedHunger'
+  | 'indigestion';
+
+
 export type RecoveryLevel =
   | 'minimal'
   | 'partial'
@@ -697,6 +1196,10 @@ export type RecoveryLevel =
 
 export interface PostdromeUpdateData {
   symptoms: PostdromeSymptom[];
+
+  clinicalSymptoms?: SymptomSelection<
+    ExtendedPostdromeSymptom
+  >[];
 
   recoveryLevel?: RecoveryLevel;
 
@@ -717,7 +1220,15 @@ export interface PostdromePhase {
 
   symptoms: PostdromeSymptom[];
 
-  updates?: PhaseUpdate<PostdromeUpdateData>[];
+  clinicalSymptoms?: SymptomSelection<
+    ExtendedPostdromeSymptom
+  >[];
+
+  customSymptoms?: CustomSymptomRecord[];
+
+  updates?: PhaseUpdate<
+    PostdromeUpdateData
+  >[];
 
   recoveryLevel?: RecoveryLevel;
 
@@ -917,7 +1428,12 @@ export interface MigraineTimeline {
 // ------------------------------------------
 
 export interface MigraineEpisode {
-  schemaVersion?: 6;
+  /*
+   * The store still persists schema 6.
+   * Schema 7 becomes active after the
+   * migration step.
+   */
+  schemaVersion?: 6 | 7;
 
   id?: string;
 
@@ -953,7 +1469,8 @@ export interface MigraineEpisode {
 
   impact?: EpisodeImpact;
 
-  completionReason?: EpisodeCompletionReason;
+  completionReason?:
+    EpisodeCompletionReason;
 
   notes?: string;
 }

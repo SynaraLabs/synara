@@ -1,12 +1,18 @@
 import styles from './crisis-mode.module.css';
 
 import type {
+  AnatomicalPainMap,
   CrisisPhase,
   CrisisSymptom,
   PainIntensity,
+  PainLocationPoint,
+  PainLocationRecord,
+  PhaseTime,
 } from '../../types/migraine.types';
 
 import { useMigraineStore } from '../../store/migraine.store';
+
+import { PainLocationSelector } from '../common/PainLocationSelector';
 
 import {
   FinishCrisisButton,
@@ -16,9 +22,11 @@ import { MedicationCard } from './MedicationCard';
 import { PainCard } from './PainCard';
 import { SymptomsCard } from './SymptomsCard';
 
+
 interface Props {
   onExit?: () => void;
 }
+
 
 const generateId = (): string => {
   if (
@@ -33,6 +41,7 @@ const generateId = (): string => {
     .toString(16)
     .slice(2)}`;
 };
+
 
 const formatCrisisStart = (
   value?: string,
@@ -56,6 +65,7 @@ const formatCrisisStart = (
   });
 };
 
+
 const isValidPainIntensity = (
   value: number,
 ): value is PainIntensity => {
@@ -65,6 +75,66 @@ const isValidPainIntensity = (
     value <= 10
   );
 };
+
+
+const createExactPhaseTime = (
+  value: string,
+): PhaseTime => {
+  return {
+    value,
+    precision: 'exact',
+    recordMode: 'realTime',
+  };
+};
+
+
+const getAnatomicalPoints = (
+  location: AnatomicalPainMap,
+): PainLocationPoint[] => {
+  const points: PainLocationPoint[] = [];
+
+  if (location.primary) {
+    points.push(location.primary);
+  }
+
+  if (location.origin) {
+    points.push(location.origin);
+  }
+
+  points.push(...location.additional);
+
+  return points;
+};
+
+
+const createLocationRecord = (
+  location: AnatomicalPainMap,
+  previousRecord?: PainLocationRecord,
+  hadPreviousLocations = false,
+): PainLocationRecord => {
+  return {
+    ...(previousRecord ?? {
+      additional: [],
+    }),
+
+    anatomicalMap: location,
+
+    anatomicalPoints:
+      getAnatomicalPoints(location),
+
+    onsetPoint: location.origin,
+
+    radiationPaths:
+      location.radiation ?? [],
+
+    changedOverTime:
+      hadPreviousLocations ||
+      location.changesSide === true,
+
+    notes: location.notes,
+  };
+};
+
 
 export function CrisisMode({
   onExit,
@@ -92,6 +162,7 @@ export function CrisisMode({
       state => state.finishCrisis,
     );
 
+
   const intensityHistory =
     crisis.intensityHistory ?? [];
 
@@ -101,10 +172,23 @@ export function CrisisMode({
   const symptoms =
     crisis.symptoms ?? [];
 
+  const locationHistory =
+    crisis.locationHistory ?? [];
+
+
   const crisisStart =
     timeline?.crisisStart ||
     crisis.startTime ||
     crisis.time?.start?.value;
+
+
+  const anatomicalLocation =
+    crisis.anatomicalLocation ??
+    crisis.locationDetails
+      ?.anatomicalMap ?? {
+      additional: [],
+    };
+
 
   const ensureCrisisStarted = () => {
     if (
@@ -114,6 +198,7 @@ export function CrisisMode({
       startCrisis();
     }
   };
+
 
   const handlePainChange = (
     value: string,
@@ -141,6 +226,7 @@ export function CrisisMode({
     updateCrisis(updatedCrisis);
   };
 
+
   const handlePainRegister = () => {
     const now =
       new Date().toISOString();
@@ -157,7 +243,10 @@ export function CrisisMode({
         {
           id: generateId(),
           time: now,
-          intensity: crisis.intensity,
+          intensity:
+            crisis.intensity,
+          location:
+            crisis.locationDetails,
         },
       ],
 
@@ -170,11 +259,72 @@ export function CrisisMode({
           data: {
             intensity:
               crisis.intensity,
+
+            anatomicalLocation:
+              crisis.anatomicalLocation,
           },
         },
       ],
     });
   };
+
+
+  const handleLocationChange = (
+    location: AnatomicalPainMap,
+  ) => {
+    const now =
+      new Date().toISOString();
+
+    ensureCrisisStarted();
+
+    const locationRecord =
+      createLocationRecord(
+        location,
+        crisis.locationDetails,
+        locationHistory.length > 0,
+      );
+
+    updateCrisis({
+      ...crisis,
+
+      active: true,
+
+      anatomicalLocation:
+        location,
+
+      locationDetails:
+        locationRecord,
+
+      locationHistory: [
+        ...locationHistory,
+        {
+          id: generateId(),
+
+          occurredAt:
+            createExactPhaseTime(
+              now,
+            ),
+
+          location:
+            locationRecord,
+        },
+      ],
+
+      events: [
+        ...events,
+        {
+          id: generateId(),
+          type: 'location',
+          timestamp: now,
+          data: {
+            anatomicalLocation:
+              location,
+          },
+        },
+      ],
+    });
+  };
+
 
   const handleMedicationRegister = (
     medication: string,
@@ -209,12 +359,15 @@ export function CrisisMode({
           data: {
             medication:
               normalizedMedication,
-            dose: normalizedDose,
+
+            dose:
+              normalizedDose,
           },
         },
       ],
     });
   };
+
 
   const handleSymptomToggle = (
     symptom: CrisisSymptom,
@@ -240,6 +393,7 @@ export function CrisisMode({
     });
   };
 
+
   const handleFinish = (
     selection?: CrisisEndSelection,
   ) => {
@@ -248,13 +402,22 @@ export function CrisisMode({
     }
 
     finishCrisis({
-      endTime: selection.endTime,
+      endTime:
+        selection.endTime,
+
       precision:
         selection.precision,
+
+      recordMode:
+        selection.recordMode,
+
+      hadPostdrome:
+        selection.hadPostdrome,
     });
 
     onExit?.();
   };
+
 
   return (
     <section
@@ -276,6 +439,7 @@ export function CrisisMode({
         </p>
       </header>
 
+
       <PainCard
         crisis={crisis}
         onChange={
@@ -286,11 +450,22 @@ export function CrisisMode({
         }
       />
 
+
+      <PainLocationSelector
+        value={anatomicalLocation}
+        onChange={
+          handleLocationChange
+        }
+        title="¿Dónde sentís el dolor?"
+      />
+
+
       <MedicationCard
         onRegister={
           handleMedicationRegister
         }
       />
+
 
       <SymptomsCard
         symptoms={symptoms}
@@ -298,6 +473,7 @@ export function CrisisMode({
           handleSymptomToggle
         }
       />
+
 
       <FinishCrisisButton
         crisisStart={crisisStart}

@@ -16,10 +16,18 @@ import type {
   Treatment,
 } from '../types/migraine.types';
 
+import {
+  applyFinishCrisisTransition,
+} from '../utils/finishCrisisTransition';
+
 export interface FinishCrisisInput {
   endTime: string;
+
   precision: TimePrecision;
+
   recordMode?: RecordMode;
+
+  hadPostdrome: boolean;
 }
 
 export type PremonitoryResolution =
@@ -845,30 +853,6 @@ const inferRecordMode = (
     : 'retrospective';
 };
 
-const calculateDurationMinutes = (
-  startTime?: string,
-  endTime?: string,
-): number | undefined => {
-  if (
-    !isValidDate(startTime) ||
-    !isValidDate(endTime)
-  ) {
-    return undefined;
-  }
-
-  const difference =
-    new Date(endTime).getTime() -
-    new Date(startTime).getTime();
-
-  if (difference < 0) {
-    return undefined;
-  }
-
-  return Math.round(
-    difference / 60_000,
-  );
-};
-
 const buildPhaseTime = (
   value: string | undefined,
   precision: TimePrecision,
@@ -1076,26 +1060,25 @@ export const useMigraineStore =
 
         finishCrisis: input =>
           set(state => {
-            const now =
-              new Date().toISOString();
+            if (!input) {
+              return state;
+            }
 
-            const requestedEndTime =
-              input?.endTime ?? now;
-
-            const precision =
-              input?.precision ?? 'exact';
+            const {
+              endTime,
+              precision,
+              hadPostdrome,
+            } = input;
 
             if (
-              !isValidDate(
-                requestedEndTime,
-              )
+              !isValidDate(endTime)
             ) {
               return state;
             }
 
             const endTimestamp =
               new Date(
-                requestedEndTime,
+                endTime,
               ).getTime();
 
             if (
@@ -1122,96 +1105,36 @@ export const useMigraineStore =
 
             const recordMode =
               inferRecordMode(
-                requestedEndTime,
-                input?.recordMode,
+                endTime,
+                input.recordMode,
               );
 
-            const currentTimeline =
-              state.episode.timeline ?? {};
+            const transitionedEpisode =
+              applyFinishCrisisTransition(
+                state.episode,
+                {
+                  endTime,
+                  precision,
+                  recordMode,
+                  hadPostdrome,
 
-            const baseTimeline:
-              MigraineTimeline = {
-              ...currentTimeline,
-
-              crisisEnd:
-                requestedEndTime,
-            };
-
-            const existingCrisisTime =
-              state.episode.crisis.time;
-
-            const crisisStartTime =
-              crisisStart
-                ? buildPhaseTime(
-                    crisisStart,
-                    existingCrisisTime
-                      ?.start
-                      ?.precision ??
-                      'exact',
-                    existingCrisisTime
-                      ?.start
-                      ?.recordMode ??
-                      state.episode
-                        .recordMode ??
-                      'realTime',
-                  )
-                : existingCrisisTime
-                    ?.start;
-
-            const crisisEndTime =
-              buildPhaseTime(
-                requestedEndTime,
-                precision,
-                recordMode,
-              );
-
-            const durationMinutes =
-              calculateDurationMinutes(
-                crisisStart,
-                requestedEndTime,
-              );
-
-            const episodeBeforeCalculation:
-              MigraineEpisode = {
-              ...state.episode,
-
-              updatedAt: now,
-
-              status:
-                'postdrome' as MigraineEpisodeStatus,
-
-              crisis: {
-                ...state.episode.crisis,
-
-                active: false,
-
-                status: 'ended',
-
-                endTime:
-                  requestedEndTime,
-
-                durationMinutes,
-
-                time: {
-                  ...existingCrisisTime,
-                  start: crisisStartTime,
-                  end: crisisEndTime,
+                  updatedAt:
+                    new Date()
+                      .toISOString(),
                 },
-              },
-
-              postdrome: {
-                ...state.episode.postdrome,
-              },
-            };
+              );
 
             const timeline =
               buildCalculatedTimeline(
-                episodeBeforeCalculation,
-                baseTimeline,
+                transitionedEpisode,
+
+                transitionedEpisode
+                  .timeline ?? {},
               );
 
-            const episode: MigraineEpisode = {
-              ...episodeBeforeCalculation,
+            const episode:
+              MigraineEpisode = {
+              ...transitionedEpisode,
               timeline,
             };
 

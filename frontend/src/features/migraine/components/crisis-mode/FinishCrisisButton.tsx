@@ -7,8 +7,12 @@ import {
 
 import styles from './crisis-mode.module.css';
 
-export type CrisisEndSelection =
-  PhaseEndSelection;
+
+export interface CrisisEndSelection
+  extends PhaseEndSelection {
+  hadPostdrome: boolean;
+}
+
 
 interface Props {
   onFinish: (
@@ -17,6 +21,7 @@ interface Props {
 
   crisisStart?: string;
 }
+
 
 export function FinishCrisisButton({
   onFinish,
@@ -27,26 +32,91 @@ export function FinishCrisisButton({
     setShowSelector,
   ] = useState(false);
 
+  const [
+    pendingEndSelection,
+    setPendingEndSelection,
+  ] = useState<
+    PhaseEndSelection | undefined
+  >();
+
+
   const handleOpen = () => {
     setShowSelector(true);
+
+    setPendingEndSelection(
+      undefined,
+    );
   };
 
-  const handleConfirm = (
+
+  const handleEndTimeConfirm = (
     selection: PhaseEndSelection,
   ) => {
-    onFinish(selection);
-    setShowSelector(false);
+    /*
+     * Primero guardamos temporalmente
+     * cuándo terminó la crisis.
+     *
+     * Todavía no finalizamos la fase:
+     * antes necesitamos saber si
+     * comenzó un postdromo.
+     */
+    setPendingEndSelection(
+      selection,
+    );
   };
 
-  const handleContinue = () => {
+
+  const handlePostdromeAnswer = (
+    hadPostdrome: boolean,
+  ) => {
+    if (!pendingEndSelection) {
+      return;
+    }
+
+    onFinish({
+      ...pendingEndSelection,
+
+      /*
+       * Si hubo postdromo, su inicio
+       * deberá coincidir exactamente
+       * con el final de la crisis.
+       */
+      hadPostdrome,
+    });
+
     setShowSelector(false);
+
+    setPendingEndSelection(
+      undefined,
+    );
   };
+
+
+  const handleContinueCrisis =
+    () => {
+      setShowSelector(false);
+
+      setPendingEndSelection(
+        undefined,
+      );
+    };
+
+
+  const handleBackToEndTime =
+    () => {
+      setPendingEndSelection(
+        undefined,
+      );
+    };
+
 
   if (!showSelector) {
     return (
       <button
         type="button"
-        className={styles.secondary}
+        className={
+          styles.secondary
+        }
         onClick={handleOpen}
       >
         Finalizar crisis
@@ -54,12 +124,88 @@ export function FinishCrisisButton({
     );
   }
 
+
+  if (!pendingEndSelection) {
+    return (
+      <PhaseEndSelector
+        title="¿Cuándo terminó la crisis?"
+        startTime={crisisStart}
+        onConfirm={
+          handleEndTimeConfirm
+        }
+        onContinue={
+          handleContinueCrisis
+        }
+      />
+    );
+  }
+
+
   return (
-    <PhaseEndSelector
-      title="¿Cuándo terminó la crisis?"
-      startTime={crisisStart}
-      onConfirm={handleConfirm}
-      onContinue={handleContinue}
-    />
+    <section>
+      <h2>
+        ¿Tuviste postdromo después de
+        la crisis?
+      </h2>
+
+      <p>
+        El postdromo es el período de
+        recuperación que puede incluir
+        cansancio, niebla mental,
+        sensibilidad residual, mareo u
+        otros síntomas.
+      </p>
+
+      <p>
+        Si hubo postdromo, se
+        considerará que comenzó en el
+        mismo momento en que terminó la
+        crisis.
+      </p>
+
+
+      <button
+        type="button"
+        onClick={() =>
+          handlePostdromeAnswer(
+            true,
+          )
+        }
+      >
+        Sí, tuve postdromo
+      </button>
+
+
+      <button
+        type="button"
+        onClick={() =>
+          handlePostdromeAnswer(
+            false,
+          )
+        }
+      >
+        No tuve postdromo
+      </button>
+
+
+      <button
+        type="button"
+        onClick={
+          handleBackToEndTime
+        }
+      >
+        Volver
+      </button>
+
+
+      <button
+        type="button"
+        onClick={
+          handleContinueCrisis
+        }
+      >
+        Cancelar finalización
+      </button>
+    </section>
   );
 }

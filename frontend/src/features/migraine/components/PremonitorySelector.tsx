@@ -1,18 +1,29 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 
 import styles from '../migraine.module.css';
 
 import type {
+  ClinicalSymptomCategory,
+  ExtendedPremonitorySymptom,
   PainIntensity,
   PhaseTime,
   PremonitorySymptom,
   PremonitoryUpdateData,
   RecordMode,
+  SymptomDefinition,
+  SymptomSelection,
   TimePrecision,
 } from '../types/migraine.types';
+
+import {
+  clinicalSymptomCategoryLabels,
+  getSymptomDefinition,
+  getSymptomsForPhase,
+} from '../data/clinicalSymptomCatalog';
 
 import {
   useMigraineStore,
@@ -24,6 +35,7 @@ import {
   type PhaseEndSelection,
 } from './common/PhaseEndSelector';
 
+
 interface PremonitorySelectorProps {
   context?:
     | 'tracking'
@@ -31,10 +43,6 @@ interface PremonitorySelectorProps {
     | 'recovery';
 }
 
-interface SymptomOption {
-  value: PremonitorySymptom;
-  label: string;
-}
 
 type EndedPremonitoryOutcome =
   Extract<
@@ -43,109 +51,112 @@ type EndedPremonitoryOutcome =
     | 'evolvedToAura'
   >;
 
-const symptomOptions:
-  readonly SymptomOption[] = [
-  {
-    value: 'fatigue',
-    label: 'Fatiga o cansancio',
-  },
-  {
-    value: 'yawning',
-    label: 'Bostezos frecuentes',
-  },
-  {
-    value: 'moodChange',
-    label: 'Cambios de ánimo',
-  },
-  {
-    value: 'irritability',
-    label: 'Irritabilidad',
-  },
-  {
-    value: 'brainFog',
-    label: 'Niebla mental',
-  },
-  {
-    value: 'foodCraving',
-    label: 'Antojos alimentarios',
-  },
-  {
-    value: 'neckStiffness',
-    label: 'Rigidez cervical',
-  },
-  {
-    value: 'neckPain',
-    label: 'Dolor cervical',
-  },
-  {
-    value: 'thirst',
-    label: 'Mayor sensación de sed',
-  },
-  {
-    value: 'sleepiness',
-    label: 'Somnolencia',
-  },
-  {
-    value: 'concentrationDifficulty',
-    label:
-      'Dificultad para concentrarse',
-  },
-  {
-    value: 'mentalSlowness',
-    label: 'Lentitud mental',
-  },
-  {
-    value: 'jawTension',
-    label: 'Tensión mandibular',
-  },
-  {
-    value: 'shoulderTension',
-    label: 'Tensión en hombros',
-  },
-  {
-    value: 'trapeziusTension',
-    label: 'Tensión en trapecios',
-  },
-  {
-    value: 'lightSensitivity',
-    label: 'Sensibilidad a la luz',
-  },
-  {
-    value: 'soundSensitivity',
-    label: 'Sensibilidad al sonido',
-  },
-  {
-    value: 'smellSensitivity',
-    label: 'Sensibilidad a olores',
-  },
-  {
-    value: 'mildNausea',
-    label: 'Náuseas leves',
-  },
-  {
-    value: 'frequentUrination',
-    label:
-      'Orinar con más frecuencia',
-  },
+
+const CATEGORY_ORDER:
+  ClinicalSymptomCategory[] = [
+  'cognitive',
+  'language',
+  'emotional',
+  'energy',
+  'sleep',
+  'appetite',
+  'digestive',
+  'musculoskeletal',
+  'sensory',
+  'visual',
+  'vestibular',
+  'motor',
+  'autonomic',
+  'pain',
+  'general',
+  'other',
 ];
 
-const symptomLabelMap =
-  symptomOptions.reduce<
-    Partial<
-      Record<
-        PremonitorySymptom,
-        string
-      >
-    >
-  >(
-    (labels, symptom) => {
-      labels[symptom.value] =
-        symptom.label;
 
-      return labels;
-    },
-    {},
+const LEGACY_PREMONITORY_SYMPTOMS:
+  readonly PremonitorySymptom[] = [
+  // Cognitive
+  'brainFog',
+  'concentrationDifficulty',
+  'mentalSlowness',
+  'wordFindingDifficulty',
+  'memoryDifficulty',
+  'disconnectionFeeling',
+  'clumsiness',
+
+  // Emotional
+  'moodChange',
+  'irritability',
+  'anxiety',
+  'sadness',
+  'apathy',
+  'euphoria',
+  'emotionalSensitivity',
+  'restlessness',
+
+  // Energy and sleep
+  'fatigue',
+  'sleepiness',
+  'yawning',
+  'insomnia',
+  'unusualEnergy',
+  'nonRestorativeSleep',
+
+  // Appetite and digestion
+  'foodCraving',
+  'sweetCraving',
+  'saltyCraving',
+  'increasedHunger',
+  'lossOfAppetite',
+  'thirst',
+  'mildNausea',
+  'bowelChanges',
+
+  // Muscular
+  'neckStiffness',
+  'neckPain',
+  'jawTension',
+  'shoulderTension',
+  'trapeziusTension',
+  'heavyNeckFeeling',
+
+  // Sensory
+  'lightSensitivity',
+  'soundSensitivity',
+  'smellSensitivity',
+  'blurredVision',
+  'coldFeeling',
+  'chills',
+
+  // Autonomic
+  'frequentUrination',
+  'fluidRetention',
+  'sweating',
+  'temperatureChange',
+  'paleness',
+  'nasalCongestion',
+];
+
+
+const legacyPremonitorySymptomSet =
+  new Set<string>(
+    LEGACY_PREMONITORY_SYMPTOMS,
   );
+
+
+const premonitoryCatalog:
+  SymptomDefinition<
+    ExtendedPremonitorySymptom
+  >[] = getSymptomsForPhase(
+  'premonitory',
+).map(definition => ({
+  ...definition,
+
+  value:
+    definition.value as
+      ExtendedPremonitorySymptom,
+}));
+
 
 const generateId = (): string => {
   if (
@@ -161,6 +172,7 @@ const generateId = (): string => {
     .slice(2)}`;
 };
 
+
 const padNumber = (
   value: number,
 ): string => {
@@ -169,6 +181,7 @@ const padNumber = (
     '0',
   );
 };
+
 
 const toLocalDateTimeValue = (
   isoDate?: string,
@@ -179,11 +192,16 @@ const toLocalDateTimeValue = (
 
   const date = new Date(isoDate);
 
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
     return '';
   }
 
-  const year = date.getFullYear();
+  const year =
+    date.getFullYear();
 
   const month = padNumber(
     date.getMonth() + 1,
@@ -204,12 +222,14 @@ const toLocalDateTimeValue = (
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
+
 const getCurrentLocalDateTimeValue =
   (): string => {
     return toLocalDateTimeValue(
       new Date().toISOString(),
     );
   };
+
 
 const parseLocalDateTime = (
   value: string,
@@ -231,13 +251,20 @@ const parseLocalDateTime = (
     minuteValue,
   ] = match;
 
-  const year = Number(yearValue);
-  const month = Number(monthValue);
-  const day = Number(dayValue);
-  const hour = Number(hourValue);
-  const minute = Number(
-    minuteValue,
-  );
+  const year =
+    Number(yearValue);
+
+  const month =
+    Number(monthValue);
+
+  const day =
+    Number(dayValue);
+
+  const hour =
+    Number(hourValue);
+
+  const minute =
+    Number(minuteValue);
 
   const date = new Date(
     year,
@@ -253,29 +280,38 @@ const parseLocalDateTime = (
     !Number.isNaN(
       date.getTime(),
     ) &&
-    date.getFullYear() === year &&
+    date.getFullYear() ===
+      year &&
     date.getMonth() ===
       month - 1 &&
-    date.getDate() === day &&
-    date.getHours() === hour &&
-    date.getMinutes() === minute;
+    date.getDate() ===
+      day &&
+    date.getHours() ===
+      hour &&
+    date.getMinutes() ===
+      minute;
 
   return isValid
     ? date
     : undefined;
 };
 
+
 const isValidDate = (
   value?: string,
 ): value is string => {
   return (
-    typeof value === 'string' &&
+    typeof value ===
+      'string' &&
     value.length > 0 &&
     !Number.isNaN(
-      new Date(value).getTime(),
+      new Date(
+        value,
+      ).getTime(),
     )
   );
 };
+
 
 const buildPhaseTime = (
   value: string,
@@ -288,6 +324,7 @@ const buildPhaseTime = (
     recordMode,
   };
 };
+
 
 const inferRecordMode = (
   occurredAt: string,
@@ -304,6 +341,7 @@ const inferRecordMode = (
     : 'retrospective';
 };
 
+
 const getEarlierDate = (
   first?: string,
   second?: string,
@@ -318,11 +356,16 @@ const getEarlierDate = (
     return first;
   }
 
-  return new Date(first).getTime() <=
-    new Date(second).getTime()
+  return new Date(
+    first,
+  ).getTime() <=
+    new Date(
+      second,
+    ).getTime()
     ? first
     : second;
 };
+
 
 const formatDateTime = (
   value?: string,
@@ -332,7 +375,8 @@ const formatDateTime = (
     return 'Sin registrar';
   }
 
-  const date = new Date(value);
+  const date =
+    new Date(value);
 
   if (
     precision === 'dateOnly' ||
@@ -360,14 +404,138 @@ const formatDateTime = (
   );
 };
 
+
+const normalizeText = (
+  value: string,
+): string => {
+  return value
+    .normalize('NFD')
+    .replace(
+      /[\u0300-\u036f]/g,
+      '',
+    )
+    .toLocaleLowerCase(
+      'es-AR',
+    );
+};
+
+
+const isLegacyPremonitorySymptom = (
+  symptom:
+    ExtendedPremonitorySymptom,
+): symptom is PremonitorySymptom => {
+  return legacyPremonitorySymptomSet.has(
+    symptom,
+  );
+};
+
+
 const getSymptomLabel = (
-  symptom: PremonitorySymptom,
+  symptom:
+    ExtendedPremonitorySymptom,
 ): string => {
   return (
-    symptomLabelMap[symptom] ??
+    getSymptomDefinition(
+      symptom,
+    )?.label ??
     symptom
   );
 };
+
+
+const getSelectedSymptoms = (
+  legacySymptoms:
+    readonly PremonitorySymptom[],
+  clinicalSymptoms:
+    | readonly SymptomSelection<
+        ExtendedPremonitorySymptom
+      >[]
+    | undefined,
+): ExtendedPremonitorySymptom[] => {
+  if (
+    clinicalSymptoms &&
+    clinicalSymptoms.length > 0
+  ) {
+    return Array.from(
+      new Set(
+        clinicalSymptoms.map(
+          selection =>
+            selection.symptom,
+        ),
+      ),
+    );
+  }
+
+  return Array.from(
+    new Set(
+      legacySymptoms,
+    ),
+  );
+};
+
+
+const getUpdateSymptoms = (
+  update:
+    PremonitoryUpdateData,
+): ExtendedPremonitorySymptom[] => {
+  if (
+    update.clinicalSymptoms &&
+    update.clinicalSymptoms
+      .length > 0
+  ) {
+    return Array.from(
+      new Set(
+        update.clinicalSymptoms.map(
+          selection =>
+            selection.symptom,
+        ),
+      ),
+    );
+  }
+
+  return Array.from(
+    new Set(
+      update.symptoms,
+    ),
+  );
+};
+
+
+const createClinicalSelections = (
+  symptoms:
+    ExtendedPremonitorySymptom[],
+  previousSelections:
+    | readonly SymptomSelection<
+        ExtendedPremonitorySymptom
+      >[]
+    | undefined,
+): SymptomSelection<
+  ExtendedPremonitorySymptom
+>[] => {
+  const previousBySymptom =
+    new Map(
+      (
+        previousSelections ??
+        []
+      ).map(selection => [
+        selection.symptom,
+        selection,
+      ]),
+    );
+
+  return symptoms.map(
+    symptom => ({
+      ...previousBySymptom.get(
+        symptom,
+      ),
+
+      symptom,
+
+      stillPresent: true,
+    }),
+  );
+};
+
 
 export function PremonitorySelector({
   context = 'tracking',
@@ -376,8 +544,18 @@ export function PremonitorySelector({
     draftSymptoms,
     setDraftSymptoms,
   ] = useState<
-    PremonitorySymptom[]
+    ExtendedPremonitorySymptom[]
   >([]);
+
+  const [
+    symptomSearch,
+    setSymptomSearch,
+  ] = useState('');
+
+  const [
+    showUncommonSymptoms,
+    setShowUncommonSymptoms,
+  ] = useState(false);
 
   const [
     draftIntensity,
@@ -418,10 +596,12 @@ export function PremonitorySelector({
     setShowUncertainConfirmation,
   ] = useState(false);
 
+
   const premonitory =
     useMigraineStore(
       state =>
-        state.episode.premonitory,
+        state.episode
+          .premonitory,
     );
 
   const timeline =
@@ -448,39 +628,71 @@ export function PremonitorySelector({
         state.resolvePremonitory,
     );
 
+
   const currentSymptoms =
-    premonitory.symptoms ?? [];
+    premonitory.symptoms ??
+    [];
 
   const updates =
-    premonitory.updates ?? [];
+    premonitory.updates ??
+    [];
+
+
+  const currentClinicalSymptoms =
+    useMemo(
+      () =>
+        getSelectedSymptoms(
+          currentSymptoms,
+          premonitory
+            .clinicalSymptoms,
+        ),
+      [
+        currentSymptoms,
+        premonitory
+          .clinicalSymptoms,
+      ],
+    );
+
 
   const premonitoryStart =
-    timeline?.premonitoryStart ??
-    premonitory.time?.start?.value;
+    timeline
+      ?.premonitoryStart ??
+    premonitory.time?.start
+      ?.value;
 
   const premonitoryEnd =
     timeline?.premonitoryEnd ??
-    premonitory.time?.end?.value;
+    premonitory.time?.end
+      ?.value;
+
 
   const isEnded =
     premonitory.status ===
       'ended' ||
     premonitory.status ===
       'uncertain' ||
-    Boolean(premonitoryEnd);
+    Boolean(
+      premonitoryEnd,
+    );
+
 
   const isFirstUpdate =
     updates.length === 0 &&
     !premonitory.present;
 
+
   const isTrackingContext =
     context === 'tracking';
 
+
   useEffect(() => {
     setDraftSymptoms(
-      currentSymptoms,
+      currentClinicalSymptoms,
     );
-  }, [currentSymptoms]);
+  }, [
+    currentClinicalSymptoms,
+  ]);
+
 
   /*
    * Al entrar en crisis o recuperación
@@ -493,33 +705,104 @@ export function PremonitorySelector({
       return;
     }
 
-    setShowResolutionOptions(false);
+    setShowResolutionOptions(
+      false,
+    );
+
     setEndingOutcome(null);
 
     setShowUncertainConfirmation(
       false,
     );
-  }, [isTrackingContext]);
+  }, [
+    isTrackingContext,
+  ]);
 
-  const selectableSymptoms =
-    Array.from(
-      new Set<PremonitorySymptom>([
-        ...symptomOptions.map(
-          symptom =>
-            symptom.value,
-        ),
 
-        ...currentSymptoms,
+  const visibleDefinitions =
+    useMemo(() => {
+      const normalizedSearch =
+        normalizeText(
+          symptomSearch.trim(),
+        );
 
-        ...draftSymptoms,
+      return premonitoryCatalog.filter(
+        definition => {
+          if (
+            !showUncommonSymptoms &&
+            !normalizedSearch &&
+            definition.uncommon
+          ) {
+            return false;
+          }
 
-        ...updates.flatMap(
-          update =>
-            update.data.symptoms ??
-            [],
-        ),
-      ]),
-    );
+          if (
+            !normalizedSearch
+          ) {
+            return true;
+          }
+
+          const searchableText =
+            normalizeText(
+              [
+                definition.label,
+                definition.value,
+                definition.description ??
+                  '',
+                ...(
+                  definition.searchTerms ??
+                  []
+                ),
+              ].join(' '),
+            );
+
+          return searchableText.includes(
+            normalizedSearch,
+          );
+        },
+      );
+    }, [
+      symptomSearch,
+      showUncommonSymptoms,
+    ]);
+
+
+  const groupedDefinitions =
+    useMemo(() => {
+      return visibleDefinitions.reduce<
+        Partial<
+          Record<
+            ClinicalSymptomCategory,
+            SymptomDefinition<
+              ExtendedPremonitorySymptom
+            >[]
+          >
+        >
+      >(
+        (
+          groups,
+          definition,
+        ) => {
+          const group =
+            groups[
+              definition.category
+            ] ?? [];
+
+          groups[
+            definition.category
+          ] = [
+            ...group,
+            definition,
+          ];
+
+          return groups;
+        },
+        {},
+      );
+    }, [
+      visibleDefinitions,
+    ]);
+
 
   const visibleUpdates =
     [...updates].sort(
@@ -548,14 +831,17 @@ export function PremonitorySelector({
       },
     );
 
+
   const resolutionTitle =
     endingOutcome ===
     'evolvedToAura'
       ? '¿Cuándo terminaron las señales antes del aura?'
       : '¿Cuándo terminaron las señales?';
 
+
   const toggleDraftSymptom = (
-    symptom: PremonitorySymptom,
+    symptom:
+      ExtendedPremonitorySymptom,
   ) => {
     setFeedback('');
 
@@ -575,6 +861,7 @@ export function PremonitorySelector({
             ],
     );
   };
+
 
   const handleRegisterUpdate = () => {
     const occurredAtDate =
@@ -607,7 +894,9 @@ export function PremonitorySelector({
     const parsedIntensity =
       draftIntensity === ''
         ? undefined
-        : Number(draftIntensity);
+        : Number(
+            draftIntensity,
+          );
 
     const intensity =
       typeof parsedIntensity ===
@@ -623,10 +912,14 @@ export function PremonitorySelector({
           )
         : undefined;
 
+
     const hasInformation =
-      draftSymptoms.length > 0 ||
+      draftSymptoms.length >
+        0 ||
       intensity !== undefined ||
-      Boolean(normalizedNotes);
+      Boolean(
+        normalizedNotes,
+      );
 
     if (!hasInformation) {
       setFeedback(
@@ -635,6 +928,7 @@ export function PremonitorySelector({
 
       return;
     }
+
 
     const now =
       new Date().toISOString();
@@ -647,14 +941,17 @@ export function PremonitorySelector({
         occurredAt,
       );
 
+
     const effectiveStart =
       getEarlierDate(
         premonitoryStart,
         occurredAt,
       ) ?? occurredAt;
 
+
     const existingStart =
       premonitory.time?.start;
+
 
     const shouldUpdateStart =
       !isValidDate(
@@ -667,6 +964,7 @@ export function PremonitorySelector({
           existingStart.value,
         ).getTime();
 
+
     const startPhaseTime =
       shouldUpdateStart
         ? buildPhaseTime(
@@ -678,20 +976,39 @@ export function PremonitorySelector({
           )
         : existingStart;
 
+
+    const legacySymptoms =
+      draftSymptoms.filter(
+        isLegacyPremonitorySymptom,
+      );
+
+
+    const clinicalSymptoms =
+      createClinicalSelections(
+        draftSymptoms,
+        premonitory
+          .clinicalSymptoms,
+      );
+
+
     const updateData:
       PremonitoryUpdateData = {
       symptoms:
-        draftSymptoms,
+        legacySymptoms,
+
+      clinicalSymptoms,
 
       symptomsStillActive:
         true,
 
-      ...(intensity !== undefined
+      ...(intensity !==
+      undefined
         ? {
             intensity,
           }
         : {}),
     };
+
 
     updatePremonitory({
       ...premonitory,
@@ -700,8 +1017,19 @@ export function PremonitorySelector({
 
       status: 'active',
 
+      /*
+       * Campo compatible con episodios
+       * y componentes anteriores.
+       */
       symptoms:
-        draftSymptoms,
+        legacySymptoms,
+
+      /*
+       * Campo clínico v7. Incluye
+       * tanto síntomas anteriores
+       * como los nuevos.
+       */
+      clinicalSymptoms,
 
       hoursBeforeAttack:
         undefined,
@@ -712,7 +1040,8 @@ export function PremonitorySelector({
       time: {
         ...premonitory.time,
 
-        start: startPhaseTime,
+        start:
+          startPhaseTime,
 
         end: undefined,
       },
@@ -731,7 +1060,8 @@ export function PremonitorySelector({
               recordMode,
             ),
 
-          data: updateData,
+          data:
+            updateData,
 
           notes:
             normalizedNotes ||
@@ -739,6 +1069,7 @@ export function PremonitorySelector({
         },
       ],
     });
+
 
     updateTimeline({
       premonitoryStart:
@@ -754,6 +1085,7 @@ export function PremonitorySelector({
         ),
     });
 
+
     setUpdateDateTime(
       getCurrentLocalDateTimeValue(),
     );
@@ -767,56 +1099,73 @@ export function PremonitorySelector({
     );
   };
 
-  const handleOpenResolution = () => {
-    setShowResolutionOptions(true);
-    setEndingOutcome(null);
 
-    setShowUncertainConfirmation(
-      false,
-    );
+  const handleOpenResolution =
+    () => {
+      setShowResolutionOptions(
+        true,
+      );
 
-    setFeedback('');
-  };
+      setEndingOutcome(null);
 
-  const handleCancelResolution = () => {
-    setShowResolutionOptions(false);
-    setEndingOutcome(null);
+      setShowUncertainConfirmation(
+        false,
+      );
 
-    setShowUncertainConfirmation(
-      false,
-    );
-  };
+      setFeedback('');
+    };
 
-  const handleContinueSignals = () => {
-    handleCancelResolution();
 
-    setFeedback(
-      'Las señales continúan abiertas.',
-    );
-  };
+  const handleCancelResolution =
+    () => {
+      setShowResolutionOptions(
+        false,
+      );
 
-  const handleContinueWithAura = () => {
-    resolvePremonitory({
-      outcome:
-        'continuesWithAura',
-    });
+      setEndingOutcome(null);
 
-    handleCancelResolution();
+      setShowUncertainConfirmation(
+        false,
+      );
+    };
 
-    setFeedback(
-      'Las señales seguirán abiertas mientras registrás el aura.',
-    );
-  };
+
+  const handleContinueSignals =
+    () => {
+      handleCancelResolution();
+
+      setFeedback(
+        'Las señales continúan abiertas.',
+      );
+    };
+
+
+  const handleContinueWithAura =
+    () => {
+      resolvePremonitory({
+        outcome:
+          'continuesWithAura',
+      });
+
+      handleCancelResolution();
+
+      setFeedback(
+        'Las señales seguirán abiertas mientras registrás el aura.',
+      );
+    };
+
 
   const handleConfirmEnd = (
-    selection: PhaseEndSelection,
+    selection:
+      PhaseEndSelection,
   ) => {
     if (!endingOutcome) {
       return;
     }
 
     resolvePremonitory({
-      outcome: endingOutcome,
+      outcome:
+        endingOutcome,
 
       endTime:
         selection.endTime,
@@ -831,12 +1180,15 @@ export function PremonitorySelector({
     handleCancelResolution();
   };
 
+
   const handleConfirmUncertain =
     () => {
       resolvePremonitory({
-        outcome: 'uncertain',
+        outcome:
+          'uncertain',
 
-        precision: 'unknown',
+        precision:
+          'unknown',
 
         recordMode:
           'retrospective',
@@ -844,6 +1196,7 @@ export function PremonitorySelector({
 
       handleCancelResolution();
     };
+
 
   return (
     <section
@@ -862,6 +1215,7 @@ export function PremonitorySelector({
         vez que notes una evolución.
       </p>
 
+
       {context === 'crisis' &&
         !isEnded && (
           <p
@@ -875,6 +1229,7 @@ export function PremonitorySelector({
             sin cerrar la fase.
           </p>
         )}
+
 
       {context === 'recovery' &&
         !isEnded && (
@@ -891,6 +1246,7 @@ export function PremonitorySelector({
           </p>
         )}
 
+
       {premonitory.present && (
         <p
           className={
@@ -900,11 +1256,12 @@ export function PremonitorySelector({
           Inicio de las señales:{' '}
           {formatDateTime(
             premonitoryStart,
-            premonitory.time?.start
-              ?.precision,
+            premonitory.time
+              ?.start?.precision,
           )}
         </p>
       )}
+
 
       {!isEnded && (
         <>
@@ -924,40 +1281,145 @@ export function PremonitorySelector({
             actualización.
           </p>
 
-          <div
+
+          <label>
+            Buscar una señal
+
+            <input
+              type="search"
+              value={
+                symptomSearch
+              }
+              onChange={event =>
+                setSymptomSearch(
+                  event.target
+                    .value,
+                )
+              }
+              placeholder="Ej.: rigidez, mareo, hambre…"
+            />
+          </label>
+
+
+          <label
             className={
-              styles.symptomGrid
+              styles.symptomOption
             }
           >
-            {selectableSymptoms.map(
-              symptom => (
-                <label
-                  key={symptom}
-                  className={
-                    styles.symptomOption
-                  }
-                >
-                  <input
-                    type="checkbox"
-                    checked={draftSymptoms.includes(
-                      symptom,
-                    )}
-                    onChange={() =>
-                      toggleDraftSymptom(
-                        symptom,
-                      )
-                    }
-                  />
+            <input
+              type="checkbox"
+              checked={
+                showUncommonSymptoms
+              }
+              onChange={event =>
+                setShowUncommonSymptoms(
+                  event.target
+                    .checked,
+                )
+              }
+            />
 
-                  <span>
-                    {getSymptomLabel(
-                      symptom,
-                    )}
-                  </span>
-                </label>
-              ),
-            )}
-          </div>
+            <span>
+              Mostrar también señales
+              menos frecuentes
+            </span>
+          </label>
+
+
+          <p
+            className={
+              styles.helperText
+            }
+          >
+            Seleccionadas:{' '}
+            {draftSymptoms.length}
+          </p>
+
+
+          {visibleDefinitions.length ===
+          0 ? (
+            <p
+              className={
+                styles.helperText
+              }
+            >
+              No encontramos señales
+              con ese nombre.
+            </p>
+          ) : (
+            CATEGORY_ORDER.map(
+              category => {
+                const definitions =
+                  groupedDefinitions[
+                    category
+                  ];
+
+                if (
+                  !definitions ||
+                  definitions.length ===
+                    0
+                ) {
+                  return null;
+                }
+
+                return (
+                  <section
+                    key={category}
+                  >
+                    <h5>
+                      {
+                        clinicalSymptomCategoryLabels[
+                          category
+                        ]
+                      }
+                    </h5>
+
+                    <div
+                      className={
+                        styles.symptomGrid
+                      }
+                    >
+                      {definitions.map(
+                        definition => (
+                          <label
+                            key={
+                              definition.value
+                            }
+                            className={
+                              styles.symptomOption
+                            }
+                          >
+                            <input
+                              type="checkbox"
+                              checked={draftSymptoms.includes(
+                                definition.value,
+                              )}
+                              onChange={() =>
+                                toggleDraftSymptom(
+                                  definition.value,
+                                )
+                              }
+                            />
+
+                            <span>
+                              {
+                                definition.label
+                              }
+
+                              {definition.uncommon
+                                ? ' · Menos frecuente'
+                                : ''}
+                            </span>
+                          </label>
+                        ),
+                      )}
+                    </div>
+                  </section>
+                );
+              },
+            )
+          )}
+
 
           <label>
             {isFirstUpdate
@@ -966,13 +1428,16 @@ export function PremonitorySelector({
 
             <input
               type="datetime-local"
-              value={updateDateTime}
+              value={
+                updateDateTime
+              }
               max={
                 getCurrentLocalDateTimeValue()
               }
               onChange={event => {
                 setUpdateDateTime(
-                  event.target.value,
+                  event.target
+                    .value,
                 );
 
                 setFeedback('');
@@ -980,15 +1445,19 @@ export function PremonitorySelector({
             />
           </label>
 
+
           <label>
             Intensidad general de las
             señales
 
             <select
-              value={draftIntensity}
+              value={
+                draftIntensity
+              }
               onChange={event => {
                 setDraftIntensity(
-                  event.target.value,
+                  event.target
+                    .value,
                 );
 
                 setFeedback('');
@@ -1014,14 +1483,18 @@ export function PremonitorySelector({
             </select>
           </label>
 
+
           <label>
             Nota de esta actualización
 
             <textarea
-              value={draftNotes}
+              value={
+                draftNotes
+              }
               onChange={event => {
                 setDraftNotes(
-                  event.target.value,
+                  event.target
+                    .value,
                 );
 
                 setFeedback('');
@@ -1030,6 +1503,7 @@ export function PremonitorySelector({
               rows={3}
             />
           </label>
+
 
           <button
             type="button"
@@ -1041,6 +1515,7 @@ export function PremonitorySelector({
               ? 'Iniciar señales'
               : 'Registrar actualización'}
           </button>
+
 
           {isTrackingContext &&
             premonitory.present &&
@@ -1058,6 +1533,7 @@ export function PremonitorySelector({
         </>
       )}
 
+
       {feedback && (
         <p
           className={
@@ -1068,6 +1544,7 @@ export function PremonitorySelector({
           {feedback}
         </p>
       )}
+
 
       {isTrackingContext &&
         premonitory.present &&
@@ -1144,11 +1621,14 @@ export function PremonitorySelector({
           </section>
         )}
 
+
       {isTrackingContext &&
         showResolutionOptions &&
         endingOutcome && (
           <PhaseEndSelector
-            title={resolutionTitle}
+            title={
+              resolutionTitle
+            }
             startTime={
               premonitoryStart
             }
@@ -1160,6 +1640,7 @@ export function PremonitorySelector({
             }
           />
         )}
+
 
       {isTrackingContext &&
         showResolutionOptions &&
@@ -1196,7 +1677,9 @@ export function PremonitorySelector({
           </section>
         )}
 
-      {visibleUpdates.length > 0 && (
+
+      {visibleUpdates.length >
+        0 && (
         <section>
           <h4>
             Evolución de las señales
@@ -1211,11 +1694,16 @@ export function PremonitorySelector({
                   update.createdAt;
 
                 const symptoms =
-                  update.data
-                    .symptoms ?? [];
+                  getUpdateSymptoms(
+                    update.data,
+                  );
 
                 return (
-                  <li key={update.id}>
+                  <li
+                    key={
+                      update.id
+                    }
+                  >
                     <p>
                       <b>
                         {formatDateTime(
@@ -1228,7 +1716,9 @@ export function PremonitorySelector({
                     </p>
 
                     <p>
-                      <b>Señales:</b>{' '}
+                      <b>
+                        Señales:
+                      </b>{' '}
                       {symptoms.length >
                       0
                         ? symptoms
@@ -1259,8 +1749,12 @@ export function PremonitorySelector({
 
                     {update.notes && (
                       <p>
-                        <b>Nota:</b>{' '}
-                        {update.notes}
+                        <b>
+                          Nota:
+                        </b>{' '}
+                        {
+                          update.notes
+                        }
                       </p>
                     )}
                   </li>
@@ -1270,6 +1764,7 @@ export function PremonitorySelector({
           </ul>
         </section>
       )}
+
 
       {isEnded && (
         <div>
@@ -1287,7 +1782,8 @@ export function PremonitorySelector({
             .
           </p>
 
-          {premonitory.endedWithoutCrisis && (
+          {premonitory
+            .endedWithoutCrisis && (
             <p>
               Resultado: las señales
               terminaron sin evolucionar
@@ -1295,7 +1791,8 @@ export function PremonitorySelector({
             </p>
           )}
 
-          {premonitory.evolvedToAura && (
+          {premonitory
+            .evolvedToAura && (
             <p>
               Resultado: las señales
               evolucionaron a aura.

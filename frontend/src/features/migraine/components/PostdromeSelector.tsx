@@ -23,22 +23,27 @@ import {
   type PhaseEndSelection,
 } from './common/PhaseEndSelector';
 
-import { PhaseDateSelector } from './common/PhaseDateSelector';
 
 const frequentSymptoms:
   readonly PostdromeSymptom[] = [
   'fatigue',
+  'extremeExhaustion',
   'brainFog',
   'weakness',
-  'moodChange',
+  'mentalSlowness',
   'residualSensitivity',
+  'dizziness',
   'neckDiscomfort',
+  'neckStiffness',
+  'moodChange',
+  'sleepiness',
+  'hangoverFeeling',
+  'difficultyReturningToActivities',
 ];
 
-const recoveryLevelLabels: Record<
-  RecoveryLevel,
-  string
-> = {
+
+const recoveryLevelLabels:
+  Record<RecoveryLevel, string> = {
   minimal: 'Recuperación mínima',
   partial: 'Recuperación parcial',
   mostlyRecovered:
@@ -46,6 +51,7 @@ const recoveryLevelLabels: Record<
   fullyRecovered:
     'Recuperación completa',
 };
+
 
 const generateId = (): string => {
   if (
@@ -61,23 +67,70 @@ const generateId = (): string => {
     .slice(2)}`;
 };
 
-const isValidDate = (
-  value?: string,
-): value is string => {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    !Number.isNaN(
-      new Date(value).getTime(),
-    )
+
+const padNumber = (
+  value: number,
+): string => {
+  return String(value).padStart(
+    2,
+    '0',
   );
 };
 
-const createDateOnlyReference = (
+
+const toLocalDateTimeValue = (
+  isoDate?: string,
+): string => {
+  if (!isoDate) {
+    return '';
+  }
+
+  const date = new Date(isoDate);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return '';
+  }
+
+  const year =
+    date.getFullYear();
+
+  const month = padNumber(
+    date.getMonth() + 1,
+  );
+
+  const day = padNumber(
+    date.getDate(),
+  );
+
+  const hours = padNumber(
+    date.getHours(),
+  );
+
+  const minutes = padNumber(
+    date.getMinutes(),
+  );
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+
+const getCurrentLocalDateTimeValue =
+  (): string => {
+    return toLocalDateTimeValue(
+      new Date().toISOString(),
+    );
+  };
+
+
+const parseLocalDateTime = (
   value: string,
-): string | undefined => {
+): Date | undefined => {
   const match = value.match(
-    /^(\d{4})-(\d{2})-(\d{2})$/,
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/,
   );
 
   if (!match) {
@@ -89,30 +142,34 @@ const createDateOnlyReference = (
     yearValue,
     monthValue,
     dayValue,
+    hourValue,
+    minuteValue,
   ] = match;
 
-  const year = Number(yearValue);
-  const month = Number(monthValue);
-  const day = Number(dayValue);
+  const year =
+    Number(yearValue);
 
-  const now = new Date();
+  const month =
+    Number(monthValue);
 
-  const isToday =
-    now.getFullYear() === year &&
-    now.getMonth() === month - 1 &&
-    now.getDate() === day;
+  const day =
+    Number(dayValue);
 
-  const date = isToday
-    ? now
-    : new Date(
-        year,
-        month - 1,
-        day,
-        12,
-        0,
-        0,
-        0,
-      );
+  const hour =
+    Number(hourValue);
+
+  const minute =
+    Number(minuteValue);
+
+  const date = new Date(
+    year,
+    month - 1,
+    day,
+    hour,
+    minute,
+    0,
+    0,
+  );
 
   const isValid =
     !Number.isNaN(
@@ -121,17 +178,45 @@ const createDateOnlyReference = (
     date.getFullYear() === year &&
     date.getMonth() ===
       month - 1 &&
-    date.getDate() === day;
+    date.getDate() === day &&
+    date.getHours() === hour &&
+    date.getMinutes() ===
+      minute;
 
-  if (
-    !isValid ||
-    date.getTime() > Date.now()
-  ) {
-    return undefined;
-  }
-
-  return date.toISOString();
+  return isValid
+    ? date
+    : undefined;
 };
+
+
+const isValidDate = (
+  value?: string,
+): value is string => {
+  return Boolean(
+    value &&
+      !Number.isNaN(
+        new Date(value).getTime(),
+      ),
+  );
+};
+
+
+const inferRecordMode = (
+  occurredAt: string,
+): RecordMode => {
+  const difference =
+    Math.abs(
+      Date.now() -
+        new Date(
+          occurredAt,
+        ).getTime(),
+    );
+
+  return difference <= 60_000
+    ? 'realTime'
+    : 'retrospective';
+};
+
 
 const buildPhaseTime = (
   value: string,
@@ -145,6 +230,7 @@ const buildPhaseTime = (
   };
 };
 
+
 const formatDateTime = (
   value?: string,
   precision?: TimePrecision,
@@ -153,7 +239,8 @@ const formatDateTime = (
     return 'Sin registrar';
   }
 
-  const date = new Date(value);
+  const date =
+    new Date(value);
 
   if (
     precision === 'dateOnly' ||
@@ -181,12 +268,19 @@ const formatDateTime = (
   );
 };
 
-export function PostdromeSelector() {
-  const [
-    showStartDate,
-    setShowStartDate,
-  ] = useState(false);
 
+const getSymptomLabel = (
+  symptom: PostdromeSymptom,
+): string => {
+  return (
+    postdromeSymptomLabels[
+      symptom
+    ] ?? symptom
+  );
+};
+
+
+export function PostdromeSelector() {
   const [
     showEndSelector,
     setShowEndSelector,
@@ -195,9 +289,9 @@ export function PostdromeSelector() {
   const [
     draftSymptoms,
     setDraftSymptoms,
-  ] = useState<PostdromeSymptom[]>(
-    [],
-  );
+  ] = useState<
+    PostdromeSymptom[]
+  >([]);
 
   const [
     draftRecoveryLevel,
@@ -212,9 +306,17 @@ export function PostdromeSelector() {
   ] = useState('');
 
   const [
+    updateDateTime,
+    setUpdateDateTime,
+  ] = useState(
+    getCurrentLocalDateTimeValue,
+  );
+
+  const [
     feedback,
     setFeedback,
   ] = useState('');
+
 
   const postdrome =
     useMigraineStore(
@@ -226,6 +328,17 @@ export function PostdromeSelector() {
     useMigraineStore(
       state =>
         state.episode.timeline,
+    );
+
+  const crisisEnd =
+    useMigraineStore(
+      state =>
+        state.episode.timeline
+          ?.crisisEnd ??
+        state.episode.crisis
+          .endTime ??
+        state.episode.crisis.time
+          ?.end?.value,
     );
 
   const updatePostdrome =
@@ -240,31 +353,40 @@ export function PostdromeSelector() {
         state.updateTimeline,
     );
 
+
   const currentSymptoms =
     postdrome.symptoms ?? [];
 
   const updates =
     postdrome.updates ?? [];
 
+
+  /*
+   * El inicio del postdromo debe
+   * coincidir con el final de la
+   * crisis.
+   */
   const postdromeStart =
     timeline?.postdromeStart ??
     postdrome.startTime ??
-    postdrome.time?.start?.value;
+    postdrome.time?.start
+      ?.value ??
+    crisisEnd;
+
 
   const postdromeEnd =
     timeline?.postdromeEnd ??
     postdrome.endTime ??
-    postdrome.time?.end?.value;
+    postdrome.time?.end
+      ?.value;
+
 
   const isEnded =
-    postdrome.status === 'ended' ||
+    postdrome.status ===
+      'ended' ||
     Boolean(postdromeEnd);
 
-  /*
-   * Al abrir nuevamente la aplicación,
-   * el borrador comienza con el último
-   * estado persistido del postdromo.
-   */
+
   useEffect(() => {
     setDraftSymptoms(
       currentSymptoms,
@@ -279,12 +401,16 @@ export function PostdromeSelector() {
     postdrome.recoveryLevel,
   ]);
 
+
   const selectableSymptoms =
     Array.from(
       new Set<PostdromeSymptom>([
         ...frequentSymptoms,
+
         ...currentSymptoms,
+
         ...draftSymptoms,
+
         ...updates.flatMap(
           update =>
             update.data.symptoms ??
@@ -293,14 +419,16 @@ export function PostdromeSelector() {
       ]),
     );
 
+
   const visibleUpdates =
     [...updates]
       .filter(update => {
         return (
-          update.data.symptoms.length >
-            0 ||
+          update.data.symptoms
+            .length > 0 ||
           Boolean(
-            update.data.recoveryLevel,
+            update.data
+              .recoveryLevel,
           ) ||
           update.data
             .symptomsStillActive ===
@@ -310,105 +438,32 @@ export function PostdromeSelector() {
           )
         );
       })
-      .sort((first, second) => {
-        const firstDate =
-          first.occurredAt.value ??
-          first.createdAt;
+      .sort(
+        (
+          first,
+          second,
+        ) => {
+          const firstDate =
+            first.occurredAt
+              .value ??
+            first.createdAt;
 
-        const secondDate =
-          second.occurredAt.value ??
-          second.createdAt;
+          const secondDate =
+            second.occurredAt
+              .value ??
+            second.createdAt;
 
-        return (
-          new Date(
-            secondDate,
-          ).getTime() -
-          new Date(
-            firstDate,
-          ).getTime()
-        );
-      });
-
-  const startPostdrome = (
-    startTime: string,
-    precision: TimePrecision,
-    recordMode: RecordMode,
-  ) => {
-    const startPhaseTime =
-      buildPhaseTime(
-        startTime,
-        precision,
-        recordMode,
+          return (
+            new Date(
+              firstDate,
+            ).getTime() -
+            new Date(
+              secondDate,
+            ).getTime()
+          );
+        },
       );
 
-    updatePostdrome({
-      ...postdrome,
-
-      present: true,
-
-      status: 'active',
-
-      startTime,
-
-      endTime: undefined,
-
-      symptoms:
-        currentSymptoms,
-
-      time: {
-        ...postdrome.time,
-
-        start: startPhaseTime,
-
-        end: undefined,
-      },
-
-      /*
-       * Iniciar una fase no constituye
-       * una actualización clínica.
-       * Las actualizaciones solo se
-       * crean al pulsar el botón
-       * correspondiente.
-       */
-      updates,
-    });
-
-    updateTimeline({
-      postdromeStart: startTime,
-      postdromeEnd: undefined,
-    });
-
-    setShowStartDate(false);
-
-    setFeedback(
-      'Postdromo iniciado. Podés registrar cambios durante los próximos días.',
-    );
-  };
-
-  const handleStartNow = () => {
-    startPostdrome(
-      new Date().toISOString(),
-      'exact',
-      'realTime',
-    );
-  };
-
-  const handleStartDate = (
-    date: string,
-  ) => {
-    const selectedDate =
-      createDateOnlyReference(date);
-
-    if (!selectedDate) {
-      return;
-    }
-
-    startPostdrome(
-      selectedDate,
-      'dateOnly',
-      'retrospective',
-    );
-  };
 
   const toggleDraftSymptom = (
     symptom: PostdromeSymptom,
@@ -432,163 +487,228 @@ export function PostdromeSelector() {
     );
   };
 
-  const handleRegisterUpdate = () => {
+
+  const handleRegisterUpdate =
+    () => {
+      if (
+        !postdrome.present ||
+        isEnded
+      ) {
+        return;
+      }
+
+      if (
+        !isValidDate(
+          postdromeStart,
+        )
+      ) {
+        setFeedback(
+          'No se encontró la hora de finalización de la crisis.',
+        );
+
+        return;
+      }
+
+      const occurredAtDate =
+        parseLocalDateTime(
+          updateDateTime,
+        );
+
+      if (!occurredAtDate) {
+        setFeedback(
+          'Ingresá una fecha y hora válidas para la actualización.',
+        );
+
+        return;
+      }
+
+      const occurredAt =
+        occurredAtDate
+          .toISOString();
+
+      if (
+        occurredAtDate.getTime() >
+        Date.now()
+      ) {
+        setFeedback(
+          'La actualización no puede registrarse en el futuro.',
+        );
+
+        return;
+      }
+
+      if (
+        occurredAtDate.getTime() <
+        new Date(
+          postdromeStart,
+        ).getTime()
+      ) {
+        setFeedback(
+          'La actualización no puede ser anterior al final de la crisis.',
+        );
+
+        return;
+      }
+
+      const normalizedNotes =
+        draftNotes.trim();
+
+      const hasInformation =
+        draftSymptoms.length >
+          0 ||
+        Boolean(
+          draftRecoveryLevel,
+        ) ||
+        Boolean(
+          normalizedNotes,
+        );
+
+      if (!hasInformation) {
+        setFeedback(
+          'Seleccioná al menos un síntoma, un nivel de recuperación o agregá una nota.',
+        );
+
+        return;
+      }
+
+      const now =
+        new Date().toISOString();
+
+      const recordMode =
+        inferRecordMode(
+          occurredAt,
+        );
+
+      const updateData:
+        PostdromeUpdateData = {
+        symptoms:
+          draftSymptoms,
+
+        symptomsStillActive:
+          true,
+
+        ...(draftRecoveryLevel
+          ? {
+              recoveryLevel:
+                draftRecoveryLevel,
+            }
+          : {}),
+      };
+
+      updatePostdrome({
+        ...postdrome,
+
+        present: true,
+
+        status: 'active',
+
+        startTime:
+          postdromeStart,
+
+        endTime:
+          undefined,
+
+        symptoms:
+          draftSymptoms,
+
+        recoveryLevel:
+          draftRecoveryLevel ||
+          postdrome.recoveryLevel,
+
+        time: {
+          ...postdrome.time,
+
+          start:
+            postdrome.time
+              ?.start ??
+            buildPhaseTime(
+              postdromeStart,
+              'exact',
+              inferRecordMode(
+                postdromeStart,
+              ),
+            ),
+
+          end: undefined,
+        },
+
+        updates: [
+          ...updates,
+          {
+            id: generateId(),
+
+            createdAt: now,
+
+            occurredAt:
+              buildPhaseTime(
+                occurredAt,
+                'exact',
+                recordMode,
+              ),
+
+            data:
+              updateData,
+
+            notes:
+              normalizedNotes ||
+              undefined,
+          },
+        ],
+      });
+
+      setUpdateDateTime(
+        getCurrentLocalDateTimeValue(),
+      );
+
+      setDraftNotes('');
+
+      setFeedback(
+        'Actualización registrada.',
+      );
+    };
+
+
+  const finishPostdrome = (
+    selection:
+      PhaseEndSelection,
+  ) => {
     if (
-      !postdrome.present ||
-      isEnded
+      !isValidDate(
+        postdromeStart,
+      )
     ) {
       return;
     }
 
-    const normalizedNotes =
-      draftNotes.trim();
-
-    const hasInformation =
-      draftSymptoms.length > 0 ||
-      Boolean(
-        draftRecoveryLevel,
-      ) ||
-      Boolean(normalizedNotes);
-
-    if (!hasInformation) {
-      setFeedback(
-        'Seleccioná al menos un síntoma, un nivel de recuperación o agregá una nota.',
-      );
-
-      return;
-    }
-
-    const now =
-      new Date().toISOString();
-
-    const effectiveStart =
-      postdromeStart ?? now;
-
-    const occurredAt =
-      buildPhaseTime(
-        now,
-        'exact',
-        'realTime',
-      );
-
-    const updateData:
-      PostdromeUpdateData = {
-      symptoms:
-        draftSymptoms,
-
-      symptomsStillActive:
-        true,
-
-      ...(draftRecoveryLevel
-        ? {
-            recoveryLevel:
-              draftRecoveryLevel,
-          }
-        : {}),
-    };
-
-    updatePostdrome({
-      ...postdrome,
-
-      present: true,
-
-      status: 'active',
-
-      startTime:
-        postdrome.startTime ??
-        effectiveStart,
-
-      endTime: undefined,
-
-      /*
-       * La fase conserva el estado más
-       * reciente para recuperar el
-       * borrador al volver a abrirla.
-       */
-      symptoms:
-        draftSymptoms,
-
-      recoveryLevel:
-        draftRecoveryLevel ||
-        postdrome.recoveryLevel,
-
-      time: {
-        ...postdrome.time,
-
-        start:
-          postdrome.time?.start ??
-          buildPhaseTime(
-            effectiveStart,
-            'exact',
-            'realTime',
-          ),
-
-        end: undefined,
-      },
-
-      updates: [
-        ...updates,
-        {
-          id: generateId(),
-
-          createdAt: now,
-
-          occurredAt,
-
-          data: updateData,
-
-          notes:
-            normalizedNotes ||
-            undefined,
-        },
-      ],
-    });
-
-    if (!postdromeStart) {
-      updateTimeline({
-        postdromeStart:
-          effectiveStart,
-
-        postdromeEnd:
-          undefined,
-      });
-    }
-
-    setDraftNotes('');
-
-    setFeedback(
-      'Actualización registrada.',
-    );
-  };
-
-  const finishPostdrome = (
-    selection: PhaseEndSelection,
-  ) => {
     const {
       endTime,
       precision,
       recordMode,
     } = selection;
 
-    if (!isValidDate(endTime)) {
+    if (
+      !isValidDate(endTime)
+    ) {
       return;
     }
 
     const endTimestamp =
-      new Date(endTime).getTime();
+      new Date(
+        endTime,
+      ).getTime();
 
     if (
-      endTimestamp > Date.now()
+      endTimestamp >
+      Date.now()
     ) {
       return;
     }
 
     if (
-      isValidDate(postdromeStart) &&
       endTimestamp <
-        new Date(
-          postdromeStart,
-        ).getTime()
+      new Date(
+        postdromeStart,
+      ).getTime()
     ) {
       return;
     }
@@ -613,17 +733,14 @@ export function PostdromeSelector() {
 
       status: 'ended',
 
+      startTime:
+        postdromeStart,
+
       endTime,
 
       recoveryLevel:
         'fullyRecovered',
 
-      /*
-       * El cierre también conserva la
-       * última fotografía seleccionada,
-       * aunque no se haya registrado
-       * previamente como actualización.
-       */
       symptoms:
         draftSymptoms,
 
@@ -631,18 +748,18 @@ export function PostdromeSelector() {
         ...postdrome.time,
 
         start:
-          postdrome.time?.start ??
-          (
-            postdromeStart
-              ? buildPhaseTime(
-                  postdromeStart,
-                  'exact',
-                  'realTime',
-                )
-              : undefined
+          postdrome.time
+            ?.start ??
+          buildPhaseTime(
+            postdromeStart,
+            'exact',
+            inferRecordMode(
+              postdromeStart,
+            ),
           ),
 
-        end: occurredAt,
+        end:
+          occurredAt,
       },
 
       updates: [
@@ -673,7 +790,10 @@ export function PostdromeSelector() {
     });
 
     updateTimeline({
-      postdromeEnd: endTime,
+      postdromeStart,
+
+      postdromeEnd:
+        endTime,
     });
 
     setDraftRecoveryLevel(
@@ -682,16 +802,40 @@ export function PostdromeSelector() {
 
     setDraftNotes('');
 
-    setShowEndSelector(false);
+    setShowEndSelector(
+      false,
+    );
 
     setFeedback(
       'Recuperación completa registrada.',
     );
   };
 
+
   const handleContinue = () => {
     setShowEndSelector(false);
   };
+
+
+  if (!postdrome.present) {
+    return (
+      <section>
+        <h3>
+          Después de la crisis
+        </h3>
+
+        <p
+          className={
+            styles.helperText
+          }
+        >
+          Registraste que esta crisis
+          no tuvo postdromo.
+        </p>
+      </section>
+    );
+  }
+
 
   return (
     <section>
@@ -700,343 +844,329 @@ export function PostdromeSelector() {
       </h3>
 
       <p>
-        El postdromo puede cambiar
+        El postdromo comenzó cuando
+        terminó la crisis. Puede cambiar
         durante varias horas o días.
-        Registrá una actualización cada
-        vez que notes una evolución.
       </p>
 
-      {!postdrome.present && (
+      <p
+        className={
+          styles.helperText
+        }
+      >
+        Inicio del postdromo:{' '}
+        {formatDateTime(
+          postdromeStart,
+          postdrome.time?.start
+            ?.precision,
+        )}
+      </p>
+
+
+      {!isEnded && (
         <>
+          <h4>
+            ¿Cómo te sentís en esta
+            actualización?
+          </h4>
+
           <p
             className={
               styles.helperText
             }
           >
-            Si no tuviste postdromo,
-            podés finalizar el episodio
-            sin iniciar esta fase.
+            Podés registrar distintos
+            estados a lo largo del
+            postdromo.
           </p>
 
-          <div>
-            <button
-              type="button"
-              onClick={handleStartNow}
-            >
-              Estoy en postdromo ahora
-            </button>
 
-            <button
-              type="button"
-              onClick={() =>
-                setShowStartDate(
-                  current =>
-                    !current,
-                )
-              }
-            >
-              Empezó en otra fecha
-            </button>
+          <div
+            className={
+              styles.symptomGrid
+            }
+          >
+            {selectableSymptoms.map(
+              symptom => (
+                <label
+                  key={symptom}
+                  className={
+                    styles.symptomOption
+                  }
+                >
+                  <input
+                    type="checkbox"
+                    checked={draftSymptoms.includes(
+                      symptom,
+                    )}
+                    onChange={() =>
+                      toggleDraftSymptom(
+                        symptom,
+                      )
+                    }
+                  />
+
+                  <span>
+                    {getSymptomLabel(
+                      symptom,
+                    )}
+                  </span>
+                </label>
+              ),
+            )}
           </div>
 
-          {showStartDate && (
-            <PhaseDateSelector
-              title="¿Cuándo empezó el postdromo?"
+
+          <label>
+            ¿Cuándo ocurrió esta
+            actualización?
+
+            <input
+              type="datetime-local"
               value={
-                postdromeStart
+                updateDateTime
               }
-              onChange={
-                handleStartDate
+              min={
+                toLocalDateTimeValue(
+                  postdromeStart,
+                )
               }
+              max={
+                getCurrentLocalDateTimeValue()
+              }
+              onChange={event => {
+                setUpdateDateTime(
+                  event.target.value,
+                );
+
+                setFeedback('');
+              }}
             />
-          )}
+          </label>
+
+
+          <label>
+            Nivel de recuperación
+
+            <select
+              value={
+                draftRecoveryLevel
+              }
+              onChange={event => {
+                setDraftRecoveryLevel(
+                  event.target.value as
+                    | RecoveryLevel
+                    | '',
+                );
+
+                setFeedback('');
+              }}
+            >
+              <option value="">
+                Sin indicar
+              </option>
+
+              <option value="minimal">
+                Recuperación mínima
+              </option>
+
+              <option value="partial">
+                Recuperación parcial
+              </option>
+
+              <option value="mostlyRecovered">
+                Casi completamente
+                recuperada
+              </option>
+            </select>
+          </label>
+
+
+          <label>
+            Nota de esta actualización
+
+            <textarea
+              value={
+                draftNotes
+              }
+              onChange={event => {
+                setDraftNotes(
+                  event.target.value,
+                );
+
+                setFeedback('');
+              }}
+              placeholder="Ejemplo: dormí dos horas y la niebla mental disminuyó"
+              rows={3}
+            />
+          </label>
+
+
+          <button
+            type="button"
+            onClick={
+              handleRegisterUpdate
+            }
+          >
+            Registrar actualización
+          </button>
         </>
       )}
 
-      {postdrome.present && (
-        <>
-          <p
-            className={
-              styles.helperText
-            }
-          >
-            Inicio del postdromo:{' '}
-            {formatDateTime(
-              postdromeStart,
-              postdrome.time?.start
-                ?.precision,
-            )}
-          </p>
 
-          {!isEnded && (
-            <>
-              <h4>
-                ¿Cómo te sentís en este
-                momento?
-              </h4>
+      {feedback && (
+        <p
+          className={
+            styles.helperText
+          }
+          aria-live="polite"
+        >
+          {feedback}
+        </p>
+      )}
 
-              <p
-                className={
-                  styles.helperText
-                }
-              >
-                Podés cambiar la
-                selección libremente.
-                No se guardará hasta que
-                registres la
-                actualización.
-              </p>
 
-              <div
-                className={
-                  styles.symptomGrid
-                }
-              >
-                {selectableSymptoms.map(
-                  symptom => (
-                    <label
-                      key={symptom}
-                      className={
-                        styles.symptomOption
-                      }
-                    >
-                      <input
-                        type="checkbox"
-                        checked={draftSymptoms.includes(
-                          symptom,
+      {visibleUpdates.length >
+        0 && (
+        <section>
+          <h4>
+            Evolución del postdromo
+          </h4>
+
+          <ul>
+            {visibleUpdates.map(
+              update => {
+                const updateTime =
+                  update.occurredAt
+                    .value ??
+                  update.createdAt;
+
+                const symptoms =
+                  update.data
+                    .symptoms;
+
+                const recoveryLevel =
+                  update.data
+                    .recoveryLevel;
+
+                return (
+                  <li
+                    key={
+                      update.id
+                    }
+                  >
+                    <p>
+                      <b>
+                        {formatDateTime(
+                          updateTime,
+                          update
+                            .occurredAt
+                            .precision,
                         )}
-                        onChange={() =>
-                          toggleDraftSymptom(
-                            symptom,
-                          )
-                        }
-                      />
+                      </b>
+                    </p>
 
-                      <span>
+                    <p>
+                      <b>
+                        Síntomas:
+                      </b>{' '}
+                      {symptoms.length >
+                      0
+                        ? symptoms
+                            .map(
+                              getSymptomLabel,
+                            )
+                            .join(', ')
+                        : 'Sin síntomas seleccionados'}
+                    </p>
+
+                    {recoveryLevel && (
+                      <p>
+                        <b>
+                          Recuperación:
+                        </b>{' '}
                         {
-                          postdromeSymptomLabels[
-                            symptom
+                          recoveryLevelLabels[
+                            recoveryLevel
                           ]
                         }
-                      </span>
-                    </label>
-                  ),
-                )}
-              </div>
+                      </p>
+                    )}
 
-              <label>
-                Nivel de recuperación
+                    {update.notes && (
+                      <p>
+                        <b>
+                          Nota:
+                        </b>{' '}
+                        {
+                          update.notes
+                        }
+                      </p>
+                    )}
 
-                <select
-                  value={
-                    draftRecoveryLevel
-                  }
-                  onChange={event =>
-                    setDraftRecoveryLevel(
-                      event.target
-                        .value as
-                        | RecoveryLevel
-                        | '',
-                    )
-                  }
-                >
-                  <option value="">
-                    Sin indicar
-                  </option>
-
-                  <option value="minimal">
-                    Recuperación mínima
-                  </option>
-
-                  <option value="partial">
-                    Recuperación parcial
-                  </option>
-
-                  <option value="mostlyRecovered">
-                    Casi completamente
-                    recuperada
-                  </option>
-                </select>
-              </label>
-
-              <label>
-                Nota de esta
-                actualización
-
-                <textarea
-                  value={draftNotes}
-                  onChange={event =>
-                    setDraftNotes(
-                      event.target
-                        .value,
-                    )
-                  }
-                  placeholder="Ejemplo: dormí dos horas y la niebla mental disminuyó"
-                  rows={3}
-                />
-              </label>
-
-              <button
-                type="button"
-                onClick={
-                  handleRegisterUpdate
-                }
-              >
-                Registrar actualización
-              </button>
-            </>
-          )}
-
-          {feedback && (
-            <p
-              className={
-                styles.helperText
-              }
-              aria-live="polite"
-            >
-              {feedback}
-            </p>
-          )}
-
-          {visibleUpdates.length >
-            0 && (
-            <section>
-              <h4>
-                Evolución del postdromo
-              </h4>
-
-              <ul>
-                {visibleUpdates.map(
-                  update => {
-                    const updateTime =
-                      update.occurredAt
-                        .value ??
-                      update.createdAt;
-
-                    const symptoms =
-                      update.data
-                        .symptoms;
-
-                    const recoveryLevel =
-                      update.data
-                        .recoveryLevel;
-
-                    return (
-                      <li
-                        key={update.id}
-                      >
-                        <p>
-                          <b>
-                            {formatDateTime(
-                              updateTime,
-                              update
-                                .occurredAt
-                                .precision,
-                            )}
-                          </b>
-                        </p>
-
-                        <p>
-                          <b>
-                            Síntomas:
-                          </b>{' '}
-                          {symptoms.length >
-                          0
-                            ? symptoms
-                                .map(
-                                  symptom =>
-                                    postdromeSymptomLabels[
-                                      symptom
-                                    ],
-                                )
-                                .join(
-                                  ', ',
-                                )
-                            : 'Sin síntomas seleccionados'}
-                        </p>
-
-                        {recoveryLevel && (
-                          <p>
-                            <b>
-                              Recuperación:
-                            </b>{' '}
-                            {
-                              recoveryLevelLabels[
-                                recoveryLevel
-                              ]
-                            }
-                          </p>
-                        )}
-
-                        {update.notes && (
-                          <p>
-                            <b>Nota:</b>{' '}
-                            {update.notes}
-                          </p>
-                        )}
-
-                        {update.data
-                          .symptomsStillActive ===
-                          false && (
-                          <p>
-                            Recuperación
-                            completa.
-                          </p>
-                        )}
-                      </li>
-                    );
-                  },
-                )}
-              </ul>
-            </section>
-          )}
-
-          {!isEnded &&
-            !showEndSelector && (
-              <button
-                type="button"
-                onClick={() =>
-                  setShowEndSelector(
-                    true,
-                  )
-                }
-              >
-                Indicar recuperación
-                completa
-              </button>
+                    {update.data
+                      .symptomsStillActive ===
+                      false && (
+                      <p>
+                        Recuperación
+                        completa.
+                      </p>
+                    )}
+                  </li>
+                );
+              },
             )}
+          </ul>
+        </section>
+      )}
 
-          {!isEnded &&
-            showEndSelector && (
-              <PhaseEndSelector
-                title="¿Cuándo terminó el postdromo?"
-                startTime={
-                  postdromeStart
-                }
-                onConfirm={
-                  finishPostdrome
-                }
-                onContinue={
-                  handleContinue
-                }
-              />
-            )}
 
-          {isEnded && (
-            <p
-              className={
-                styles.helperText
-              }
-            >
-              Recuperación completa:{' '}
-              {formatDateTime(
-                postdromeEnd,
-                postdrome.time?.end
-                  ?.precision,
-              )}
-            </p>
+      {!isEnded &&
+        !showEndSelector && (
+          <button
+            type="button"
+            onClick={() =>
+              setShowEndSelector(
+                true,
+              )
+            }
+          >
+            Indicar recuperación
+            completa
+          </button>
+        )}
+
+
+      {!isEnded &&
+        showEndSelector && (
+          <PhaseEndSelector
+            title="¿Cuándo terminó el postdromo?"
+            startTime={
+              postdromeStart
+            }
+            onConfirm={
+              finishPostdrome
+            }
+            onContinue={
+              handleContinue
+            }
+          />
+        )}
+
+
+      {isEnded && (
+        <p
+          className={
+            styles.helperText
+          }
+        >
+          Recuperación completa:{' '}
+          {formatDateTime(
+            postdromeEnd,
+            postdrome.time?.end
+              ?.precision,
           )}
-        </>
+        </p>
       )}
     </section>
   );

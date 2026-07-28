@@ -1,7 +1,9 @@
 import styles from '../history.module.css';
 
 import type {
+  AnatomicalPainMap,
   MigraineEpisode,
+  PainLocationRecord,
   PremonitorySymptom,
   RecoveryLevel,
   TimePrecision,
@@ -18,6 +20,12 @@ import {
 } from '../../migraine/utils/episodeCalculations';
 
 import {
+  convertLegacyLocationRecord,
+  formatPainLocationPoint,
+  formatPainRadiationPath,
+} from '../../migraine/data/painLocationCatalog';
+
+import {
   auraTypeLabels,
   crisisSymptomLabels,
   languageAuraLabels,
@@ -29,9 +37,11 @@ import {
   visualAuraLabels,
 } from '../utils/migraineLabels';
 
+
 interface Props {
   episode: MigraineEpisode;
 }
+
 
 const recoveryLevelLabels: Record<
   RecoveryLevel,
@@ -44,6 +54,7 @@ const recoveryLevelLabels: Record<
   fullyRecovered:
     'Recuperación completa',
 };
+
 
 const premonitorySymptomLabels:
   Partial<
@@ -86,6 +97,7 @@ const premonitorySymptomLabels:
     'Orinar con más frecuencia',
 };
 
+
 function parseValidDate(
   value?: string,
 ): Date | undefined {
@@ -102,16 +114,21 @@ function parseValidDate(
   return date;
 }
 
+
 function isValidDate(
   value?: string,
 ): value is string {
-  return Boolean(parseValidDate(value));
+  return Boolean(
+    parseValidDate(value),
+  );
 }
+
 
 function formatCreatedDate(
   value?: string,
 ): string {
-  const date = parseValidDate(value);
+  const date =
+    parseValidDate(value);
 
   if (!date) {
     return 'Fecha sin registrar';
@@ -127,11 +144,13 @@ function formatCreatedDate(
   );
 }
 
+
 function formatDateTime(
   value?: string,
   precision?: TimePrecision,
 ): string {
-  const date = parseValidDate(value);
+  const date =
+    parseValidDate(value);
 
   if (!date) {
     return 'Sin registrar';
@@ -163,10 +182,12 @@ function formatDateTime(
   );
 }
 
+
 function formatTime(
   value?: string,
 ): string {
-  const date = parseValidDate(value);
+  const date =
+    parseValidDate(value);
 
   if (!date) {
     return 'Hora sin registrar';
@@ -181,14 +202,18 @@ function formatTime(
   );
 }
 
+
 function getTimestamp(
   value?: string,
 ): number {
   return (
-    parseValidDate(value)?.getTime() ??
+    parseValidDate(
+      value,
+    )?.getTime() ??
     Number.MAX_SAFE_INTEGER
   );
 }
+
 
 function getMedicationData(
   data: unknown,
@@ -207,10 +232,11 @@ function getMedicationData(
     };
   }
 
-  const record = data as Record<
-    string,
-    unknown
-  >;
+  const record =
+    data as Record<
+      string,
+      unknown
+    >;
 
   return {
     medication:
@@ -220,11 +246,13 @@ function getMedicationData(
         : 'Medicamento no especificado',
 
     dose:
-      typeof record.dose === 'string'
+      typeof record.dose ===
+      'string'
         ? record.dose
         : '',
   };
 }
+
 
 function getLabels<
   Value extends string,
@@ -237,9 +265,11 @@ function getLabels<
   >,
 ): string[] {
   return (values ?? []).map(
-    value => labels[value] ?? value,
+    value =>
+      labels[value] ?? value,
   );
 }
+
 
 function getPremonitoryLabels(
   symptoms:
@@ -253,6 +283,7 @@ function getPremonitoryLabels(
       ] ?? symptom,
   );
 }
+
 
 function getAuraDetails(
   episode: MigraineEpisode,
@@ -296,14 +327,207 @@ function getAuraDetails(
   ];
 }
 
+
 function getPostdromeDetails(
   episode: MigraineEpisode,
 ): string[] {
   return getLabels(
-    episode.postdrome?.symptoms,
+    episode.postdrome
+      ?.symptoms,
     postdromeSymptomLabels,
   );
 }
+
+
+// ------------------------------------------
+// PAIN LOCATION
+// ------------------------------------------
+
+function hasPainLocationData(
+  location?: AnatomicalPainMap,
+): location is AnatomicalPainMap {
+  if (!location) {
+    return false;
+  }
+
+  return Boolean(
+    location.primary ||
+      location.origin ||
+      location.additional
+        .length > 0 ||
+      (
+        location.radiation ??
+        []
+      ).length > 0 ||
+      location.changesSide ||
+      location.notes?.trim(),
+  );
+}
+
+
+function getLocationFromRecord(
+  record?: PainLocationRecord,
+): AnatomicalPainMap | undefined {
+  if (!record) {
+    return undefined;
+  }
+
+  const location =
+    convertLegacyLocationRecord(
+      record,
+    );
+
+  return hasPainLocationData(
+    location,
+  )
+    ? location
+    : undefined;
+}
+
+
+function getCurrentPainLocation(
+  episode: MigraineEpisode,
+): AnatomicalPainMap | undefined {
+  const crisis =
+    episode.crisis;
+
+  if (
+    hasPainLocationData(
+      crisis.anatomicalLocation,
+    )
+  ) {
+    return crisis.anatomicalLocation;
+  }
+
+  const recordLocation =
+    getLocationFromRecord(
+      crisis.locationDetails,
+    );
+
+  if (recordLocation) {
+    return recordLocation;
+  }
+
+  const legacyLocations =
+    crisis.location ?? [];
+
+  if (
+    legacyLocations.length === 0
+  ) {
+    return undefined;
+  }
+
+  const legacyRecord:
+    PainLocationRecord = {
+    primary:
+      legacyLocations[0],
+
+    additional:
+      legacyLocations.slice(1),
+  };
+
+  return getLocationFromRecord(
+    legacyRecord,
+  );
+}
+
+
+function removeRepeatedLabels(
+  values: string[],
+): string[] {
+  return Array.from(
+    new Set(values),
+  );
+}
+
+
+function getPainLocationLines(
+  location?: AnatomicalPainMap,
+): string[] {
+  if (
+    !hasPainLocationData(
+      location,
+    )
+  ) {
+    return [];
+  }
+
+  const lines: string[] = [];
+
+  if (location.primary) {
+    lines.push(
+      `Zona principal: ${formatPainLocationPoint(
+        location.primary,
+      )}`,
+    );
+  }
+
+  if (location.origin) {
+    lines.push(
+      `Punto de inicio: ${formatPainLocationPoint(
+        location.origin,
+      )}`,
+    );
+  }
+
+  const additionalLocations =
+    removeRepeatedLabels(
+      location.additional.map(
+        point =>
+          formatPainLocationPoint(
+            point,
+          ),
+      ),
+    );
+
+  if (
+    additionalLocations.length >
+    0
+  ) {
+    lines.push(
+      `Otras zonas: ${additionalLocations.join(
+        ', ',
+      )}`,
+    );
+  }
+
+  const radiationPaths =
+    removeRepeatedLabels(
+      (
+        location.radiation ??
+        []
+      ).map(path =>
+        formatPainRadiationPath(
+          path,
+        ),
+      ),
+    );
+
+  if (
+    radiationPaths.length > 0
+  ) {
+    lines.push(
+      `Extensión del dolor: ${radiationPaths.join(
+        '; ',
+      )}`,
+    );
+  }
+
+  if (location.changesSide) {
+    lines.push(
+      'El dolor cambió de lado.',
+    );
+  }
+
+  if (location.notes?.trim()) {
+    lines.push(
+      `Nota: ${location.notes.trim()}`,
+    );
+  }
+
+  return lines;
+}
+
 
 export function EpisodeCard({
   episode,
@@ -312,16 +536,22 @@ export function EpisodeCard({
     episode.premonitory;
 
   const aura = episode.aura;
-  const crisis = episode.crisis;
+
+  const crisis =
+    episode.crisis;
+
   const postdrome =
     episode.postdrome;
 
-  const timeline = episode.timeline;
+  const timeline =
+    episode.timeline;
+
 
   const createdDate =
     formatCreatedDate(
       episode.createdAt,
     );
+
 
   const crisisStart =
     timeline?.crisisStart ??
@@ -333,10 +563,12 @@ export function EpisodeCard({
     crisis.endTime ??
     crisis.time?.end?.value;
 
+
   const hasCrisis =
     crisis.active === true ||
     isValidDate(crisisStart) ||
     isValidDate(crisisEnd);
+
 
   const auraStart =
     timeline?.auraStart ??
@@ -346,8 +578,10 @@ export function EpisodeCard({
     timeline?.auraEnd ??
     aura.time?.end?.value;
 
+
   const auraDetails =
     getAuraDetails(episode);
+
 
   const hasAura =
     aura.present === true ||
@@ -355,18 +589,24 @@ export function EpisodeCard({
     isValidDate(auraStart) ||
     isValidDate(auraEnd);
 
+
   const premonitoryStart =
     timeline?.premonitoryStart ??
-    premonitory.time?.start?.value;
+    premonitory.time?.start
+      ?.value;
 
   const premonitoryEnd =
     timeline?.premonitoryEnd ??
     premonitory.time?.end?.value;
 
+
   const premonitoryEndUnknown =
     premonitory.time?.end
       ?.precision === 'unknown' &&
-    !isValidDate(premonitoryEnd);
+    !isValidDate(
+      premonitoryEnd,
+    );
+
 
   const isUncertainRecord =
     episode.status ===
@@ -374,47 +614,66 @@ export function EpisodeCard({
     premonitory.status ===
       'uncertain';
 
+
   const endedWithoutCrisis =
     premonitory
       .endedWithoutCrisis === true ||
     episode.completionReason ===
       'phaseEndedWithoutCrisis';
 
-  const recordTitle = hasCrisis
-    ? 'Migraña'
-    : endedWithoutCrisis
-      ? 'Señales previas sin crisis'
-      : isUncertainRecord
-        ? 'Registro de señales — desenlace incierto'
-        : hasAura
-          ? 'Aura sin crisis confirmada'
-          : 'Registro de señales previas';
 
-  const headerStatus = hasCrisis
-    ? `${getMaxPainIntensity(
-        episode,
-      )}/10`
-    : isUncertainRecord
-      ? 'Incierto'
-      : 'Sin crisis';
+  const recordTitle =
+    hasCrisis
+      ? 'Migraña'
+      : endedWithoutCrisis
+        ? 'Señales previas sin crisis'
+        : isUncertainRecord
+          ? 'Registro de señales — desenlace incierto'
+          : hasAura
+            ? 'Aura sin crisis confirmada'
+            : 'Registro de señales previas';
+
+
+  const headerStatus =
+    hasCrisis
+      ? `${getMaxPainIntensity(
+          episode,
+        )}/10`
+      : isUncertainRecord
+        ? 'Incierto'
+        : 'Sin crisis';
+
 
   const maxIntensity =
-    getMaxPainIntensity(episode);
+    getMaxPainIntensity(
+      episode,
+    );
 
   const premonitoryDuration =
-    getPremonitoryDuration(episode);
+    getPremonitoryDuration(
+      episode,
+    );
 
   const auraDuration =
-    getAuraDuration(episode);
+    getAuraDuration(
+      episode,
+    );
 
   const crisisDuration =
-    getCrisisDuration(episode);
+    getCrisisDuration(
+      episode,
+    );
 
   const postdromeDuration =
-    getPostdromeDuration(episode);
+    getPostdromeDuration(
+      episode,
+    );
 
   const episodeDuration =
-    getEpisodeDuration(episode);
+    getEpisodeDuration(
+      episode,
+    );
+
 
   const triggers =
     episode.triggers ?? [];
@@ -423,14 +682,65 @@ export function EpisodeCard({
     crisis.symptoms ?? [];
 
   const intensityHistory =
-    crisis.intensityHistory ?? [];
+    crisis.intensityHistory ??
+    [];
 
   const crisisEvents =
     crisis.events ?? [];
 
+
+  const currentPainLocation =
+    getCurrentPainLocation(
+      episode,
+    );
+
+  const currentPainLocationLines =
+    getPainLocationLines(
+      currentPainLocation,
+    );
+
+
+  const locationHistory =
+    [
+      ...(crisis.locationHistory ??
+        []),
+    ]
+      .filter(snapshot =>
+        Boolean(
+          getLocationFromRecord(
+            snapshot.location,
+          ),
+        ),
+      )
+      .sort(
+        (
+          firstSnapshot,
+          secondSnapshot,
+        ) => {
+          const firstDate =
+            firstSnapshot
+              .occurredAt?.value;
+
+          const secondDate =
+            secondSnapshot
+              .occurredAt?.value;
+
+          return (
+            getTimestamp(
+              firstDate,
+            ) -
+            getTimestamp(
+              secondDate,
+            )
+          );
+        },
+      );
+
+
   const premonitoryUpdates =
     [
-      ...(premonitory.updates ?? []),
+      ...(premonitory.updates ??
+        []),
     ].sort(
       (
         firstUpdate,
@@ -447,17 +757,26 @@ export function EpisodeCard({
           secondUpdate.createdAt;
 
         return (
-          getTimestamp(firstDate) -
-          getTimestamp(secondDate)
+          getTimestamp(
+            firstDate,
+          ) -
+          getTimestamp(
+            secondDate,
+          )
         );
       },
     );
 
+
   const postdromeUpdates =
-    [...(postdrome.updates ?? [])]
+    [
+      ...(postdrome.updates ??
+        []),
+    ]
       .filter(update => {
         const symptoms =
-          update.data?.symptoms ?? [];
+          update.data?.symptoms ??
+          [];
 
         return (
           symptoms.length > 0 ||
@@ -489,11 +808,16 @@ export function EpisodeCard({
             secondUpdate.createdAt;
 
           return (
-            getTimestamp(firstDate) -
-            getTimestamp(secondDate)
+            getTimestamp(
+              firstDate,
+            ) -
+            getTimestamp(
+              secondDate,
+            )
           );
         },
       );
+
 
   const formattedTriggers =
     triggers.length > 0
@@ -503,6 +827,7 @@ export function EpisodeCard({
         ).join(', ')
       : 'Sin triggers registrados';
 
+
   const formattedCrisisSymptoms =
     crisisSymptoms.length > 0
       ? getLabels(
@@ -511,36 +836,49 @@ export function EpisodeCard({
         ).join(', ')
       : 'Sin síntomas registrados';
 
+
   const postdromeDetails =
-    getPostdromeDetails(episode);
+    getPostdromeDetails(
+      episode,
+    );
+
 
   const postdromeStart =
     timeline?.postdromeStart ??
     postdrome.startTime ??
-    postdrome.time?.start?.value;
+    postdrome.time?.start
+      ?.value;
 
   const postdromeEnd =
     timeline?.postdromeEnd ??
     postdrome.endTime ??
     postdrome.time?.end?.value;
 
+
   const hasPostdrome =
     postdrome.present === true ||
-    postdromeDetails.length > 0 ||
-    postdromeUpdates.length > 0 ||
+    postdromeDetails.length >
+      0 ||
+    postdromeUpdates.length >
+      0 ||
     Boolean(
       postdromeStart ||
         postdromeEnd,
     );
 
+
   const medicationEvents =
     crisisEvents
       .filter(
         event =>
-          event.type === 'medication',
+          event.type ===
+          'medication',
       )
       .sort(
-        (firstEvent, secondEvent) =>
+        (
+          firstEvent,
+          secondEvent,
+        ) =>
           getTimestamp(
             firstEvent.timestamp,
           ) -
@@ -549,8 +887,11 @@ export function EpisodeCard({
           ),
       );
 
+
   const getPremonitoryResult =
-    (): string | undefined => {
+    ():
+      | string
+      | undefined => {
       if (
         premonitory
           .endedWithoutCrisis
@@ -559,7 +900,8 @@ export function EpisodeCard({
       }
 
       if (
-        premonitory.evolvedToCrisis
+        premonitory
+          .evolvedToCrisis
       ) {
         if (
           premonitory.status ===
@@ -573,7 +915,8 @@ export function EpisodeCard({
       }
 
       if (
-        premonitory.evolvedToAura
+        premonitory
+          .evolvedToAura
       ) {
         if (
           premonitory.status ===
@@ -586,7 +929,9 @@ export function EpisodeCard({
         return 'Las señales evolucionaron a aura.';
       }
 
-      if (isUncertainRecord) {
+      if (
+        isUncertainRecord
+      ) {
         return 'No se pudo confirmar si las señales estuvieron relacionadas con una migraña.';
       }
 
@@ -600,20 +945,30 @@ export function EpisodeCard({
       return undefined;
     };
 
+
   const premonitoryResult =
     getPremonitoryResult();
 
+
   return (
     <article
-      className={styles.episodeCard}
+      className={
+        styles.episodeCard
+      }
     >
       <header
-        className={styles.episodeHeader}
+        className={
+          styles.episodeHeader
+        }
       >
         <div>
-          <h3>{recordTitle}</h3>
+          <h3>
+            {recordTitle}
+          </h3>
 
-          <span>{createdDate}</span>
+          <span>
+            {createdDate}
+          </span>
         </div>
 
         <strong>
@@ -621,8 +976,11 @@ export function EpisodeCard({
         </strong>
       </header>
 
+
       <div
-        className={styles.episodeInfo}
+        className={
+          styles.episodeInfo
+        }
       >
         <p>
           <b>
@@ -635,6 +993,7 @@ export function EpisodeCard({
               crisisStart,
           )}
         </p>
+
 
         {premonitory.present && (
           <section>
@@ -663,7 +1022,8 @@ export function EpisodeCard({
                 {formatDateTime(
                   premonitoryEnd,
                   premonitory.time
-                    ?.end?.precision,
+                    ?.end
+                    ?.precision,
                 )}
               </p>
             )}
@@ -706,9 +1066,11 @@ export function EpisodeCard({
                       index,
                     ) => {
                       const updateTime =
-                        update.occurredAt
+                        update
+                          .occurredAt
                           ?.value ??
-                        update.createdAt;
+                        update
+                          .createdAt;
 
                       const symptoms =
                         getPremonitoryLabels(
@@ -770,7 +1132,9 @@ export function EpisodeCard({
                               <b>
                                 Nota:
                               </b>{' '}
-                              {update.notes}
+                              {
+                                update.notes
+                              }
                             </p>
                           )}
                         </li>
@@ -783,12 +1147,17 @@ export function EpisodeCard({
 
             {premonitoryResult && (
               <p>
-                <b>Resultado:</b>{' '}
-                {premonitoryResult}
+                <b>
+                  Resultado:
+                </b>{' '}
+                {
+                  premonitoryResult
+                }
               </p>
             )}
           </section>
         )}
+
 
         {hasAura && (
           <section>
@@ -825,7 +1194,10 @@ export function EpisodeCard({
               0 && (
               <ul>
                 {auraDetails.map(
-                  (detail, index) => (
+                  (
+                    detail,
+                    index,
+                  ) => (
                     <li
                       key={`${detail}-${index}`}
                     >
@@ -837,6 +1209,7 @@ export function EpisodeCard({
             )}
           </section>
         )}
+
 
         {hasCrisis && (
           <section>
@@ -869,6 +1242,134 @@ export function EpisodeCard({
               {maxIntensity}/10
             </p>
 
+
+            {currentPainLocationLines.length >
+              0 && (
+              <div>
+                <p>
+                  <b>
+                    Localización actual
+                    o final:
+                  </b>
+                </p>
+
+                <ul>
+                  {currentPainLocationLines.map(
+                    (
+                      detail,
+                      index,
+                    ) => (
+                      <li
+                        key={`${detail}-${index}`}
+                      >
+                        {detail}
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            )}
+
+
+            {locationHistory.length >
+              0 && (
+              <div>
+                <p>
+                  <b>
+                    Evolución de la
+                    localización:
+                  </b>
+                </p>
+
+                <ul>
+                  {locationHistory.map(
+                    (
+                      snapshot,
+                      index,
+                    ) => {
+                      const location =
+                        getLocationFromRecord(
+                          snapshot.location,
+                        );
+
+                      const details =
+                        getPainLocationLines(
+                          location,
+                        );
+
+                      const snapshotTime =
+                        snapshot
+                          .occurredAt
+                          ?.value;
+
+                      return (
+                        <li
+                          key={
+                            snapshot.id ??
+                            `${
+                              snapshotTime ??
+                              'sin-fecha'
+                            }-${index}`
+                          }
+                        >
+                          <p>
+                            <b>
+                              {formatDateTime(
+                                snapshotTime,
+                                snapshot
+                                  .occurredAt
+                                  ?.precision,
+                              )}
+                            </b>
+                          </p>
+
+                          {details.length >
+                          0 ? (
+                            <ul>
+                              {details.map(
+                                (
+                                  detail,
+                                  detailIndex,
+                                ) => (
+                                  <li
+                                    key={`${detail}-${detailIndex}`}
+                                  >
+                                    {
+                                      detail
+                                    }
+                                  </li>
+                                ),
+                              )}
+                            </ul>
+                          ) : (
+                            <p>
+                              Sin una
+                              localización
+                              determinada.
+                            </p>
+                          )}
+
+                          {snapshot
+                            .notes && (
+                            <p>
+                              <b>
+                                Nota:
+                              </b>{' '}
+                              {
+                                snapshot
+                                  .notes
+                              }
+                            </p>
+                          )}
+                        </li>
+                      );
+                    },
+                  )}
+                </ul>
+              </div>
+            )}
+
+
             {intensityHistory.length >
               0 && (
               <div>
@@ -880,30 +1381,60 @@ export function EpisodeCard({
 
                 <ul>
                   {intensityHistory.map(
-                    (record, index) => (
-                      <li
-                        key={
-                          record.id ??
-                          `${
-                            record.time ??
-                            'sin-hora'
-                          }-${index}`
-                        }
-                      >
-                        {formatTime(
-                          record.time,
-                        )}
-                        {' → '}
-                        {
-                          record.intensity
-                        }
-                        /10
-                      </li>
-                    ),
+                    (
+                      record,
+                      index,
+                    ) => {
+                      const recordLocation =
+                        getLocationFromRecord(
+                          record.location,
+                        );
+
+                      const locationLines =
+                        getPainLocationLines(
+                          recordLocation,
+                        );
+
+                      return (
+                        <li
+                          key={
+                            record.id ??
+                            `${
+                              record.time ??
+                              'sin-hora'
+                            }-${index}`
+                          }
+                        >
+                          <p>
+                            {formatTime(
+                              record.time,
+                            )}
+                            {' → '}
+                            {
+                              record.intensity
+                            }
+                            /10
+                          </p>
+
+                          {locationLines.length >
+                            0 && (
+                            <p>
+                              <b>
+                                Zona:
+                              </b>{' '}
+                              {locationLines.join(
+                                ' · ',
+                              )}
+                            </p>
+                          )}
+                        </li>
+                      );
+                    },
                   )}
                 </ul>
               </div>
             )}
+
 
             {medicationEvents.length >
               0 && (
@@ -954,11 +1485,14 @@ export function EpisodeCard({
               </div>
             )}
 
+
             <p>
               <b>
                 Síntomas de crisis:
               </b>{' '}
-              {formattedCrisisSymptoms}
+              {
+                formattedCrisisSymptoms
+              }
             </p>
 
             <p>
@@ -967,6 +1501,7 @@ export function EpisodeCard({
             </p>
           </section>
         )}
+
 
         {!hasCrisis &&
           triggers.length > 0 && (
@@ -978,6 +1513,7 @@ export function EpisodeCard({
             </p>
           )}
 
+
         {hasPostdrome && (
           <section>
             <h4>Postdromo</h4>
@@ -988,8 +1524,8 @@ export function EpisodeCard({
               </b>{' '}
               {formatDateTime(
                 postdromeStart,
-                postdrome.time?.start
-                  ?.precision,
+                postdrome.time
+                  ?.start?.precision,
               )}
             </p>
 
@@ -1012,8 +1548,8 @@ export function EpisodeCard({
                 </b>{' '}
                 {formatDateTime(
                   postdromeEnd,
-                  postdrome.time?.end
-                    ?.precision,
+                  postdrome.time
+                    ?.end?.precision,
                 )}
               </p>
             )}
@@ -1028,7 +1564,10 @@ export function EpisodeCard({
             0 ? (
               <ul>
                 {postdromeDetails.map(
-                  (symptom, index) => (
+                  (
+                    symptom,
+                    index,
+                  ) => (
                     <li
                       key={`${symptom}-${index}`}
                     >
@@ -1061,9 +1600,11 @@ export function EpisodeCard({
                       index,
                     ) => {
                       const updateTime =
-                        update.occurredAt
+                        update
+                          .occurredAt
                           ?.value ??
-                        update.createdAt;
+                        update
+                          .createdAt;
 
                       const symptoms =
                         getLabels(
@@ -1137,7 +1678,9 @@ export function EpisodeCard({
                               <b>
                                 Nota:
                               </b>{' '}
-                              {update.notes}
+                              {
+                                update.notes
+                              }
                             </p>
                           )}
 
@@ -1157,6 +1700,7 @@ export function EpisodeCard({
           </section>
         )}
 
+
         {episodeDuration !==
           undefined && (
           <p>
@@ -1169,6 +1713,7 @@ export function EpisodeCard({
             )}
           </p>
         )}
+
 
         {episodeDuration ===
           undefined &&
