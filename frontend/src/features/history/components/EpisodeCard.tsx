@@ -119,7 +119,13 @@ function formatDateTime(
     return 'Sin registrar';
   }
 
-  return new Date(date).toLocaleString(
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Sin registrar';
+  }
+
+  return parsedDate.toLocaleString(
     'es-AR',
     {
       day: 'numeric',
@@ -131,9 +137,19 @@ function formatDateTime(
 }
 
 function formatTime(
-  date: string,
+  date?: string,
 ): string {
-  return new Date(date).toLocaleTimeString(
+  if (!date) {
+    return 'Sin hora';
+  }
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Sin hora';
+  }
+
+  return parsedDate.toLocaleTimeString(
     'es-AR',
     {
       hour: '2-digit',
@@ -143,16 +159,16 @@ function formatTime(
 }
 
 function getMedicationData(
-  data: Record<string, unknown>,
+  data?: Record<string, unknown>,
 ) {
   return {
     medication:
-      typeof data.medication === 'string'
+      typeof data?.medication === 'string'
         ? data.medication
         : 'Medicamento no especificado',
 
     dose:
-      typeof data.dose === 'string'
+      typeof data?.dose === 'string'
         ? data.dose
         : '',
   };
@@ -161,22 +177,34 @@ function getMedicationData(
 function getAuraDetails(
   episode: MigraineEpisode,
 ): string[] {
+  const auraTypes =
+    episode.aura?.types ?? [];
+
+  const visualSymptoms =
+    episode.aura?.visualSymptoms ?? [];
+
+  const sensorySymptoms =
+    episode.aura?.sensorySymptoms ?? [];
+
+  const languageSymptoms =
+    episode.aura?.languageSymptoms ?? [];
+
   return [
-    ...episode.aura.types.map(
+    ...auraTypes.map(
       type => auraTypeLabels[type],
     ),
 
-    ...episode.aura.visualSymptoms.map(
+    ...visualSymptoms.map(
       symptom =>
         visualAuraLabels[symptom],
     ),
 
-    ...episode.aura.sensorySymptoms.map(
+    ...sensorySymptoms.map(
       symptom =>
         sensoryAuraLabels[symptom],
     ),
 
-    ...episode.aura.languageSymptoms.map(
+    ...languageSymptoms.map(
       symptom =>
         languageAuraLabels[symptom],
     ),
@@ -186,7 +214,10 @@ function getAuraDetails(
 function getPostdromeDetails(
   episode: MigraineEpisode,
 ): string[] {
-  return episode.postdrome.symptoms.map(
+  const symptoms =
+    episode.postdrome?.symptoms ?? [];
+
+  return symptoms.map(
     symptom =>
       postdromeSymptomLabels[symptom],
   );
@@ -196,7 +227,21 @@ export function EpisodeCard({
   episode,
 }: Props) {
   const crisis = episode.crisis;
-  const timeline = episode.timeline;
+
+  const timeline =
+    episode.timeline ?? {};
+
+  const intensityHistory =
+    crisis?.intensityHistory ?? [];
+
+  const crisisEvents =
+    crisis?.events ?? [];
+
+  const crisisSymptoms =
+    crisis?.symptoms ?? [];
+
+  const triggers =
+    episode.triggers ?? [];
 
   const createdDate = new Date(
     episode.createdAt,
@@ -225,8 +270,8 @@ export function EpisodeCard({
     getEpisodeDuration(episode);
 
   const formattedTriggers =
-    episode.triggers.length > 0
-      ? episode.triggers
+    triggers.length > 0
+      ? triggers
           .map(
             trigger =>
               triggerLabels[trigger],
@@ -235,8 +280,8 @@ export function EpisodeCard({
       : 'Sin triggers registrados';
 
   const formattedCrisisSymptoms =
-    crisis.symptoms.length > 0
-      ? crisis.symptoms
+    crisisSymptoms.length > 0
+      ? crisisSymptoms
           .map(
             symptom =>
               crisisSymptomLabels[
@@ -253,7 +298,7 @@ export function EpisodeCard({
     getPostdromeDetails(episode);
 
   const medicationEvents =
-    crisis.events
+    crisisEvents
       .filter(
         event =>
           event.type === 'medication',
@@ -277,7 +322,6 @@ export function EpisodeCard({
       >
         <div>
           <h3>Migraña</h3>
-
           <span>{createdDate}</span>
         </div>
 
@@ -292,11 +336,11 @@ export function EpisodeCard({
         <p>
           <b>Inicio del episodio:</b>{' '}
           {formatDateTime(
-            timeline?.episodeStart,
+            timeline.episodeStart,
           )}
         </p>
 
-        {timeline?.premonitoryStart && (
+        {timeline.premonitoryStart && (
           <>
             <p>
               <b>
@@ -321,7 +365,7 @@ export function EpisodeCard({
           </>
         )}
 
-        {timeline?.auraStart && (
+        {timeline.auraStart && (
           <>
             <p>
               <b>Inicio aura:</b>{' '}
@@ -345,7 +389,7 @@ export function EpisodeCard({
         <p>
           <b>Inicio de crisis:</b>{' '}
           {formatDateTime(
-            timeline?.crisisStart,
+            timeline.crisisStart,
           )}
         </p>
 
@@ -358,7 +402,7 @@ export function EpisodeCard({
           )}
         </p>
 
-        {timeline?.postdromeStart && (
+        {timeline.postdromeStart && (
           <>
             <p>
               <b>
@@ -408,7 +452,7 @@ export function EpisodeCard({
           {maxIntensity}/10
         </p>
 
-        {crisis.intensityHistory.length >
+        {intensityHistory.length >
           0 && (
           <div>
             <p>
@@ -418,7 +462,7 @@ export function EpisodeCard({
             </p>
 
             <ul>
-              {crisis.intensityHistory.map(
+              {intensityHistory.map(
                 (record, index) => (
                   <li
                     key={`${record.time}-${index}`}
@@ -504,7 +548,7 @@ export function EpisodeCard({
           {formattedTriggers}
         </p>
 
-        {episode.postdrome.present && (
+        {episode.postdrome?.present && (
           <div>
             <p>
               <b>
