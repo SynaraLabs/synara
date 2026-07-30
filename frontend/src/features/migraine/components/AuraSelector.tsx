@@ -1,311 +1,1002 @@
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+
 import styles from '../migraine.module.css';
 
 import type {
+  AuraClinicalSymptom,
   AuraTiming,
-  AuraType,
-  LanguageAura,
-  SensoryAura,
-  VisualAura,
+  AuraUpdateData,
+  BodySide,
+  ClinicalSymptomCategory,
 } from '../types/migraine.types';
 
-import {
-  useMigraineStore,
-} from '../store/migraine.store';
+import { useMigraineStore } from '../store/migraine.store';
 
-type SelectableOption<T extends string> = {
-  value: T;
-  label: string;
+import {
+  AURA_CATALOG,
+  AURA_CATEGORY_ORDER,
+  AURA_SIDE_OPTIONS,
+  AURA_TIMING_OPTIONS,
+  buildAuraLegacyFields,
+  buildAuraPhaseTime,
+  calculateAuraDurationMinutes,
+  createAuraClinicalSelections,
+  formatAuraDateTime,
+  generateAuraRecordId,
+  getAuraSymptomLabel,
+  getAuraTypes,
+  getAuraUpdateSymptoms,
+  getCurrentLocalDateTimeValue,
+  getEarlierAuraDate,
+  getSelectedAuraSymptoms,
+  inferAuraRecordMode,
+  isValidAuraDate,
+  normalizeAuraSearch,
+  parseLocalDateTime,
+  toLocalDateTimeValue,
+} from '../utils/auraClinical';
+
+import {
+  PhaseEndSelector,
+  type PhaseEndSelection,
+} from './common/PhaseEndSelector';
+
+
+const frequentAuraSymptoms =
+  new Set<string>([
+    'flashes',
+    'zigzagLines',
+    'blindSpots',
+    'blurredVision',
+    'visualSpots',
+    'tingling',
+    'numbness',
+    'spreadingParesthesia',
+    'wordFindingDifficulty',
+    'speechDifficulty',
+    'vertigo',
+    'imbalance',
+  ]);
+
+
+const categoryLabels:
+  Partial<
+    Record<
+      ClinicalSymptomCategory,
+      string
+    >
+  > = {
+  visual:
+    'Síntomas visuales',
+
+  sensory:
+    'Síntomas sensitivos',
+
+  language:
+    'Lenguaje y comunicación',
+
+  motor:
+    'Síntomas motores',
+
+  vestibular:
+    'Equilibrio y orientación',
+
+  cognitive:
+    'Síntomas cognitivos',
+
+  general:
+    'Otros síntomas del aura',
+
+  other:
+    'Otros',
 };
 
-const auraTypes: SelectableOption<AuraType>[] = [
-  {
-    value: 'visual',
-    label: 'Visual',
-  },
-  {
-    value: 'sensory',
-    label: 'Sensitiva',
-  },
-  {
-    value: 'language',
-    label: 'Lenguaje',
-  },
-];
 
-const visualSymptoms: SelectableOption<VisualAura>[] = [
-  {
-    value: 'flashes',
-    label: 'Destellos de luz',
-  },
-  {
-    value: 'zigzagLines',
-    label: 'Líneas zigzag',
-  },
-  {
-    value: 'blindSpots',
-    label: 'Puntos ciegos',
-  },
-  {
-    value: 'blurredVision',
-    label: 'Visión borrosa',
-  },
-];
+function getCategoryLabel(
+  category:
+    ClinicalSymptomCategory,
+): string {
+  return (
+    categoryLabels[category] ??
+    category
+  );
+}
 
-const sensorySymptoms: SelectableOption<SensoryAura>[] = [
-  {
-    value: 'tingling',
-    label: 'Hormigueo',
-  },
-  {
-    value: 'numbness',
-    label: 'Entumecimiento',
-  },
-  {
-    value: 'electricSensation',
-    label: 'Sensación eléctrica',
-  },
-];
-
-const languageSymptoms: SelectableOption<LanguageAura>[] = [
-  {
-    value: 'wordFindingDifficulty',
-    label: 'Dificultad para encontrar palabras',
-  },
-  {
-    value: 'speechDifficulty',
-    label: 'Dificultad al hablar',
-  },
-];
-
-const auraTimingOptions: SelectableOption<AuraTiming>[] = [
-  {
-    value: 'beforePain',
-    label: 'Antes de que comenzara el dolor',
-  },
-  {
-    value: 'duringPain',
-    label: 'Durante el dolor',
-  },
-  {
-    value: 'afterPain',
-    label: 'Después de que terminó el dolor',
-  },
-];
 
 export function AuraSelector() {
+  const [
+    searchQuery,
+    setSearchQuery,
+  ] = useState('');
+
+  const [
+    showAllSymptoms,
+    setShowAllSymptoms,
+  ] = useState(false);
+
+  const [
+    draftSymptoms,
+    setDraftSymptoms,
+  ] = useState<
+    AuraClinicalSymptom[]
+  >([]);
+
+  const [
+    draftTiming,
+    setDraftTiming,
+  ] = useState<
+    AuraTiming | ''
+  >('');
+
+  const [
+    draftSide,
+    setDraftSide,
+  ] = useState<
+    BodySide | ''
+  >('');
+
+  const [
+    draftNotes,
+    setDraftNotes,
+  ] = useState('');
+
+  const [
+    updateDateTime,
+    setUpdateDateTime,
+  ] = useState(
+    getCurrentLocalDateTimeValue,
+  );
+
+  const [
+    showEndSelector,
+    setShowEndSelector,
+  ] = useState(false);
+
+  const [
+    feedback,
+    setFeedback,
+  ] = useState('');
+
+
   const aura = useMigraineStore(
     state => state.episode.aura,
   );
 
-  const updateAura = useMigraineStore(
-    state => state.updateAura,
+  const timeline = useMigraineStore(
+    state => state.episode.timeline,
   );
 
-  const hasAura = aura.types.length > 0;
+  const updateAura =
+    useMigraineStore(
+      state => state.updateAura,
+    );
 
-  const toggleType = (
-    type: AuraType,
+  const updateTimeline =
+    useMigraineStore(
+      state => state.updateTimeline,
+    );
+
+
+  const updates =
+    aura.updates ?? [];
+
+  /*
+   * Conserva la misma referencia
+   * mientras el aura almacenada no
+   * cambie.
+   *
+   * Sin useMemo, se generaba un array
+   * nuevo en cada render y el efecto
+   * borraba las selecciones realizadas.
+   */
+  const currentSymptoms =
+    useMemo(
+      () =>
+        getSelectedAuraSymptoms(
+          aura,
+        ),
+      [aura],
+    );
+
+  const auraStart =
+    timeline?.auraStart ??
+    aura.time?.start?.value;
+
+  const auraEnd =
+    timeline?.auraEnd ??
+    aura.time?.end?.value;
+
+  const isEnded =
+    aura.status === 'ended' ||
+    isValidAuraDate(auraEnd);
+
+  const isActive =
+    aura.present && !isEnded;
+
+
+  useEffect(() => {
+    setDraftSymptoms(
+      currentSymptoms,
+    );
+
+    setDraftTiming(
+      aura.timing ?? '',
+    );
+
+    setDraftSide(
+      aura.side ?? '',
+    );
+  }, [
+    aura.side,
+    aura.timing,
+    currentSymptoms,
+  ]);
+
+
+  const visibleDefinitions =
+    useMemo(() => {
+      const normalizedQuery =
+        normalizeAuraSearch(
+          searchQuery,
+        );
+
+      return AURA_CATALOG.filter(
+        definition => {
+          const isSelected =
+            draftSymptoms.includes(
+              definition.value,
+            );
+
+          const matchesSearch =
+            normalizedQuery.length >
+              0 &&
+            normalizeAuraSearch(
+              `${definition.label} ${definition.value}`,
+            ).includes(
+              normalizedQuery,
+            );
+
+          if (
+            normalizedQuery.length >
+            0
+          ) {
+            return matchesSearch;
+          }
+
+          if (showAllSymptoms) {
+            return true;
+          }
+
+          return (
+            frequentAuraSymptoms.has(
+              definition.value,
+            ) ||
+            isSelected
+          );
+        },
+      );
+    }, [
+      draftSymptoms,
+      searchQuery,
+      showAllSymptoms,
+    ]);
+
+
+  const visibleCategories =
+    useMemo(() => {
+      return AURA_CATEGORY_ORDER
+        .map(category => ({
+          category,
+
+          symptoms:
+            visibleDefinitions.filter(
+              definition =>
+                definition.category ===
+                category,
+            ),
+        }))
+        .filter(
+          group =>
+            group.symptoms.length > 0,
+        );
+    }, [visibleDefinitions]);
+
+
+  const visibleUpdates =
+    useMemo(() => {
+      return [...updates].sort(
+        (
+          firstUpdate,
+          secondUpdate,
+        ) => {
+          const firstDate =
+            firstUpdate.occurredAt
+              .value ??
+            firstUpdate.createdAt;
+
+          const secondDate =
+            secondUpdate.occurredAt
+              .value ??
+            secondUpdate.createdAt;
+
+          return (
+            new Date(
+              firstDate,
+            ).getTime() -
+            new Date(
+              secondDate,
+            ).getTime()
+          );
+        },
+      );
+    }, [updates]);
+
+
+  const toggleSymptom = (
+    symptom:
+      AuraClinicalSymptom,
   ) => {
-    const isSelected =
-      aura.types.includes(type);
+    setFeedback('');
 
-    const updatedTypes = isSelected
-      ? aura.types.filter(
-          currentType =>
-            currentType !== type,
+    setDraftSymptoms(
+      currentDraft =>
+        currentDraft.includes(
+          symptom,
         )
-      : [
-          ...aura.types,
-          type,
-        ];
-
-    updateAura({
-      ...aura,
-      present: updatedTypes.length > 0,
-      types: updatedTypes,
-    });
+          ? currentDraft.filter(
+              currentSymptom =>
+                currentSymptom !==
+                symptom,
+            )
+          : [
+              ...currentDraft,
+              symptom,
+            ],
+    );
   };
 
-  const handleDurationChange = (
-    value: string,
-  ) => {
-    if (value === '') {
+
+  const handleRegisterUpdate =
+    () => {
+      if (isEnded) {
+        return;
+      }
+
+      const occurredAtDate =
+        parseLocalDateTime(
+          updateDateTime,
+        );
+
+      if (!occurredAtDate) {
+        setFeedback(
+          'Ingresá una fecha y hora válidas para el registro.',
+        );
+
+        return;
+      }
+
+      if (
+        occurredAtDate.getTime() >
+        Date.now()
+      ) {
+        setFeedback(
+          'El registro del aura no puede estar en el futuro.',
+        );
+
+        return;
+      }
+
+      const normalizedNotes =
+        draftNotes.trim();
+
+      if (
+        draftSymptoms.length === 0 &&
+        !normalizedNotes
+      ) {
+        setFeedback(
+          'Seleccioná al menos un síntoma o agregá una nota.',
+        );
+
+        return;
+      }
+
+      const occurredAt =
+        occurredAtDate.toISOString();
+
+      const now =
+        new Date().toISOString();
+
+      const recordMode =
+        inferAuraRecordMode(
+          occurredAt,
+        );
+
+      const effectiveStart =
+        getEarlierAuraDate(
+          auraStart,
+          occurredAt,
+        ) ?? occurredAt;
+
+      const existingStart =
+        aura.time?.start;
+
+      const shouldUpdateStart =
+        !isValidAuraDate(
+          existingStart?.value,
+        ) ||
+        new Date(
+          effectiveStart,
+        ).getTime() <
+          new Date(
+            existingStart.value,
+          ).getTime();
+
+      const startPhaseTime =
+        shouldUpdateStart
+          ? buildAuraPhaseTime(
+              effectiveStart,
+              'exact',
+              inferAuraRecordMode(
+                effectiveStart,
+              ),
+            )
+          : existingStart;
+
+      const side =
+        draftSide || undefined;
+
+      const timing =
+        draftTiming || undefined;
+
+      const legacyFields =
+        buildAuraLegacyFields(
+          draftSymptoms,
+        );
+
+      const clinicalSymptoms =
+        createAuraClinicalSelections(
+          draftSymptoms,
+          side,
+          aura.clinicalSymptoms,
+          true,
+        );
+
+      const types =
+        getAuraTypes(
+          draftSymptoms,
+          aura.types,
+        );
+
+      const updateData:
+        AuraUpdateData = {
+        types,
+
+        ...legacyFields,
+
+        clinicalSymptoms,
+
+        symptomsStillActive:
+          draftSymptoms.length > 0,
+      };
+
       updateAura({
         ...aura,
-        durationMinutes: undefined,
+
+        present: true,
+
+        status: 'active',
+
+        types,
+
+        ...legacyFields,
+
+        clinicalSymptoms,
+
+        timing,
+
+        side,
+
+        occurredWithoutPain:
+          timing === 'withoutPain',
+
+        durationMinutes:
+          undefined,
+
+        time: {
+          ...aura.time,
+
+          start:
+            startPhaseTime,
+
+          end: undefined,
+        },
+
+        updates: [
+          ...updates,
+
+          {
+            id:
+              generateAuraRecordId(),
+
+            createdAt: now,
+
+            occurredAt:
+              buildAuraPhaseTime(
+                occurredAt,
+                'exact',
+                recordMode,
+              ),
+
+            data:
+              updateData,
+
+            notes:
+              normalizedNotes ||
+              undefined,
+          },
+        ],
       });
+
+      updateTimeline({
+        auraStart:
+          effectiveStart,
+
+        auraEnd:
+          undefined,
+
+        episodeStart:
+          getEarlierAuraDate(
+            timeline?.episodeStart,
+            effectiveStart,
+          ),
+      });
+
+      setUpdateDateTime(
+        getCurrentLocalDateTimeValue(),
+      );
+
+      setDraftNotes('');
+
+      setFeedback(
+        aura.present
+          ? 'Actualización del aura registrada.'
+          : 'Aura iniciada y primera actualización registrada.',
+      );
+    };
+
+
+  const finishAura = (
+    selection:
+      PhaseEndSelection,
+  ) => {
+    if (
+      !isValidAuraDate(
+        auraStart,
+      )
+    ) {
+      setFeedback(
+        'Primero registrá el inicio del aura.',
+      );
 
       return;
     }
 
-    const parsedValue = Number(value);
+    const {
+      endTime,
+      precision,
+      recordMode,
+    } = selection;
 
     if (
-      Number.isNaN(parsedValue) ||
-      parsedValue < 1
+      !isValidAuraDate(endTime)
     ) {
       return;
     }
 
+    const endTimestamp =
+      new Date(
+        endTime,
+      ).getTime();
+
+    if (
+      endTimestamp >
+      Date.now()
+    ) {
+      setFeedback(
+        'El final del aura no puede estar en el futuro.',
+      );
+
+      return;
+    }
+
+    if (
+      endTimestamp <
+      new Date(
+        auraStart,
+      ).getTime()
+    ) {
+      setFeedback(
+        'El final del aura no puede ser anterior a su inicio.',
+      );
+
+      return;
+    }
+
+    const now =
+      new Date().toISOString();
+
+    const side =
+      draftSide || undefined;
+
+    const timing =
+      draftTiming || undefined;
+
+    const legacyFields =
+      buildAuraLegacyFields(
+        draftSymptoms,
+      );
+
+    const clinicalSymptoms =
+      createAuraClinicalSelections(
+        draftSymptoms,
+        side,
+        aura.clinicalSymptoms,
+        false,
+      );
+
+    const types =
+      getAuraTypes(
+        draftSymptoms,
+        aura.types,
+      );
+
+    const endPhaseTime =
+      buildAuraPhaseTime(
+        endTime,
+        precision,
+        recordMode,
+      );
+
+    const updateData:
+      AuraUpdateData = {
+      types,
+
+      ...legacyFields,
+
+      clinicalSymptoms,
+
+      symptomsStillActive:
+        false,
+    };
+
     updateAura({
       ...aura,
-      durationMinutes: parsedValue,
+
+      present: true,
+
+      status: 'ended',
+
+      types,
+
+      ...legacyFields,
+
+      clinicalSymptoms,
+
+      timing,
+
+      side,
+
+      occurredWithoutPain:
+        timing === 'withoutPain',
+
+      durationMinutes:
+        calculateAuraDurationMinutes(
+          auraStart,
+          endTime,
+        ),
+
+      time: {
+        ...aura.time,
+
+        start:
+          aura.time?.start ??
+          buildAuraPhaseTime(
+            auraStart,
+            'exact',
+            inferAuraRecordMode(
+              auraStart,
+            ),
+          ),
+
+        end:
+          endPhaseTime,
+      },
+
+      updates: [
+        ...updates,
+
+        {
+          id:
+            generateAuraRecordId(),
+
+          createdAt: now,
+
+          occurredAt:
+            endPhaseTime,
+
+          data:
+            updateData,
+
+          notes:
+            draftNotes.trim() ||
+            undefined,
+        },
+      ],
     });
+
+    updateTimeline({
+      auraStart,
+
+      auraEnd:
+        endTime,
+    });
+
+    setDraftNotes('');
+
+    setShowEndSelector(false);
+
+    setFeedback(
+      'Final del aura registrado.',
+    );
   };
 
-  const handleTimingChange = (
-    value: string,
-  ) => {
-    updateAura({
-      ...aura,
-      timing:
-        value === ''
-          ? undefined
-          : (value as AuraTiming),
-    });
+
+  const handleContinueAura = () => {
+    setShowEndSelector(false);
+
+    setFeedback(
+      'El aura continúa abierta.',
+    );
   };
+
 
   return (
     <section
-      className={styles.symptomSelector}
+      className={
+        styles.symptomSelector
+      }
       aria-labelledby="aura-title"
     >
-      <div>
+      <header>
         <h3 id="aura-title">
-          Síntomas de aura
+          Aura
         </h3>
 
         <p>
-          Seleccioná el tipo de aura que
-          experimentaste durante este
-          episodio.
+          El aura puede incluir cambios
+          visuales, sensitivos, de
+          lenguaje, motores o de
+          equilibrio. Podés registrar
+          varias actualizaciones.
         </p>
-      </div>
+      </header>
 
-      <div
-        className={styles.symptomGrid}
-        role="group"
-        aria-label="Tipos de aura"
-      >
-        {auraTypes.map(item => (
-          <label
-            key={item.value}
-            className={styles.symptomOption}
-          >
-            <input
-              type="checkbox"
-              checked={aura.types.includes(
-                item.value,
+
+      {aura.present && (
+        <p
+          className={
+            styles.helperText
+          }
+        >
+          Inicio del aura:{' '}
+          {formatAuraDateTime(
+            auraStart,
+            aura.time?.start
+              ?.precision,
+          )}
+
+          {isEnded && (
+            <>
+              {' · '}
+              Final:{' '}
+              {formatAuraDateTime(
+                auraEnd,
+                aura.time?.end
+                  ?.precision,
               )}
-              onChange={() =>
-                toggleType(item.value)
-              }
+            </>
+          )}
+        </p>
+      )}
+
+
+      {!isEnded && (
+        <>
+          <label>
+            Buscar síntomas de aura
+
+            <input
+              type="search"
+              value={searchQuery}
+              placeholder="Ejemplo: destellos, hormigueo o dificultad al hablar"
+              onChange={event => {
+                setSearchQuery(
+                  event.target.value,
+                );
+
+                setFeedback('');
+              }}
             />
-
-            <span>{item.label}</span>
           </label>
-        ))}
-      </div>
 
-      {aura.types.includes('visual') && (
-        <AuraCheckboxGroup
-          title="Síntomas visuales"
-          ariaLabel="Síntomas visuales del aura"
-          items={visualSymptoms}
-          selected={aura.visualSymptoms}
-          onChange={visualValues =>
-            updateAura({
-              ...aura,
-              visualSymptoms:
-                visualValues,
-            })
-          }
-        />
-      )}
 
-      {aura.types.includes('sensory') && (
-        <AuraCheckboxGroup
-          title="Síntomas sensitivos"
-          ariaLabel="Síntomas sensitivos del aura"
-          items={sensorySymptoms}
-          selected={aura.sensorySymptoms}
-          onChange={sensoryValues =>
-            updateAura({
-              ...aura,
-              sensorySymptoms:
-                sensoryValues,
-            })
-          }
-        />
-      )}
-
-      {aura.types.includes('language') && (
-        <AuraCheckboxGroup
-          title="Síntomas de lenguaje"
-          ariaLabel="Síntomas de lenguaje del aura"
-          items={languageSymptoms}
-          selected={aura.languageSymptoms}
-          onChange={languageValues =>
-            updateAura({
-              ...aura,
-              languageSymptoms:
-                languageValues,
-            })
-          }
-        />
-      )}
-
-      {hasAura && (
-        <div className={styles.dateSelector}>
-          <div
-            className={styles.auraDetailsGrid}
+          <button
+            type="button"
+            onClick={() =>
+              setShowAllSymptoms(
+                current => !current,
+              )
+            }
           >
-            <label>
-              Duración del aura
+            {showAllSymptoms
+              ? 'Mostrar solo los más frecuentes'
+              : 'Mostrar todos los síntomas'}
+          </button>
 
-              <input
-                type="number"
-                min="1"
-                step="1"
-                inputMode="numeric"
-                value={
-                  aura.durationMinutes ??
-                  ''
+
+          {visibleCategories.map(
+            group => (
+              <section
+                key={
+                  group.category
                 }
-                placeholder="Ejemplo: 30"
-                onChange={event =>
-                  handleDurationChange(
-                    event.target.value,
-                  )
-                }
-              />
-
-              <small>
-                Ingresá la duración en
-                minutos.
-              </small>
-            </label>
-
-            <label>
-              ¿Cuándo ocurrió?
-
-              <select
-                value={aura.timing ?? ''}
-                onChange={event =>
-                  handleTimingChange(
-                    event.target.value,
-                  )
+                className={
+                  styles.auraGroup
                 }
               >
+                <h4>
+                  {getCategoryLabel(
+                    group.category,
+                  )}
+                </h4>
+
+                <div
+                  className={
+                    styles.symptomGrid
+                  }
+                  role="group"
+                  aria-label={
+                    getCategoryLabel(
+                      group.category,
+                    )
+                  }
+                >
+                  {group.symptoms.map(
+                    definition => (
+                      <label
+                        key={
+                          definition.value
+                        }
+                        className={
+                          styles.symptomOption
+                        }
+                      >
+                        <input
+                          type="checkbox"
+                          checked={draftSymptoms.includes(
+                            definition.value,
+                          )}
+                          onChange={() =>
+                            toggleSymptom(
+                              definition.value,
+                            )
+                          }
+                        />
+
+                        <span>
+                          {
+                            definition.label
+                          }
+                        </span>
+                      </label>
+                    ),
+                  )}
+                </div>
+              </section>
+            ),
+          )}
+
+
+          {visibleDefinitions.length ===
+            0 && (
+            <p
+              className={
+                styles.helperText
+              }
+            >
+              No encontramos síntomas
+              con esa búsqueda.
+            </p>
+          )}
+
+
+          <div
+            className={
+              styles.auraDetailsGrid
+            }
+          >
+            <label>
+              ¿Cuándo ocurrió respecto
+              del dolor?
+
+              <select
+                value={draftTiming}
+                onChange={event => {
+                  setDraftTiming(
+                    event.target
+                      .value as
+                      | AuraTiming
+                      | '',
+                  );
+
+                  setFeedback('');
+                }}
+              >
                 <option value="">
-                  Seleccionar momento
+                  Sin indicar
                 </option>
 
-                {auraTimingOptions.map(
+                {AURA_TIMING_OPTIONS.map(
                   option => (
                     <option
-                      key={option.value}
-                      value={option.value}
+                      key={
+                        option.value
+                      }
+                      value={
+                        option.value
+                      }
+                    >
+                      {option.label}
+                    </option>
+                  ),
+                )}
+              </select>
+            </label>
+
+
+            <label>
+              Lado afectado
+
+              <select
+                value={draftSide}
+                onChange={event => {
+                  setDraftSide(
+                    event.target
+                      .value as
+                      | BodySide
+                      | '',
+                  );
+
+                  setFeedback('');
+                }}
+              >
+                <option value="">
+                  Sin indicar
+                </option>
+
+                {AURA_SIDE_OPTIONS.map(
+                  option => (
+                    <option
+                      key={
+                        option.value
+                      }
+                      value={
+                        option.value
+                      }
                     >
                       {option.label}
                     </option>
@@ -315,84 +1006,196 @@ export function AuraSelector() {
             </label>
           </div>
 
-          <p>
-            SYNARA calculará
-            automáticamente el inicio y
-            el final del aura tomando
-            como referencia la crisis.
-          </p>
-        </div>
+
+          <label>
+            ¿Cuándo ocurrió esta
+            actualización?
+
+            <input
+              type="datetime-local"
+              value={
+                updateDateTime
+              }
+              max={
+                getCurrentLocalDateTimeValue()
+              }
+              min={
+                toLocalDateTimeValue(
+                  auraStart,
+                )
+              }
+              onChange={event => {
+                setUpdateDateTime(
+                  event.target.value,
+                );
+
+                setFeedback('');
+              }}
+            />
+          </label>
+
+
+          <label>
+            Nota de esta actualización
+
+            <textarea
+              value={draftNotes}
+              rows={3}
+              placeholder="Ejemplo: el hormigueo comenzó en la mano y avanzó hacia el rostro"
+              onChange={event => {
+                setDraftNotes(
+                  event.target.value,
+                );
+
+                setFeedback('');
+              }}
+            />
+          </label>
+
+
+          <button
+            type="button"
+            onClick={
+              handleRegisterUpdate
+            }
+          >
+            {aura.present
+              ? 'Registrar actualización'
+              : 'Registrar inicio del aura'}
+          </button>
+        </>
+      )}
+
+
+      {feedback && (
+        <p
+          className={
+            styles.helperText
+          }
+          aria-live="polite"
+        >
+          {feedback}
+        </p>
+      )}
+
+
+      {visibleUpdates.length > 0 && (
+        <section>
+          <h4>
+            Evolución del aura
+          </h4>
+
+          <ul>
+            {visibleUpdates.map(
+              update => {
+                const updateTime =
+                  update.occurredAt
+                    .value ??
+                  update.createdAt;
+
+                const symptoms =
+                  getAuraUpdateSymptoms(
+                    update.data,
+                  );
+
+                return (
+                  <li
+                    key={update.id}
+                  >
+                    <p>
+                      <b>
+                        {formatAuraDateTime(
+                          updateTime,
+                          update
+                            .occurredAt
+                            .precision,
+                        )}
+                      </b>
+                    </p>
+
+                    <p>
+                      <b>
+                        Síntomas:
+                      </b>{' '}
+
+                      {symptoms.length >
+                      0
+                        ? symptoms
+                            .map(
+                              getAuraSymptomLabel,
+                            )
+                            .join(', ')
+                        : 'Sin síntomas seleccionados'}
+                    </p>
+
+                    {update.notes && (
+                      <p>
+                        <b>Nota:</b>{' '}
+                        {update.notes}
+                      </p>
+                    )}
+
+                    {update.data
+                      .symptomsStillActive ===
+                      false && (
+                      <p>
+                        Final del aura.
+                      </p>
+                    )}
+                  </li>
+                );
+              },
+            )}
+          </ul>
+        </section>
+      )}
+
+
+      {isActive &&
+        !showEndSelector && (
+          <button
+            type="button"
+            onClick={() => {
+              setShowEndSelector(
+                true,
+              );
+
+              setFeedback('');
+            }}
+          >
+            Indicar que terminó el aura
+          </button>
+        )}
+
+
+      {isActive &&
+        showEndSelector && (
+          <PhaseEndSelector
+            title="¿Cuándo terminó el aura?"
+            startTime={auraStart}
+            onConfirm={finishAura}
+            onContinue={
+              handleContinueAura
+            }
+          />
+        )}
+
+
+      {isEnded && (
+        <p
+          className={
+            styles.helperText
+          }
+        >
+          Aura finalizada. Duración
+          registrada:{' '}
+
+          {aura.durationMinutes !==
+          undefined
+            ? `${aura.durationMinutes} minutos`
+            : 'no calculada'}
+        </p>
       )}
     </section>
-  );
-}
-
-interface AuraCheckboxGroupProps<
-  T extends string,
-> {
-  title: string;
-  ariaLabel: string;
-  items: SelectableOption<T>[];
-  selected: T[];
-  onChange: (values: T[]) => void;
-}
-
-function AuraCheckboxGroup<
-  T extends string,
->({
-  title,
-  ariaLabel,
-  items,
-  selected,
-  onChange,
-}: AuraCheckboxGroupProps<T>) {
-  const toggleValue = (
-    value: T,
-  ) => {
-    const isSelected =
-      selected.includes(value);
-
-    const updatedValues = isSelected
-      ? selected.filter(
-          currentValue =>
-            currentValue !== value,
-        )
-      : [
-          ...selected,
-          value,
-        ];
-
-    onChange(updatedValues);
-  };
-
-  return (
-    <div className={styles.auraGroup}>
-      <h4>{title}</h4>
-
-      <div
-        className={styles.symptomGrid}
-        role="group"
-        aria-label={ariaLabel}
-      >
-        {items.map(item => (
-          <label
-            key={item.value}
-            className={styles.symptomOption}
-          >
-            <input
-              type="checkbox"
-              checked={selected.includes(
-                item.value,
-              )}
-              onChange={() =>
-                toggleValue(item.value)
-              }
-            />
-
-            <span>{item.label}</span>
-          </label>
-        ))}
-      </div>
-    </div>
   );
 }

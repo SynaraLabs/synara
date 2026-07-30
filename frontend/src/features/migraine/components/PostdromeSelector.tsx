@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 
@@ -16,6 +17,15 @@ import type {
 
 import { useMigraineStore } from '../store/migraine.store';
 
+import {
+  FREQUENT_POSTDROME_SYMPTOMS,
+  POSTDROME_CATEGORY_LABELS,
+  POSTDROME_CATEGORY_ORDER,
+  POSTDROME_SYMPTOM_CATALOG,
+  normalizePostdromeSearch,
+  type PostdromeSymptomDefinition,
+} from '../data/postdromeSymptomCatalog';
+
 import { postdromeSymptomLabels } from '../../history/utils/migraineLabels';
 
 import {
@@ -24,30 +34,23 @@ import {
 } from './common/PhaseEndSelector';
 
 
-const frequentSymptoms:
-  readonly PostdromeSymptom[] = [
-  'fatigue',
-  'extremeExhaustion',
-  'brainFog',
-  'weakness',
-  'mentalSlowness',
-  'residualSensitivity',
-  'dizziness',
-  'neckDiscomfort',
-  'neckStiffness',
-  'moodChange',
-  'sleepiness',
-  'hangoverFeeling',
-  'difficultyReturningToActivities',
-];
+const frequentSymptoms =
+  new Set<PostdromeSymptom>(
+    FREQUENT_POSTDROME_SYMPTOMS,
+  );
 
 
 const recoveryLevelLabels:
   Record<RecoveryLevel, string> = {
-  minimal: 'Recuperación mínima',
-  partial: 'Recuperación parcial',
+  minimal:
+    'Recuperación mínima',
+
+  partial:
+    'Recuperación parcial',
+
   mostlyRecovered:
     'Casi completamente recuperada',
+
   fullyRecovered:
     'Recuperación completa',
 };
@@ -282,6 +285,16 @@ const getSymptomLabel = (
 
 export function PostdromeSelector() {
   const [
+    searchQuery,
+    setSearchQuery,
+  ] = useState('');
+
+  const [
+    showAllSymptoms,
+    setShowAllSymptoms,
+  ] = useState(false);
+
+  const [
     showEndSelector,
     setShowEndSelector,
   ] = useState(false);
@@ -354,17 +367,21 @@ export function PostdromeSelector() {
     );
 
 
-  const currentSymptoms =
-    postdrome.symptoms ?? [];
-
   const updates =
     postdrome.updates ?? [];
 
 
+  const currentSymptoms =
+    useMemo(
+      () =>
+        postdrome.symptoms ?? [],
+      [postdrome.symptoms],
+    );
+
+
   /*
-   * El inicio del postdromo debe
-   * coincidir con el final de la
-   * crisis.
+   * El inicio del postdromo coincide
+   * siempre con el final de la crisis.
    */
   const postdromeStart =
     timeline?.postdromeStart ??
@@ -402,67 +419,183 @@ export function PostdromeSelector() {
   ]);
 
 
-  const selectableSymptoms =
-    Array.from(
-      new Set<PostdromeSymptom>([
-        ...frequentSymptoms,
-
-        ...currentSymptoms,
-
-        ...draftSymptoms,
-
-        ...updates.flatMap(
-          update =>
-            update.data.symptoms ??
-            [],
-        ),
-      ]),
-    );
-
-
-  const visibleUpdates =
-    [...updates]
-      .filter(update => {
-        return (
-          update.data.symptoms
-            .length > 0 ||
-          Boolean(
-            update.data
-              .recoveryLevel,
-          ) ||
-          update.data
-            .symptomsStillActive ===
-            false ||
-          Boolean(
-            update.notes?.trim(),
-          )
+  const allDefinitions =
+    useMemo(() => {
+      const knownSymptoms =
+        new Set<PostdromeSymptom>(
+          POSTDROME_SYMPTOM_CATALOG.map(
+            definition =>
+              definition.value,
+          ),
         );
-      })
-      .sort(
-        (
-          first,
-          second,
-        ) => {
-          const firstDate =
-            first.occurredAt
-              .value ??
-            first.createdAt;
 
-          const secondDate =
-            second.occurredAt
-              .value ??
-            second.createdAt;
+      const legacySymptoms =
+        Array.from(
+          new Set<PostdromeSymptom>([
+            ...currentSymptoms,
+
+            ...draftSymptoms,
+
+            ...updates.flatMap(
+              update =>
+                update.data
+                  .symptoms ?? [],
+            ),
+          ]),
+        ).filter(
+          symptom =>
+            !knownSymptoms.has(
+              symptom,
+            ),
+        );
+
+      const legacyDefinitions:
+        PostdromeSymptomDefinition[] =
+        legacySymptoms.map(
+          symptom => ({
+            value: symptom,
+
+            category: 'other',
+
+            searchTerms: [],
+          }),
+        );
+
+      return [
+        ...POSTDROME_SYMPTOM_CATALOG,
+        ...legacyDefinitions,
+      ];
+    }, [
+      currentSymptoms,
+      draftSymptoms,
+      updates,
+    ]);
+
+
+  const visibleDefinitions =
+    useMemo(() => {
+      const normalizedQuery =
+        normalizePostdromeSearch(
+          searchQuery,
+        );
+
+      return allDefinitions.filter(
+        definition => {
+          const isSelected =
+            draftSymptoms.includes(
+              definition.value,
+            );
+
+          if (
+            normalizedQuery.length >
+            0
+          ) {
+            const searchableText =
+              normalizePostdromeSearch(
+                [
+                  getSymptomLabel(
+                    definition.value,
+                  ),
+
+                  definition.value,
+
+                  ...(
+                    definition
+                      .searchTerms ?? []
+                  ),
+                ].join(' '),
+              );
+
+            return searchableText.includes(
+              normalizedQuery,
+            );
+          }
+
+          if (showAllSymptoms) {
+            return true;
+          }
 
           return (
-            new Date(
-              firstDate,
-            ).getTime() -
-            new Date(
-              secondDate,
-            ).getTime()
+            frequentSymptoms.has(
+              definition.value,
+            ) ||
+            isSelected
           );
         },
       );
+    }, [
+      allDefinitions,
+      draftSymptoms,
+      searchQuery,
+      showAllSymptoms,
+    ]);
+
+
+  const visibleCategories =
+    useMemo(() => {
+      return POSTDROME_CATEGORY_ORDER
+        .map(category => ({
+          category,
+
+          symptoms:
+            visibleDefinitions.filter(
+              definition =>
+                definition.category ===
+                category,
+            ),
+        }))
+        .filter(
+          group =>
+            group.symptoms.length > 0,
+        );
+    }, [visibleDefinitions]);
+
+
+  const visibleUpdates =
+    useMemo(() => {
+      return [...updates]
+        .filter(update => {
+          return (
+            update.data.symptoms
+              .length > 0 ||
+            Boolean(
+              update.data
+                .recoveryLevel,
+            ) ||
+            update.data
+              .symptomsStillActive ===
+              false ||
+            Boolean(
+              update.notes?.trim(),
+            )
+          );
+        })
+        .sort(
+          (
+            first,
+            second,
+          ) => {
+            const firstDate =
+              first.occurredAt
+                .value ??
+              first.createdAt;
+
+            const secondDate =
+              second.occurredAt
+                .value ??
+              second.createdAt;
+
+            return (
+              new Date(
+                firstDate,
+              ).getTime() -
+              new Date(
+                secondDate,
+              ).getTime()
+            );
+          },
+        );
+    }, [updates]);
 
 
   const toggleDraftSymptom = (
@@ -634,6 +767,7 @@ export function PostdromeSelector() {
 
         updates: [
           ...updates,
+
           {
             id: generateId(),
 
@@ -764,6 +898,7 @@ export function PostdromeSelector() {
 
       updates: [
         ...updates,
+
         {
           id: generateId(),
 
@@ -855,6 +990,7 @@ export function PostdromeSelector() {
         }
       >
         Inicio del postdromo:{' '}
+
         {formatDateTime(
           postdromeStart,
           postdrome.time?.start
@@ -875,46 +1011,126 @@ export function PostdromeSelector() {
               styles.helperText
             }
           >
-            Podés registrar distintos
-            estados a lo largo del
+            Seleccioná tu estado actual.
+            Podés registrar cambios
+            diferentes durante todo el
             postdromo.
           </p>
 
 
-          <div
-            className={
-              styles.symptomGrid
-            }
+          <label>
+            Buscar síntomas del
+            postdromo
+
+            <input
+              type="search"
+              value={
+                searchQuery
+              }
+              placeholder="Ejemplo: agotamiento, niebla mental o sensibilidad a la luz"
+              onChange={event => {
+                setSearchQuery(
+                  event.target.value,
+                );
+
+                setFeedback('');
+              }}
+            />
+          </label>
+
+
+          <button
+            type="button"
+            onClick={() => {
+              setShowAllSymptoms(
+                current => !current,
+              );
+
+              setFeedback('');
+            }}
           >
-            {selectableSymptoms.map(
-              symptom => (
-                <label
-                  key={symptom}
+            {showAllSymptoms
+              ? 'Mostrar solo los más frecuentes'
+              : 'Mostrar todos los síntomas'}
+          </button>
+
+
+          {visibleCategories.map(
+            group => (
+              <section
+                key={
+                  group.category
+                }
+                className={
+                  styles.auraGroup
+                }
+              >
+                <h4>
+                  {
+                    POSTDROME_CATEGORY_LABELS[
+                      group.category
+                    ]
+                  }
+                </h4>
+
+                <div
                   className={
-                    styles.symptomOption
+                    styles.symptomGrid
+                  }
+                  role="group"
+                  aria-label={
+                    POSTDROME_CATEGORY_LABELS[
+                      group.category
+                    ]
                   }
                 >
-                  <input
-                    type="checkbox"
-                    checked={draftSymptoms.includes(
-                      symptom,
-                    )}
-                    onChange={() =>
-                      toggleDraftSymptom(
-                        symptom,
-                      )
-                    }
-                  />
+                  {group.symptoms.map(
+                    definition => (
+                      <label
+                        key={
+                          definition.value
+                        }
+                        className={
+                          styles.symptomOption
+                        }
+                      >
+                        <input
+                          type="checkbox"
+                          checked={draftSymptoms.includes(
+                            definition.value,
+                          )}
+                          onChange={() =>
+                            toggleDraftSymptom(
+                              definition.value,
+                            )
+                          }
+                        />
 
-                  <span>
-                    {getSymptomLabel(
-                      symptom,
-                    )}
-                  </span>
-                </label>
-              ),
-            )}
-          </div>
+                        <span>
+                          {getSymptomLabel(
+                            definition.value,
+                          )}
+                        </span>
+                      </label>
+                    ),
+                  )}
+                </div>
+              </section>
+            ),
+          )}
+
+
+          {visibleDefinitions.length ===
+            0 && (
+            <p
+              className={
+                styles.helperText
+              }
+            >
+              No encontramos síntomas
+              con esa búsqueda.
+            </p>
+          )}
 
 
           <label>
@@ -1070,6 +1286,7 @@ export function PostdromeSelector() {
                       <b>
                         Síntomas:
                       </b>{' '}
+
                       {symptoms.length >
                       0
                         ? symptoms
@@ -1085,6 +1302,7 @@ export function PostdromeSelector() {
                         <b>
                           Recuperación:
                         </b>{' '}
+
                         {
                           recoveryLevelLabels[
                             recoveryLevel
@@ -1098,6 +1316,7 @@ export function PostdromeSelector() {
                         <b>
                           Nota:
                         </b>{' '}
+
                         {
                           update.notes
                         }
@@ -1161,6 +1380,7 @@ export function PostdromeSelector() {
           }
         >
           Recuperación completa:{' '}
+
           {formatDateTime(
             postdromeEnd,
             postdrome.time?.end

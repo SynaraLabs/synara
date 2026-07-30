@@ -18,6 +18,7 @@ import {
   FinishCrisisButton,
   type CrisisEndSelection,
 } from './FinishCrisisButton';
+
 import { MedicationCard } from './MedicationCard';
 import { PainCard } from './PainCard';
 import { SymptomsCard } from './SymptomsCard';
@@ -56,13 +57,16 @@ const formatCrisisStart = (
     return 'Hora de inicio no registrada';
   }
 
-  return date.toLocaleString('es-AR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return date.toLocaleString(
+    'es-AR',
+    {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+  );
 };
 
 
@@ -91,17 +95,24 @@ const createExactPhaseTime = (
 const getAnatomicalPoints = (
   location: AnatomicalPainMap,
 ): PainLocationPoint[] => {
-  const points: PainLocationPoint[] = [];
+  const points:
+    PainLocationPoint[] = [];
 
   if (location.primary) {
-    points.push(location.primary);
+    points.push(
+      location.primary,
+    );
   }
 
   if (location.origin) {
-    points.push(location.origin);
+    points.push(
+      location.origin,
+    );
   }
 
-  points.push(...location.additional);
+  points.push(
+    ...(location.additional ?? []),
+  );
 
   return points;
 };
@@ -117,12 +128,16 @@ const createLocationRecord = (
       additional: [],
     }),
 
-    anatomicalMap: location,
+    anatomicalMap:
+      location,
 
     anatomicalPoints:
-      getAnatomicalPoints(location),
+      getAnatomicalPoints(
+        location,
+      ),
 
-    onsetPoint: location.origin,
+    onsetPoint:
+      location.origin,
 
     radiationPaths:
       location.radiation ?? [],
@@ -131,73 +146,84 @@ const createLocationRecord = (
       hadPreviousLocations ||
       location.changesSide === true,
 
-    notes: location.notes,
+    notes:
+      location.notes,
   };
 };
+
+
+const getCurrentCrisis =
+  (): CrisisPhase => {
+    return useMigraineStore.getState()
+      .episode.crisis;
+  };
+
+
+const ensureCrisisStarted =
+  (): CrisisPhase => {
+    const state =
+      useMigraineStore.getState();
+
+    const currentCrisis =
+      state.episode.crisis;
+
+    const currentTimeline =
+      state.episode.timeline;
+
+    if (
+      !currentTimeline?.crisisStart ||
+      !currentCrisis.active
+    ) {
+      state.startCrisis();
+
+      return useMigraineStore.getState()
+        .episode.crisis;
+    }
+
+    return currentCrisis;
+  };
 
 
 export function CrisisMode({
   onExit,
 }: Props) {
-  const crisis = useMigraineStore(
-    state => state.episode.crisis,
-  );
-
-  const timeline = useMigraineStore(
-    state => state.episode.timeline,
-  );
-
-  const updateCrisis =
+  const crisis =
     useMigraineStore(
-      state => state.updateCrisis,
+      state =>
+        state.episode.crisis,
     );
 
-  const startCrisis =
+  const timeline =
     useMigraineStore(
-      state => state.startCrisis,
+      state =>
+        state.episode.timeline,
     );
 
   const finishCrisis =
     useMigraineStore(
-      state => state.finishCrisis,
+      state =>
+        state.finishCrisis,
     );
 
-
-  const intensityHistory =
-    crisis.intensityHistory ?? [];
-
-  const events =
-    crisis.events ?? [];
 
   const symptoms =
     crisis.symptoms ?? [];
 
-  const locationHistory =
-    crisis.locationHistory ?? [];
-
 
   const crisisStart =
-    timeline?.crisisStart ||
-    crisis.startTime ||
+    timeline?.crisisStart ??
+    crisis.startTime ??
     crisis.time?.start?.value;
 
 
-  const anatomicalLocation =
+  const anatomicalLocation:
+    AnatomicalPainMap =
     crisis.anatomicalLocation ??
     crisis.locationDetails
       ?.anatomicalMap ?? {
       additional: [],
+      radiation: [],
     };
-
-
-  const ensureCrisisStarted = () => {
-    if (
-      !timeline?.crisisStart ||
-      !crisis.active
-    ) {
-      startCrisis();
-    }
-  };
 
 
   const handlePainChange = (
@@ -214,59 +240,84 @@ export function CrisisMode({
       return;
     }
 
-    ensureCrisisStarted();
+    const currentCrisis =
+      ensureCrisisStarted();
 
-    const updatedCrisis:
-      CrisisPhase = {
-      ...crisis,
-      active: true,
-      intensity: numericValue,
+    useMigraineStore
+      .getState()
+      .updateCrisis({
+        ...currentCrisis,
+
+        active: true,
+
+        intensity:
+          numericValue,
+      });
+  };
+
+
+  const handlePainRegister =
+    () => {
+      const now =
+        new Date().toISOString();
+
+      const currentCrisis =
+        ensureCrisisStarted();
+
+      const currentIntensityHistory =
+        currentCrisis
+          .intensityHistory ?? [];
+
+      const currentEvents =
+        currentCrisis.events ?? [];
+
+      useMigraineStore
+        .getState()
+        .updateCrisis({
+          ...currentCrisis,
+
+          active: true,
+
+          intensityHistory: [
+            ...currentIntensityHistory,
+
+            {
+              id: generateId(),
+
+              time: now,
+
+              intensity:
+                currentCrisis.intensity,
+
+              location:
+                currentCrisis
+                  .locationDetails,
+            },
+          ],
+
+          events: [
+            ...currentEvents,
+
+            {
+              id: generateId(),
+
+              type: 'intensity',
+
+              timestamp: now,
+
+              data: {
+                intensity:
+                  currentCrisis
+                    .intensity,
+
+                anatomicalLocation:
+                  currentCrisis
+                    .anatomicalLocation,
+              },
+            },
+          ],
+        });
     };
-
-    updateCrisis(updatedCrisis);
-  };
-
-
-  const handlePainRegister = () => {
-    const now =
-      new Date().toISOString();
-
-    ensureCrisisStarted();
-
-    updateCrisis({
-      ...crisis,
-
-      active: true,
-
-      intensityHistory: [
-        ...intensityHistory,
-        {
-          id: generateId(),
-          time: now,
-          intensity:
-            crisis.intensity,
-          location:
-            crisis.locationDetails,
-        },
-      ],
-
-      events: [
-        ...events,
-        {
-          id: generateId(),
-          type: 'intensity',
-          timestamp: now,
-          data: {
-            intensity:
-              crisis.intensity,
-
-            anatomicalLocation:
-              crisis.anatomicalLocation,
-          },
-        },
-      ],
-    });
-  };
 
 
   const handleLocationChange = (
@@ -275,54 +326,85 @@ export function CrisisMode({
     const now =
       new Date().toISOString();
 
-    ensureCrisisStarted();
+    const currentCrisis =
+      ensureCrisisStarted();
+
+    const currentLocationHistory =
+      currentCrisis
+        .locationHistory ?? [];
+
+    const currentEvents =
+      currentCrisis.events ?? [];
+
+    const normalizedLocation:
+      AnatomicalPainMap = {
+      ...location,
+
+      additional:
+        location.additional ?? [],
+
+      radiation:
+        location.radiation ?? [],
+    };
 
     const locationRecord =
       createLocationRecord(
-        location,
-        crisis.locationDetails,
-        locationHistory.length > 0,
+        normalizedLocation,
+
+        currentCrisis
+          .locationDetails,
+
+        currentLocationHistory.length >
+          0,
       );
 
-    updateCrisis({
-      ...crisis,
 
-      active: true,
+    useMigraineStore
+      .getState()
+      .updateCrisis({
+        ...currentCrisis,
 
-      anatomicalLocation:
-        location,
+        active: true,
 
-      locationDetails:
-        locationRecord,
+        anatomicalLocation:
+          normalizedLocation,
 
-      locationHistory: [
-        ...locationHistory,
-        {
-          id: generateId(),
+        locationDetails:
+          locationRecord,
 
-          occurredAt:
-            createExactPhaseTime(
-              now,
-            ),
+        locationHistory: [
+          ...currentLocationHistory,
 
-          location:
-            locationRecord,
-        },
-      ],
+          {
+            id: generateId(),
 
-      events: [
-        ...events,
-        {
-          id: generateId(),
-          type: 'location',
-          timestamp: now,
-          data: {
-            anatomicalLocation:
-              location,
+            occurredAt:
+              createExactPhaseTime(
+                now,
+              ),
+
+            location:
+              locationRecord,
           },
-        },
-      ],
-    });
+        ],
+
+        events: [
+          ...currentEvents,
+
+          {
+            id: generateId(),
+
+            type: 'location',
+
+            timestamp: now,
+
+            data: {
+              anatomicalLocation:
+                normalizedLocation,
+            },
+          },
+        ],
+      });
   };
 
 
@@ -343,63 +425,102 @@ export function CrisisMode({
     const now =
       new Date().toISOString();
 
-    ensureCrisisStarted();
+    const currentCrisis =
+      ensureCrisisStarted();
 
-    updateCrisis({
-      ...crisis,
+    const currentEvents =
+      currentCrisis.events ?? [];
 
-      active: true,
 
-      events: [
-        ...events,
-        {
-          id: generateId(),
-          type: 'medication',
-          timestamp: now,
-          data: {
-            medication:
-              normalizedMedication,
+    useMigraineStore
+      .getState()
+      .updateCrisis({
+        ...currentCrisis,
 
-            dose:
-              normalizedDose,
+        active: true,
+
+        events: [
+          ...currentEvents,
+
+          {
+            id: generateId(),
+
+            type: 'medication',
+
+            timestamp: now,
+
+            data: {
+              medication:
+                normalizedMedication,
+
+              dose:
+                normalizedDose,
+            },
           },
-        },
-      ],
-    });
+        ],
+      });
   };
 
 
   const handleSymptomToggle = (
     symptom: CrisisSymptom,
   ) => {
-    ensureCrisisStarted();
+    const currentCrisis =
+      ensureCrisisStarted();
+
+    const currentSymptoms =
+      currentCrisis.symptoms ?? [];
 
     const updatedSymptoms =
-      symptoms.includes(symptom)
-        ? symptoms.filter(
+      currentSymptoms.includes(
+        symptom,
+      )
+        ? currentSymptoms.filter(
             currentSymptom =>
               currentSymptom !==
               symptom,
           )
         : [
-            ...symptoms,
+            ...currentSymptoms,
             symptom,
           ];
 
-    updateCrisis({
-      ...crisis,
-      active: true,
-      symptoms: updatedSymptoms,
-    });
+
+    useMigraineStore
+      .getState()
+      .updateCrisis({
+        ...currentCrisis,
+
+        active: true,
+
+        symptoms:
+          updatedSymptoms,
+      });
   };
 
 
   const handleFinish = (
-    selection?: CrisisEndSelection,
+    selection?:
+      CrisisEndSelection,
   ) => {
     if (!selection) {
       return;
     }
+
+    /*
+     * Antes de finalizar, verificamos
+     * que el store conserve la última
+     * versión completa de la crisis.
+     */
+    const currentCrisis =
+      getCurrentCrisis();
+
+    useMigraineStore
+      .getState()
+      .updateCrisis(
+        currentCrisis,
+      );
+
 
     finishCrisis({
       endTime:
@@ -421,13 +542,18 @@ export function CrisisMode({
 
   return (
     <section
-      className={styles.container}
+      className={
+        styles.container
+      }
     >
       <header>
-        <h1>Crisis activa</h1>
+        <h1>
+          Crisis activa
+        </h1>
 
         <p>
           Desde{' '}
+
           {formatCrisisStart(
             crisisStart,
           )}
@@ -441,7 +567,9 @@ export function CrisisMode({
 
 
       <PainCard
-        crisis={crisis}
+        crisis={
+          crisis
+        }
         onChange={
           handlePainChange
         }
@@ -452,7 +580,9 @@ export function CrisisMode({
 
 
       <PainLocationSelector
-        value={anatomicalLocation}
+        value={
+          anatomicalLocation
+        }
         onChange={
           handleLocationChange
         }
@@ -468,7 +598,9 @@ export function CrisisMode({
 
 
       <SymptomsCard
-        symptoms={symptoms}
+        symptoms={
+          symptoms
+        }
         onToggle={
           handleSymptomToggle
         }
@@ -476,8 +608,12 @@ export function CrisisMode({
 
 
       <FinishCrisisButton
-        crisisStart={crisisStart}
-        onFinish={handleFinish}
+        crisisStart={
+          crisisStart
+        }
+        onFinish={
+          handleFinish
+        }
       />
     </section>
   );
