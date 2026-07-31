@@ -2,6 +2,10 @@ import {
   useMigraineStore,
 } from '../../migraine/store/migraine.store';
 
+import {
+  getBasicMigrainePatterns,
+} from '../utils/migrainePatternCalculations';
+
 import styles from '../dashboard.module.css';
 
 const insightIcons = {
@@ -11,116 +15,186 @@ const insightIcons = {
   lastEpisode: '⌁',
 };
 
-function formatDuration(totalMinutes: number) {
-  if (totalMinutes < 60) {
-    return `${totalMinutes} min`;
+const formatDuration = (
+  totalMinutes?: number,
+): string => {
+  if (totalMinutes === undefined) {
+    return 'Sin datos';
   }
 
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
+  if (totalMinutes < 60) {
+    return `${Math.round(
+      totalMinutes,
+    )} min`;
+  }
+
+  const hours =
+    Math.floor(
+      totalMinutes / 60,
+    );
+
+  const minutes =
+    Math.round(
+      totalMinutes % 60,
+    );
 
   if (minutes === 0) {
     return `${hours} h`;
   }
 
   return `${hours} h ${minutes} min`;
-}
+};
+
+const formatLastCrisisDate = (
+  value?: string,
+): {
+  date: string;
+  year: string;
+} => {
+  if (!value) {
+    return {
+      date: 'Sin registros',
+      year:
+        'Todavía no hay crisis registradas',
+    };
+  }
+
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return {
+      date: 'Sin registros',
+      year:
+        'Fecha no disponible',
+    };
+  }
+
+  return {
+    date:
+      date.toLocaleDateString(
+        'es-AR',
+        {
+          day: '2-digit',
+          month: 'short',
+        },
+      ),
+
+    year:
+      date.toLocaleDateString(
+        'es-AR',
+        {
+          year: 'numeric',
+        },
+      ),
+  };
+};
 
 export function InsightsSummary() {
-  const history = useMigraineStore(
-    state => state.history,
-  );
+  const history =
+    useMigraineStore(
+      state => state.history,
+    );
 
-  const totalEpisodes = history.length;
+  const patterns =
+    getBasicMigrainePatterns(
+      history,
+    );
 
-  const averageIntensity =
-    totalEpisodes > 0
-      ? (
-          history.reduce(
-            (total, episode) =>
-              total +
-              (episode.crisis?.intensity ?? 0),
-            0,
-          ) / totalEpisodes
-        ).toFixed(1)
-      : '0';
+  const lastCrisis =
+    formatLastCrisisDate(
+      patterns.lastCrisisDate,
+    );
 
-  const averageDurationMinutes =
-    totalEpisodes > 0
-      ? Math.round(
-          history.reduce(
-            (total, episode) =>
-              total +
-              (
-                episode.crisis
-                  ?.durationMinutes ?? 0
-              ),
-            0,
-          ) / totalEpisodes,
-        )
-      : 0;
-
-  const lastEpisode =
-    totalEpisodes > 0
-      ? new Date(
-          history[totalEpisodes - 1]
-            .createdAt,
-        )
-      : null;
+  const recordDescription =
+    patterns.totalRecords === 1
+      ? '1 registro clínico'
+      : `${patterns.totalRecords} registros clínicos`;
 
   const insights = [
     {
-      label: 'Episodios',
-      value: String(totalEpisodes),
+      label:
+        'Crisis registradas',
+
+      value:
+        String(
+          patterns.crisisCount,
+        ),
+
       description:
-        totalEpisodes === 1
-          ? 'Episodio registrado'
-          : 'Episodios registrados',
-      icon: insightIcons.episodes,
+        recordDescription,
+
+      icon:
+        insightIcons.episodes,
     },
     {
-      label: 'Intensidad promedio',
-      value: `${averageIntensity}/10`,
-      description: 'Según tu historial',
-      icon: insightIcons.intensity,
+      label:
+        'Intensidad promedio',
+
+      value:
+        patterns.crisisCount > 0
+          ? `${patterns.averageMaxPain}/10`
+          : 'Sin datos',
+
+      description:
+        patterns.crisisCount > 0
+          ? `Máxima registrada: ${patterns.maximumPain}/10`
+          : 'Todavía no hay crisis',
+
+      icon:
+        insightIcons.intensity,
     },
     {
-      label: 'Duración promedio',
-      value: formatDuration(
-        averageDurationMinutes,
-      ),
-      description: 'Tiempo de crisis',
-      icon: insightIcons.duration,
+      label:
+        'Duración promedio',
+
+      value:
+        formatDuration(
+          patterns
+            .averageCrisisDurationMinutes,
+        ),
+
+      description:
+        patterns
+          .averageCrisisDurationMinutes !==
+        undefined
+          ? 'Duración de la crisis'
+          : 'Sin crisis finalizadas',
+
+      icon:
+        insightIcons.duration,
     },
     {
-      label: 'Última crisis',
-      value: lastEpisode
-        ? lastEpisode.toLocaleDateString(
-            'es-AR',
-            {
-              day: '2-digit',
-              month: 'short',
-            },
-          )
-        : 'Sin registros',
-      description: lastEpisode
-        ? lastEpisode.toLocaleDateString(
-            'es-AR',
-            {
-              year: 'numeric',
-            },
-          )
-        : 'Todavía no hay episodios',
-      icon: insightIcons.lastEpisode,
+      label:
+        'Última crisis',
+
+      value:
+        lastCrisis.date,
+
+      description:
+        lastCrisis.year,
+
+      icon:
+        insightIcons.lastEpisode,
     },
   ];
 
   return (
     <section
-      className={styles.section}
+      className={
+        styles.section
+      }
       aria-labelledby="insights-title"
     >
-      <div className={styles.sectionHeader}>
+      <div
+        className={
+          styles.sectionHeader
+        }
+      >
         <div>
           <p
             className={
@@ -136,42 +210,62 @@ export function InsightsSummary() {
         </div>
 
         <span
-          className={styles.sectionHint}
+          className={
+            styles.sectionHint
+          }
         >
           Calculados con tus episodios
         </span>
       </div>
 
-      <div className={styles.summaryGrid}>
-        {insights.map(insight => (
-          <article
-            key={insight.label}
-            className={styles.summaryCard}
-          >
-            <div
+      <div
+        className={
+          styles.summaryGrid
+        }
+      >
+        {insights.map(
+          insight => (
+            <article
+              key={
+                insight.label
+              }
               className={
-                styles.summaryCardHeader
+                styles.summaryCard
               }
             >
-              <span
+              <div
                 className={
-                  styles.summaryIcon
+                  styles.summaryCardHeader
                 }
-                aria-hidden="true"
               >
-                {insight.icon}
+                <span
+                  className={
+                    styles.summaryIcon
+                  }
+                  aria-hidden="true"
+                >
+                  {
+                    insight.icon
+                  }
+                </span>
+
+                <p>
+                  {insight.label}
+                </p>
+              </div>
+
+              <h3>
+                {insight.value}
+              </h3>
+
+              <span>
+                {
+                  insight.description
+                }
               </span>
-
-              <p>{insight.label}</p>
-            </div>
-
-            <h3>{insight.value}</h3>
-
-            <span>
-              {insight.description}
-            </span>
-          </article>
-        ))}
+            </article>
+          ),
+        )}
       </div>
     </section>
   );

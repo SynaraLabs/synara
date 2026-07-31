@@ -1,14 +1,36 @@
-import { WelcomeCard } from './components/WelcomeCard';
-import { QuickActions } from './components/QuickActions';
-import { HealthSummary } from './components/HealthSummary';
-import { RealRecentEpisodes } from './components/RealRecentEpisodes';
-import { InsightsSummary } from './components/InsightsSummary';
+import {
+  HealthSummary,
+} from './components/HealthSummary';
+
+import {
+  InsightsSummary,
+} from './components/InsightsSummary';
+
+import {
+  MigrainePatternsSummary,
+} from './components/MigrainePatternsSummary';
+
+import {
+  QuickActions,
+} from './components/QuickActions';
+
+import {
+  RealRecentEpisodes,
+} from './components/RealRecentEpisodes';
+
+import {
+  WelcomeCard,
+} from './components/WelcomeCard';
 
 import styles from './dashboard.module.css';
 
 export function DashboardPage() {
   return (
-    <section className={styles.dashboard}>
+    <section
+      className={
+        styles.dashboard
+      }
+    >
       <WelcomeCard />
 
       <QuickActions />
@@ -16,6 +38,8 @@ export function DashboardPage() {
       <HealthSummary />
 
       <InsightsSummary />
+
+      <MigrainePatternsSummary />
 
       <RealRecentEpisodes />
     </section>
