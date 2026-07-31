@@ -12,7 +12,7 @@ const formatResponseTime = (
   minutes?: number,
 ): string => {
   if (minutes === undefined) {
-    return 'Sin datos';
+    return 'Sin registrar';
   }
 
   if (minutes < 60) {
@@ -42,14 +42,24 @@ export function TreatmentEffectivenessSummary({
   const effectiveness =
     patterns.effectiveness;
 
+  const hasUsefulData =
+    effectiveness.total > 0 ||
+    patterns
+      .averageResponseTimeMinutes !==
+      undefined;
+
+  if (!hasUsefulData) {
+    return null;
+  }
+
   const evaluatedDescription =
     effectiveness.total === 1
-      ? '1 tratamiento con resultado registrado'
-      : `${effectiveness.total} tratamientos con resultado registrado`;
+      ? '1 tratamiento evaluado'
+      : `${effectiveness.total} tratamientos evaluados`;
 
   const favorableDescription =
     effectiveness.total > 0
-      ? `${effectiveness.high} funcionaron mucho · ${effectiveness.medium} moderadamente`
+      ? `${effectiveness.high} con respuesta alta · ${effectiveness.medium} moderada`
       : 'Todavía no hay respuestas evaluadas';
 
   return (
@@ -123,7 +133,7 @@ export function TreatmentEffectivenessSummary({
               .positivePercentage !==
             undefined
               ? `${effectiveness.positivePercentage}%`
-              : 'Sin datos'}
+              : 'Sin registrar'}
           </h3>
 
           <span>
@@ -206,18 +216,16 @@ export function TreatmentEffectivenessSummary({
         </article>
       </div>
 
-      {effectiveness.total > 0 && (
-        <p
-          className={
-            styles.sectionHint
-          }
-        >
-          La efectividad refleja tu
-          percepción registrada y no
-          reemplaza una evaluación
-          profesional.
-        </p>
-      )}
+      <p
+        className={
+          styles.sectionHint
+        }
+      >
+        La efectividad refleja tu
+        percepción registrada y no
+        reemplaza una evaluación
+        profesional.
+      </p>
     </section>
   );
 }

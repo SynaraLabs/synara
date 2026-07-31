@@ -31,11 +31,11 @@ export function DashboardPage() {
         styles.dashboard
       }
     >
+      <HealthSummary />
+
       <WelcomeCard />
 
       <QuickActions />
-
-      <HealthSummary />
 
       <InsightsSummary />
 

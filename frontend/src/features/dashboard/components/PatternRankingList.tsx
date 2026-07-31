@@ -1,8 +1,12 @@
+import {
+  useState,
+} from 'react';
+
 import type {
   RankedPattern,
 } from '../utils/patternRankingCalculations';
 
-import styles from '../dashboard.module.css';
+import styles from './PatternRankingList.module.css';
 
 interface Props {
   id: string;
@@ -26,6 +30,9 @@ interface Props {
   footer?: string;
 }
 
+const INITIAL_VISIBLE_PATTERNS =
+  3;
+
 export function PatternRankingList({
   id,
   eyebrow,
@@ -38,161 +45,238 @@ export function PatternRankingList({
   emptyDescription,
   footer,
 }: Props) {
+  const [
+    showAll,
+    setShowAll,
+  ] = useState(false);
+
   const hasPatterns =
     patterns.length > 0;
+
+  const canExpand =
+    patterns.length >
+    INITIAL_VISIBLE_PATTERNS;
+
+  const visiblePatterns =
+    showAll
+      ? patterns
+      : patterns.slice(
+          0,
+          INITIAL_VISIBLE_PATTERNS,
+        );
+
+  const leadingPattern =
+    patterns[0];
+
+  const preview =
+    leadingPattern
+      ? `${leadingPattern.label} · ${leadingPattern.percentage}%`
+      : 'Aún sin datos';
 
   return (
     <section
       className={
         styles.section
       }
-      aria-labelledby={id}
     >
-      <div
+      <details
         className={
-          styles.sectionHeader
+          styles.panel
         }
       >
-        <div>
-          <p
-            className={
-              styles.sectionEyebrow
-            }
-          >
-            {eyebrow}
-          </p>
-
-          <h2 id={id}>
-            {title}
-          </h2>
-        </div>
-
-        <span
+        <summary
           className={
-            styles.sectionHint
-          }
-        >
-          {hint}
-        </span>
-      </div>
-
-      {hasPatterns ? (
-        <div
-          className={
-            styles.episodesList
-          }
-        >
-          {patterns.map(
-            pattern => (
-              <article
-                key={
-                  pattern.value
-                }
-                className={
-                  styles.episodeCard
-                }
-              >
-                <div
-                  className={
-                    styles.episodeMain
-                  }
-                >
-                  <span
-                    className={
-                      styles.episodeIcon
-                    }
-                    aria-hidden="true"
-                  >
-                    {icon}
-                  </span>
-
-                  <div>
-                    <h3>
-                      {pattern.label}
-                    </h3>
-
-                    <div
-                      className={
-                        styles.episodeDetails
-                      }
-                    >
-                      <span>
-                        Registrado en{' '}
-                        <strong>
-                          {
-                            pattern.count
-                          }
-                        </strong>{' '}
-                        {pattern.count ===
-                        1
-                          ? 'crisis'
-                          : 'crisis'}
-                      </span>
-
-                      <span>
-                        De{' '}
-                        <strong>
-                          {
-                            totalEpisodes
-                          }
-                        </strong>{' '}
-                        crisis analizadas
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <strong
-                  className={
-                    styles.episodeDate
-                  }
-                  aria-label={`${pattern.percentage} por ciento de las crisis`}
-                >
-                  {
-                    pattern.percentage
-                  }
-                  %
-                </strong>
-              </article>
-            ),
-          )}
-        </div>
-      ) : (
-        <div
-          className={
-            styles.emptyState
+            styles.summary
           }
         >
           <span
             className={
-              styles.emptyStateIcon
+              styles.heading
             }
-            aria-hidden="true"
           >
-            {icon}
+            <span
+              className={
+                styles.icon
+              }
+              aria-hidden="true"
+            >
+              {icon}
+            </span>
+
+            <span>
+              <span
+                className={
+                  styles.eyebrow
+                }
+              >
+                {eyebrow}
+              </span>
+
+              <span
+                id={id}
+                className={
+                  styles.title
+                }
+              >
+                {title}
+              </span>
+            </span>
           </span>
 
-          <div>
-            <h3>
-              {emptyTitle}
-            </h3>
+          <span
+            className={
+              styles.preview
+            }
+          >
+            <span
+              className={
+                styles.previewText
+              }
+            >
+              {preview}
+            </span>
 
-            <p>
-              {emptyDescription}
-            </p>
-          </div>
-        </div>
-      )}
+            <span
+              className={
+                styles.chevron
+              }
+              aria-hidden="true"
+            >
+              ⌄
+            </span>
+          </span>
+        </summary>
 
-      {hasPatterns && footer && (
-        <p
+        <div
           className={
-            styles.sectionHint
+            styles.content
           }
+          aria-labelledby={id}
         >
-          {footer}
-        </p>
-      )}
+          <p
+            className={
+              styles.hint
+            }
+          >
+            {hint}
+          </p>
+
+          {hasPatterns ? (
+            <>
+              <div
+                className={
+                  styles.list
+                }
+              >
+                {visiblePatterns.map(
+                  pattern => (
+                    <article
+                      key={
+                        pattern.value
+                      }
+                      className={
+                        styles.row
+                      }
+                    >
+                      <div
+                        className={
+                          styles.rowMain
+                        }
+                      >
+                        <strong
+                          className={
+                            styles.rowTitle
+                          }
+                        >
+                          {
+                            pattern.label
+                          }
+                        </strong>
+
+                        <span
+                          className={
+                            styles.rowMeta
+                          }
+                        >
+                          En{' '}
+                          {
+                            pattern.count
+                          }{' '}
+                          de{' '}
+                          {
+                            totalEpisodes
+                          }{' '}
+                          crisis analizadas
+                        </span>
+                      </div>
+
+                      <strong
+                        className={
+                          styles.percentage
+                        }
+                        aria-label={`${pattern.percentage} por ciento de las crisis`}
+                      >
+                        {
+                          pattern.percentage
+                        }
+                        %
+                      </strong>
+                    </article>
+                  ),
+                )}
+              </div>
+
+              {canExpand && (
+                <button
+                  type="button"
+                  className={
+                    styles.toggle
+                  }
+                  aria-expanded={
+                    showAll
+                  }
+                  onClick={() =>
+                    setShowAll(
+                      current =>
+                        !current,
+                    )
+                  }
+                >
+                  {showAll
+                    ? 'Mostrar menos'
+                    : `Ver todos (${patterns.length})`}
+                </button>
+              )}
+
+              {footer && (
+                <p
+                  className={
+                    styles.footer
+                  }
+                >
+                  {footer}
+                </p>
+              )}
+            </>
+          ) : (
+            <div>
+              <strong>
+                {emptyTitle}
+              </strong>
+
+              <p
+                className={
+                  styles.empty
+                }
+              >
+                {
+                  emptyDescription
+                }
+              </p>
+            </div>
+          )}
+        </div>
+      </details>
     </section>
   );
 }

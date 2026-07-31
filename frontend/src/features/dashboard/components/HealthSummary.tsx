@@ -1,126 +1,219 @@
 import {
-  useProfileStore,
-} from '../../profile/store/profile.store';
+  useNavigate,
+} from 'react-router-dom';
 
 import {
   useMigraineStore,
 } from '../../migraine/store/migraine.store';
 
+import type {
+  MigraineEpisode,
+} from '../../migraine/types/migraine.types';
+
 import styles from '../dashboard.module.css';
 
-const healthIcons = {
-  sleep: '☾',
-  stress: '≈',
-  pain: '◉',
+const getActivePhaseLabel = (
+  episode: MigraineEpisode,
+): string => {
+  const postdromeOpen =
+    episode.postdrome.present &&
+    episode.postdrome.status !==
+      'ended' &&
+    !episode.postdrome.endTime &&
+    !episode.postdrome.time?.end
+      ?.value;
+
+  const auraOpen =
+    episode.aura.present &&
+    episode.aura.status !==
+      'ended' &&
+    episode.aura.status !==
+      'uncertain';
+
+  const premonitoryOpen =
+    episode.premonitory.present &&
+    episode.premonitory.status !==
+      'ended' &&
+    episode.premonitory.status !==
+      'uncertain';
+
+  if (episode.crisis.active) {
+    return 'Crisis activa';
+  }
+
+  if (postdromeOpen) {
+    return 'Recuperación en curso';
+  }
+
+  if (auraOpen) {
+    return 'Aura activa';
+  }
+
+  if (premonitoryOpen) {
+    return 'Señales premonitorias';
+  }
+
+  return 'Episodio en curso';
+};
+
+const formatLastUpdate = (
+  episode: MigraineEpisode,
+): string => {
+  const value =
+    episode.updatedAt ??
+    episode.createdAt;
+
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return 'Actualización no disponible';
+  }
+
+  return date.toLocaleString(
+    'es-AR',
+    {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+  );
 };
 
 export function HealthSummary() {
-  const profile = useProfileStore(
-    state => state.profile,
-  );
+  const navigate =
+    useNavigate();
 
-  const crisis = useMigraineStore(
-    state => state.episode.crisis,
-  );
+  const activeEpisode =
+    useMigraineStore(
+      state =>
+        state.activeEpisode,
+    );
 
-  const sleepHours =
-    profile.lifestyle?.averageSleepHours;
+  if (!activeEpisode) {
+    return null;
+  }
 
-  const baselineStress =
-    profile.emotionalContext?.baselineStress;
+  const phaseLabel =
+    getActivePhaseLabel(
+      activeEpisode,
+    );
 
-  const healthData = [
-    {
-      label: 'Sueño',
-      value:
-        sleepHours !== undefined
-          ? `${sleepHours} h`
-          : 'Sin registrar',
-      description: 'Promedio habitual',
-      icon: healthIcons.sleep,
-      status: 'neutral',
-    },
-    {
-      label: 'Estrés',
-      value:
-        baselineStress !== undefined
-          ? `${baselineStress}/10`
-          : 'Sin registrar',
-      description: 'Nivel habitual',
-      icon: healthIcons.stress,
-      status:
-        baselineStress !== undefined &&
-        baselineStress >= 7
-          ? 'warning'
-          : 'neutral',
-    },
-    {
-      label: 'Dolor',
-      value: `${crisis.intensity} / 10`,
-      description: crisis.active
-        ? 'Crisis activa'
-        : 'Sin crisis activa',
-      icon: healthIcons.pain,
-      status: crisis.active
-        ? 'active'
-        : 'neutral',
-    },
-  ];
+  const lastUpdate =
+    formatLastUpdate(
+      activeEpisode,
+    );
 
   return (
     <section
-      className={styles.section}
-      aria-labelledby="health-summary-title"
+      className={
+        styles.section
+      }
+      aria-labelledby="active-episode-title"
     >
-      <div className={styles.sectionHeader}>
+      <div
+        className={
+          styles.sectionHeader
+        }
+      >
         <div>
-          <p className={styles.sectionEyebrow}>
-            Resumen personal
+          <p
+            className={
+              styles.sectionEyebrow
+            }
+          >
+            Ahora
           </p>
 
-          <h2 id="health-summary-title">
-            Estado actual
+          <h2
+            id="active-episode-title"
+          >
+            Tenés un registro en curso
           </h2>
         </div>
 
-        <span className={styles.sectionHint}>
-          Datos de tu perfil y registros
+        <span
+          className={
+            styles.sectionHint
+          }
+        >
+          Tus cambios se guardan
+          automáticamente
         </span>
       </div>
 
-      <div className={styles.summaryGrid}>
-        {healthData.map(item => (
-          <article
-            key={item.label}
-            className={`${styles.summaryCard} ${
-              item.status === 'active'
-                ? styles.summaryCardActive
-                : ''
-            } ${
-              item.status === 'warning'
-                ? styles.summaryCardWarning
-                : ''
-            }`}
+      <article
+        className={
+          styles.episodeCard
+        }
+      >
+        <div
+          className={
+            styles.episodeMain
+          }
+        >
+          <span
+            className={
+              styles.episodeIcon
+            }
+            aria-hidden="true"
           >
+            ◉
+          </span>
+
+          <div>
+            <h3>
+              {phaseLabel}
+            </h3>
+
             <div
-              className={styles.summaryCardHeader}
+              className={
+                styles.episodeDetails
+              }
             >
-              <span
-                className={styles.summaryIcon}
-                aria-hidden="true"
-              >
-                {item.icon}
+              {activeEpisode
+                .crisis.active && (
+                <span>
+                  Dolor actual:{' '}
+
+                  <strong>
+                    {
+                      activeEpisode
+                        .crisis
+                        .intensity
+                    }
+                    /10
+                  </strong>
+                </span>
+              )}
+
+              <span>
+                Última actualización:{' '}
+
+                <strong>
+                  {lastUpdate}
+                </strong>
               </span>
-
-              <p>{item.label}</p>
             </div>
+          </div>
+        </div>
 
-            <h3>{item.value}</h3>
-
-            <span>{item.description}</span>
-          </article>
-        ))}
-      </div>
+        <button
+          type="button"
+          onClick={() =>
+            navigate(
+              '/migraine',
+            )
+          }
+        >
+          Continuar registro
+        </button>
+      </article>
     </section>
   );
 }

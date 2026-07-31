@@ -6,7 +6,7 @@ import {
   getBasicMigrainePatterns,
 } from '../utils/migrainePatternCalculations';
 
-import styles from '../dashboard.module.css';
+import styles from './InsightsSummary.module.css';
 
 const insightIcons = {
   episodes: '▥',
@@ -55,7 +55,7 @@ const formatLastCrisisDate = (
     return {
       date: 'Sin registros',
       year:
-        'Todavía no hay crisis registradas',
+        'Todavía no hay crisis',
     };
   }
 
@@ -133,7 +133,7 @@ export function InsightsSummary() {
     },
     {
       label:
-        'Intensidad promedio',
+        'Intensidad habitual',
 
       value:
         patterns.crisisCount > 0
@@ -142,7 +142,7 @@ export function InsightsSummary() {
 
       description:
         patterns.crisisCount > 0
-          ? `Máxima registrada: ${patterns.maximumPain}/10`
+          ? `Máxima: ${patterns.maximumPain}/10`
           : 'Todavía no hay crisis',
 
       icon:
@@ -150,7 +150,7 @@ export function InsightsSummary() {
     },
     {
       label:
-        'Duración promedio',
+        'Duración habitual',
 
       value:
         formatDuration(
@@ -162,7 +162,7 @@ export function InsightsSummary() {
         patterns
           .averageCrisisDurationMinutes !==
         undefined
-          ? 'Duración de la crisis'
+          ? 'Promedio por crisis'
           : 'Sin crisis finalizadas',
 
       icon:
@@ -192,35 +192,35 @@ export function InsightsSummary() {
     >
       <div
         className={
-          styles.sectionHeader
+          styles.header
         }
       >
         <div>
           <p
             className={
-              styles.sectionEyebrow
+              styles.eyebrow
             }
           >
-            Tendencias personales
+            Resumen personal
           </p>
 
           <h2 id="insights-title">
-            Insights SYNARA
+            Tu panorama
           </h2>
         </div>
 
         <span
           className={
-            styles.sectionHint
+            styles.hint
           }
         >
-          Calculados con tus episodios
+          Se actualiza con tus episodios
         </span>
       </div>
 
       <div
         className={
-          styles.summaryGrid
+          styles.grid
         }
       >
         {insights.map(
@@ -230,17 +230,17 @@ export function InsightsSummary() {
                 insight.label
               }
               className={
-                styles.summaryCard
+                styles.card
               }
             >
               <div
                 className={
-                  styles.summaryCardHeader
+                  styles.cardHeader
                 }
               >
                 <span
                   className={
-                    styles.summaryIcon
+                    styles.icon
                   }
                   aria-hidden="true"
                 >
@@ -249,16 +249,28 @@ export function InsightsSummary() {
                   }
                 </span>
 
-                <p>
+                <p
+                  className={
+                    styles.label
+                  }
+                >
                   {insight.label}
                 </p>
               </div>
 
-              <h3>
+              <strong
+                className={
+                  styles.value
+                }
+              >
                 {insight.value}
-              </h3>
+              </strong>
 
-              <span>
+              <span
+                className={
+                  styles.description
+                }
+              >
                 {
                   insight.description
                 }

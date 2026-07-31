@@ -13,7 +13,7 @@ const navigationItems = [
   },
   {
     to: '/migraine',
-    label: 'Migrañas',
+    label: 'Registrar',
     icon: '◉',
   },
   {
@@ -21,41 +21,20 @@ const navigationItems = [
     label: 'Historial',
     icon: '◷',
   },
-  {
-    to: '/profile',
-    label: 'Perfil',
-    icon: '○',
-  },
-  {
-    to: '/anxiety',
-    label: 'Ansiedad',
-    icon: '≈',
-  },
-  {
-    to: '/panic',
-    label: 'Pánico',
-    icon: '!',
-  },
-  {
-    to: '/journal',
-    label: 'Diario',
-    icon: '✎',
-  },
-  {
-    to: '/reports',
-    label: 'Reportes',
-    icon: '▥',
-  },
 ];
 
 export function Sidebar() {
   return (
     <aside
-      className={styles.sidebar}
+      className={
+        styles.sidebar
+      }
       aria-label="Navegación principal"
     >
       <div
-        className={styles.sidebarBrand}
+        className={
+          styles.sidebarBrand
+        }
       >
         <span
           className={
@@ -67,48 +46,58 @@ export function Sidebar() {
         </span>
 
         <div>
-          <strong>SYNARA</strong>
+          <strong>
+            SYNARA
+          </strong>
 
           <small>
-            Salud personal
+            Migraña personal
           </small>
         </div>
       </div>
 
       <nav>
         <ul>
-          {navigationItems.map(item => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                end={item.end}
-                className={({
-                  isActive,
-                }) =>
-                  isActive
-                    ? styles.activeLink
-                    : undefined
-                }
-              >
-                <span
-                  className={
-                    styles.navIcon
+          {navigationItems.map(
+            item => (
+              <li key={item.to}>
+                <NavLink
+                  to={item.to}
+                  end={item.end}
+                  className={({
+                    isActive,
+                  }) =>
+                    isActive
+                      ? styles.activeLink
+                      : undefined
                   }
-                  aria-hidden="true"
+                  aria-label={
+                    item.to ===
+                    '/migraine'
+                      ? 'Registrar migraña'
+                      : item.label
+                  }
                 >
-                  {item.icon}
-                </span>
+                  <span
+                    className={
+                      styles.navIcon
+                    }
+                    aria-hidden="true"
+                  >
+                    {item.icon}
+                  </span>
 
-                <span
-                  className={
-                    styles.navLabel
-                  }
-                >
-                  {item.label}
-                </span>
-              </NavLink>
-            </li>
-          ))}
+                  <span
+                    className={
+                      styles.navLabel
+                    }
+                  >
+                    {item.label}
+                  </span>
+                </NavLink>
+              </li>
+            ),
+          )}
         </ul>
       </nav>
     </aside>

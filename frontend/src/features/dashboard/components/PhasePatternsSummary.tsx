@@ -3,7 +3,7 @@ import type {
   PhasePresencePattern,
 } from '../utils/phasePatternCalculations';
 
-import styles from '../dashboard.module.css';
+import styles from './PhasePatternsSummary.module.css';
 
 interface Props {
   patterns: PhasePatterns;
@@ -29,39 +29,53 @@ function PhaseCard({
 }: PhaseCardProps) {
   const description =
     totalCrises === 0
-      ? 'Todavía no hay crisis registradas'
-      : `Presente en ${pattern.count} de ${totalCrises} crisis`;
+      ? 'Todavía no hay crisis'
+      : `En ${pattern.count} de ${totalCrises} crisis`;
 
   return (
     <article
       className={
-        styles.summaryCard
+        styles.card
       }
     >
       <div
         className={
-          styles.summaryCardHeader
+          styles.cardHeader
         }
       >
         <span
           className={
-            styles.summaryIcon
+            styles.icon
           }
           aria-hidden="true"
         >
           {icon}
         </span>
 
-        <p>{label}</p>
+        <p
+          className={
+            styles.label
+          }
+        >
+          {label}
+        </p>
       </div>
 
-      <h3>
+      <strong
+        className={
+          styles.value
+        }
+      >
         {totalCrises > 0
           ? `${pattern.percentage}%`
           : 'Sin datos'}
-      </h3>
+      </strong>
 
-      <span>
+      <span
+        className={
+          styles.description
+        }
+      >
         {description}
       </span>
     </article>
@@ -89,17 +103,17 @@ export function PhasePatternsSummary({
     patterns
       .averageCrisesPer30Days !==
     undefined
-      ? 'Promedio cada 30 días'
-      : 'Crisis en últimos 30 días';
+      ? 'Promedio mensual'
+      : 'Últimos 30 días';
 
   const frequencyDescription =
     patterns
       .averageCrisesPer30Days !==
     undefined
-      ? `Calculado sobre ${patterns.observationPeriodDays} días de registros`
+      ? `Estimado con ${patterns.observationPeriodDays} días`
       : totalCrises > 1
-        ? 'Se necesitan al menos 7 días entre registros para estimar un promedio'
-        : 'Se necesitan más registros para estimar una frecuencia';
+        ? 'Faltan más días para estimar el promedio'
+        : 'Se necesitan más registros';
 
   return (
     <section
@@ -110,13 +124,13 @@ export function PhasePatternsSummary({
     >
       <div
         className={
-          styles.sectionHeader
+          styles.header
         }
       >
         <div>
           <p
             className={
-              styles.sectionEyebrow
+              styles.eyebrow
             }
           >
             Perfil de los episodios
@@ -131,7 +145,7 @@ export function PhasePatternsSummary({
 
         <span
           className={
-            styles.sectionHint
+            styles.hint
           }
         >
           Comparación entre crisis
@@ -140,38 +154,50 @@ export function PhasePatternsSummary({
 
       <div
         className={
-          styles.summaryGrid
+          styles.grid
         }
       >
         <article
           className={
-            styles.summaryCard
+            styles.card
           }
         >
           <div
             className={
-              styles.summaryCardHeader
+              styles.cardHeader
             }
           >
             <span
               className={
-                styles.summaryIcon
+                styles.icon
               }
               aria-hidden="true"
             >
               #
             </span>
 
-            <p>
+            <p
+              className={
+                styles.label
+              }
+            >
               {frequencyLabel}
             </p>
           </div>
 
-          <h3>
+          <strong
+            className={
+              styles.value
+            }
+          >
             {frequencyValue}
-          </h3>
+          </strong>
 
-          <span>
+          <span
+            className={
+              styles.description
+            }
+          >
             {
               frequencyDescription
             }
@@ -179,7 +205,7 @@ export function PhasePatternsSummary({
         </article>
 
         <PhaseCard
-          label="Señales premonitorias"
+          label="Premonitorio"
           icon="◌"
           pattern={
             patterns.premonitory

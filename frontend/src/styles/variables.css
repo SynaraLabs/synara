@@ -1,22 +1,52 @@
 :root {
   /* ==========================
-     COLORS
+     SYNARA COLOR SYSTEM
+
+     Agua:
+     claridad y continuidad.
+
+     Madera:
+     evolución y recuperación.
+
+     Tierra:
+     estabilidad y contención.
   ========================== */
 
-  --color-primary: #2f6fed;
-  --color-primary-hover: #2558bc;
+  --color-background: #f3f2ee;
 
-  --color-success: #2e8b57;
-  --color-warning: #d97706;
-  --color-danger: #dc2626;
+  --color-surface: #fcfbf8;
+  --color-surface-soft: #eaf0ed;
+  --color-surface-muted: #e1e8e4;
 
-  --color-background: #f7f9fc;
-  --color-surface: #ffffff;
+  --color-text: #354441;
+  --color-text-strong: #1b2c29;
+  --color-text-soft: #60716d;
+  --color-text-secondary: #60716d;
+  --color-text-disabled: #899692;
 
-  --color-text: #1f2937;
-  --color-text-secondary: #6b7280;
+  --color-primary: #315f62;
+  --color-primary-hover: #274d50;
+  --color-primary-soft: #dce9e6;
+  --color-primary-border: #b9d0cb;
 
-  --color-border: #e5e7eb;
+  --color-secondary: #716c87;
+  --color-secondary-soft: #ece9f1;
+
+  --color-success: #477363;
+  --color-success-soft: #e1eee8;
+
+  --color-warning: #896438;
+  --color-warning-soft: #f4eadb;
+
+  --color-danger: #98565c;
+  --color-danger-hover: #80474d;
+  --color-danger-soft: #f3e4e5;
+
+  --color-border: #d8e0dc;
+  --color-border-strong: #c2d0cb;
+
+  --color-focus:
+    rgba(49, 95, 98, 0.22);
 
   /* ==========================
      SPACING
@@ -33,27 +63,65 @@
   --space-12: 48px;
 
   /* ==========================
-     RADIUS
+     RADII
   ========================== */
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
+  --radius-small: 8px;
+  --radius-medium: 14px;
+  --radius-large: 20px;
+  --radius-pill: 999px;
+
+  /*
+   * Compatibility aliases for
+   * existing components.
+   */
+
+  --radius-sm:
+    var(--radius-small);
+
+  --radius-md:
+    var(--radius-medium);
+
+  --radius-lg:
+    var(--radius-large);
+
   --radius-xl: 24px;
 
   /* ==========================
      SHADOWS
   ========================== */
 
-  --shadow-sm: 0 2px 6px rgba(0,0,0,.05);
+  --shadow-small:
+    0 1px 2px
+      rgba(27, 44, 41, 0.04),
+    0 4px 14px
+      rgba(27, 44, 41, 0.045);
 
-  --shadow-md: 0 6px 18px rgba(0,0,0,.08);
+  --shadow-medium:
+    0 10px 28px
+      rgba(27, 44, 41, 0.075);
 
-  --shadow-lg: 0 12px 30px rgba(0,0,0,.10);
+  --shadow-large:
+    0 16px 42px
+      rgba(27, 44, 41, 0.09);
+
+  /*
+   * Compatibility aliases.
+   */
+
+  --shadow-sm:
+    var(--shadow-small);
+
+  --shadow-md:
+    var(--shadow-medium);
+
+  --shadow-lg:
+    var(--shadow-large);
 
   /* ==========================
-     TRANSITIONS
+     INTERACTION
   ========================== */
 
-  --transition: .2s ease;
+  --transition:
+    160ms ease;
 }
