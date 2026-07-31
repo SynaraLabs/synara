@@ -13,7 +13,8 @@ export function getMaxPainIntensity(
     episode.crisis.intensity,
 
     ...episode.crisis.intensityHistory.map(
-      record => record.intensity,
+      record =>
+        record.intensity,
     ),
   ];
 
@@ -27,7 +28,8 @@ export function getAveragePainIntensity(
     episode.crisis.intensity,
 
     ...episode.crisis.intensityHistory.map(
-      record => record.intensity,
+      record =>
+        record.intensity,
     ),
   ];
 
@@ -51,6 +53,30 @@ export function getAveragePainIntensity(
 // DATE CALCULATIONS
 // ===============================
 
+const getMinuteTimestamp = (
+  value: string,
+): number | undefined => {
+  const date = new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return undefined;
+  }
+
+  /*
+   * La interfaz registra y muestra
+   * horarios con precisión de minutos.
+   * Los segundos internos no deben
+   * alterar la duración visible.
+   */
+  date.setSeconds(0, 0);
+
+  return date.getTime();
+};
+
 export function calculateMinutes(
   start?: string,
   end?: string,
@@ -60,14 +86,18 @@ export function calculateMinutes(
   }
 
   const startTime =
-    new Date(start).getTime();
+    getMinuteTimestamp(
+      start,
+    );
 
   const endTime =
-    new Date(end).getTime();
+    getMinuteTimestamp(
+      end,
+    );
 
   if (
-    Number.isNaN(startTime) ||
-    Number.isNaN(endTime)
+    startTime === undefined ||
+    endTime === undefined
   ) {
     return undefined;
   }
@@ -76,11 +106,12 @@ export function calculateMinutes(
     endTime - startTime;
 
   if (difference < 0) {
-    return 0;
+    return undefined;
   }
 
-  return Math.floor(
-    difference / 60000,
+  return (
+    difference /
+    60_000
   );
 }
 
@@ -125,8 +156,11 @@ export function getEpisodeDuration(
   episode: MigraineEpisode,
 ): number | undefined {
   return calculateMinutes(
-    episode.timeline?.episodeStart,
-    episode.timeline?.episodeEnd,
+    episode.timeline
+      ?.episodeStart,
+
+    episode.timeline
+      ?.episodeEnd,
   );
 }
 
@@ -134,10 +168,13 @@ export function getPremonitoryDuration(
   episode: MigraineEpisode,
 ): number | undefined {
   return calculateMinutes(
-    episode.timeline?.premonitoryStart,
+    episode.timeline
+      ?.premonitoryStart,
 
-    episode.timeline?.premonitoryEnd ??
-      episode.timeline?.crisisStart,
+    episode.timeline
+      ?.premonitoryEnd ??
+      episode.timeline
+        ?.crisisStart,
   );
 }
 
@@ -145,10 +182,13 @@ export function getAuraDuration(
   episode: MigraineEpisode,
 ): number | undefined {
   return calculateMinutes(
-    episode.timeline?.auraStart,
+    episode.timeline
+      ?.auraStart,
 
-    episode.timeline?.auraEnd ??
-      episode.timeline?.crisisStart,
+    episode.timeline
+      ?.auraEnd ??
+      episode.timeline
+        ?.crisisStart,
   );
 }
 
@@ -156,8 +196,11 @@ export function getCrisisDuration(
   episode: MigraineEpisode,
 ): number | undefined {
   return calculateMinutes(
-    episode.timeline?.crisisStart,
-    episode.timeline?.crisisEnd,
+    episode.timeline
+      ?.crisisStart,
+
+    episode.timeline
+      ?.crisisEnd,
   );
 }
 
@@ -165,8 +208,11 @@ export function getPostdromeDuration(
   episode: MigraineEpisode,
 ): number | undefined {
   return calculateMinutes(
-    episode.timeline?.postdromeStart,
-    episode.timeline?.postdromeEnd,
+    episode.timeline
+      ?.postdromeStart,
+
+    episode.timeline
+      ?.postdromeEnd,
   );
 }
 
@@ -176,20 +222,29 @@ export function getPostdromeDuration(
 
 export interface EpisodeSummary {
   maxPain: number;
+
   averagePain: number;
 
   episodeDuration?: number;
+
   premonitoryDuration?: number;
+
   auraDuration?: number;
+
   crisisDuration?: number;
+
   postdromeDuration?: number;
 
   symptomCount: number;
+
   triggerCount: number;
+
   medicationCount: number;
 
   hadPremonitory: boolean;
+
   hadAura: boolean;
+
   hadPostdrome: boolean;
 
   firstMedicationTime?: string;
@@ -202,42 +257,61 @@ export function getEpisodeSummary(
     episode.crisis.events
       .filter(
         event =>
-          event.type === 'medication',
+          event.type ===
+          'medication',
       )
       .sort(
-        (a, b) =>
+        (
+          first,
+          second,
+        ) =>
           new Date(
-            a.timestamp,
+            first.timestamp,
           ).getTime() -
           new Date(
-            b.timestamp,
+            second.timestamp,
           ).getTime(),
       );
 
   return {
     maxPain:
-      getMaxPainIntensity(episode),
+      getMaxPainIntensity(
+        episode,
+      ),
 
     averagePain:
-      getAveragePainIntensity(episode),
+      getAveragePainIntensity(
+        episode,
+      ),
 
     episodeDuration:
-      getEpisodeDuration(episode),
+      getEpisodeDuration(
+        episode,
+      ),
 
     premonitoryDuration:
-      getPremonitoryDuration(episode),
+      getPremonitoryDuration(
+        episode,
+      ),
 
     auraDuration:
-      getAuraDuration(episode),
+      getAuraDuration(
+        episode,
+      ),
 
     crisisDuration:
-      getCrisisDuration(episode),
+      getCrisisDuration(
+        episode,
+      ),
 
     postdromeDuration:
-      getPostdromeDuration(episode),
+      getPostdromeDuration(
+        episode,
+      ),
 
     symptomCount:
-      episode.crisis.symptoms.length,
+      episode.crisis.symptoms
+        .length,
 
     triggerCount:
       episode.triggers.length,
@@ -255,6 +329,7 @@ export function getEpisodeSummary(
       episode.postdrome.present,
 
     firstMedicationTime:
-      medicationEvents[0]?.timestamp,
+      medicationEvents[0]
+        ?.timestamp,
   };
 }

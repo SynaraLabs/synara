@@ -6,7 +6,6 @@ import type {
   TimePrecision,
 } from '../types/migraine.types';
 
-
 export interface FinishCrisisTransitionInput {
   endTime: string;
 
@@ -14,11 +13,15 @@ export interface FinishCrisisTransitionInput {
 
   recordMode: RecordMode;
 
-  hadPostdrome: boolean;
+  /*
+   * Campo temporal de compatibilidad.
+   * La transición ya no utiliza este
+   * valor: el postdromo siempre inicia.
+   */
+  hadPostdrome?: boolean;
 
   updatedAt: string;
 }
-
 
 const isValidDate = (
   value?: string,
@@ -31,7 +34,6 @@ const isValidDate = (
   );
 };
 
-
 const buildPhaseTime = (
   value: string,
   precision: TimePrecision,
@@ -43,7 +45,6 @@ const buildPhaseTime = (
     recordMode,
   };
 };
-
 
 const getCrisisStart = (
   episode: MigraineEpisode,
@@ -59,7 +60,6 @@ const getCrisisStart = (
     isValidDate,
   );
 };
-
 
 const calculateDurationMinutes = (
   startTime?: string,
@@ -85,7 +85,6 @@ const calculateDurationMinutes = (
   );
 };
 
-
 export function applyFinishCrisisTransition(
   episode: MigraineEpisode,
   input: FinishCrisisTransitionInput,
@@ -94,7 +93,6 @@ export function applyFinishCrisisTransition(
     endTime,
     precision,
     recordMode,
-    hadPostdrome,
     updatedAt,
   } = input;
 
@@ -105,14 +103,18 @@ export function applyFinishCrisisTransition(
     crisisStart
       ? buildPhaseTime(
           crisisStart,
+
           episode.crisis.time?.start
-            ?.precision ?? 'exact',
+            ?.precision ??
+            'exact',
+
           episode.crisis.time?.start
             ?.recordMode ??
             episode.recordMode ??
             'realTime',
         )
-      : episode.crisis.time?.start;
+      : episode.crisis.time
+          ?.start;
 
   const crisisEndTime =
     buildPhaseTime(
@@ -121,45 +123,48 @@ export function applyFinishCrisisTransition(
       recordMode,
     );
 
+  /*
+   * El postdromo comienza siempre en
+   * el mismo instante en que termina
+   * la crisis.
+   */
   const postdromeStartTime =
-    hadPostdrome
-      ? buildPhaseTime(
-          endTime,
-          precision,
-          recordMode,
-        )
-      : undefined;
+    buildPhaseTime(
+      endTime,
+      precision,
+      recordMode,
+    );
 
   const timeline:
     MigraineTimeline = {
     ...(episode.timeline ?? {}),
 
-    crisisEnd: endTime,
+    crisisEnd:
+      endTime,
 
     postdromeStart:
-      hadPostdrome
-        ? endTime
-        : undefined,
+      endTime,
 
-    postdromeEnd: undefined,
+    postdromeEnd:
+      undefined,
 
     crisis: {
       ...episode.timeline?.crisis,
 
-      start: crisisStartTime,
+      start:
+        crisisStartTime,
 
-      end: crisisEndTime,
+      end:
+        crisisEndTime,
     },
 
-    postdrome:
-      hadPostdrome
-        ? {
-            start:
-              postdromeStartTime,
+    postdrome: {
+      start:
+        postdromeStartTime,
 
-            end: undefined,
-          }
-        : undefined,
+      end:
+        undefined,
+    },
   };
 
   return {
@@ -167,27 +172,22 @@ export function applyFinishCrisisTransition(
 
     updatedAt,
 
-    /*
-     * Se mantiene esta etapa para que
-     * la pantalla pueda cerrar otras
-     * fases abiertas antes de completar
-     * definitivamente el episodio.
-     */
-    status: 'postdrome',
+    status:
+      'postdrome',
 
     completionReason:
-      hadPostdrome
-        ? undefined
-        : 'crisisWithoutPostdrome',
+      undefined,
 
     timeline,
 
     crisis: {
       ...episode.crisis,
 
-      active: false,
+      active:
+        false,
 
-      status: 'ended',
+      status:
+        'ended',
 
       endTime,
 
@@ -200,76 +200,52 @@ export function applyFinishCrisisTransition(
       time: {
         ...episode.crisis.time,
 
-        start: crisisStartTime,
+        start:
+          crisisStartTime,
 
-        end: crisisEndTime,
+        end:
+          crisisEndTime,
       },
     },
 
-    postdrome: hadPostdrome
-      ? {
-          ...episode.postdrome,
+    postdrome: {
+      ...episode.postdrome,
 
-          present: true,
+      present:
+        true,
 
-          status: 'active',
+      status:
+        'active',
 
-          /*
-           * El inicio del postdromo
-           * coincide siempre con el
-           * final de la crisis.
-           */
-          startTime: endTime,
+      startTime:
+        endTime,
 
-          endTime: undefined,
+      endTime:
+        undefined,
 
-          time: {
-            ...episode.postdrome.time,
+      time: {
+        ...episode.postdrome.time,
 
-            start:
-              postdromeStartTime,
+        start:
+          postdromeStartTime,
 
-            end: undefined,
-          },
+        end:
+          undefined,
+      },
 
-          symptoms:
-            episode.postdrome
-              .symptoms ?? [],
+      symptoms:
+        episode.postdrome
+          .symptoms ?? [],
 
-          updates:
-            episode.postdrome
-              .updates ?? [],
+      updates:
+        episode.postdrome
+          .updates ?? [],
 
-          recoveryLevel:
-            undefined,
+      recoveryLevel:
+        undefined,
 
-          recoveryHours:
-            undefined,
-        }
-      : {
-          ...episode.postdrome,
-
-          present: false,
-
-          status: 'notStarted',
-
-          startTime: undefined,
-
-          endTime: undefined,
-
-          time: undefined,
-
-          symptoms: [],
-
-          updates: [],
-
-          recoveryLevel:
-            undefined,
-
-          recoveryHours:
-            undefined,
-
-          notes: undefined,
-        },
+      recoveryHours:
+        undefined,
+    },
   };
 }

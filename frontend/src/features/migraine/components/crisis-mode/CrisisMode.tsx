@@ -10,24 +10,41 @@ import type {
   PhaseTime,
 } from '../../types/migraine.types';
 
+import type {
+  NonPharmacologicalMeasure,
+} from '../../data/nonPharmacologicalMeasureCatalog';
+
+import {
+  getFunctionalCapacityRecords,
+  getMedicationRecords,
+  getNonPharmacologicalRecords,
+} from '../../utils/crisisEventRecords';
+
 import { useMigraineStore } from '../../store/migraine.store';
 
 import { PainLocationSelector } from '../common/PainLocationSelector';
+
+import { CrisisEvolutionCard } from './CrisisEvolutionCard';
 
 import {
   FinishCrisisButton,
   type CrisisEndSelection,
 } from './FinishCrisisButton';
 
+import {
+  FunctionalCapacityCard,
+  type AffectedActivity,
+  type FunctionalCapacityLevel,
+} from './FunctionalCapacityCard';
+
 import { MedicationCard } from './MedicationCard';
+import { NonPharmacologicalCard } from './NonPharmacologicalCard';
 import { PainCard } from './PainCard';
 import { SymptomsCard } from './SymptomsCard';
-
 
 interface Props {
   onExit?: () => void;
 }
-
 
 const generateId = (): string => {
   if (
@@ -42,7 +59,6 @@ const generateId = (): string => {
     .toString(16)
     .slice(2)}`;
 };
-
 
 const formatCrisisStart = (
   value?: string,
@@ -69,7 +85,6 @@ const formatCrisisStart = (
   );
 };
 
-
 const isValidPainIntensity = (
   value: number,
 ): value is PainIntensity => {
@@ -80,7 +95,6 @@ const isValidPainIntensity = (
   );
 };
 
-
 const createExactPhaseTime = (
   value: string,
 ): PhaseTime => {
@@ -90,7 +104,6 @@ const createExactPhaseTime = (
     recordMode: 'realTime',
   };
 };
-
 
 const getAnatomicalPoints = (
   location: AnatomicalPainMap,
@@ -116,7 +129,6 @@ const getAnatomicalPoints = (
 
   return points;
 };
-
 
 const createLocationRecord = (
   location: AnatomicalPainMap,
@@ -151,13 +163,11 @@ const createLocationRecord = (
   };
 };
 
-
 const getCurrentCrisis =
   (): CrisisPhase => {
     return useMigraineStore.getState()
       .episode.crisis;
   };
-
 
 const ensureCrisisStarted =
   (): CrisisPhase => {
@@ -183,6 +193,21 @@ const ensureCrisisStarted =
     return currentCrisis;
   };
 
+const normalizeLocalDateTime = (
+  value: string,
+): string | null => {
+  const date = new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return null;
+  }
+
+  return date.toISOString();
+};
 
 export function CrisisMode({
   onExit,
@@ -205,16 +230,28 @@ export function CrisisMode({
         state.finishCrisis,
     );
 
-
   const symptoms =
     crisis.symptoms ?? [];
 
+  const medicationRecords =
+    getMedicationRecords(
+      crisis,
+    );
+
+  const nonPharmacologicalRecords =
+    getNonPharmacologicalRecords(
+      crisis,
+    );
+
+  const functionalCapacityRecords =
+    getFunctionalCapacityRecords(
+      crisis,
+    );
 
   const crisisStart =
     timeline?.crisisStart ??
     crisis.startTime ??
     crisis.time?.start?.value;
-
 
   const anatomicalLocation:
     AnatomicalPainMap =
@@ -224,7 +261,6 @@ export function CrisisMode({
       additional: [],
       radiation: [],
     };
-
 
   const handlePainChange = (
     value: string,
@@ -247,14 +283,11 @@ export function CrisisMode({
       .getState()
       .updateCrisis({
         ...currentCrisis,
-
         active: true,
-
         intensity:
           numericValue,
       });
   };
-
 
   const handlePainRegister =
     () => {
@@ -275,20 +308,15 @@ export function CrisisMode({
         .getState()
         .updateCrisis({
           ...currentCrisis,
-
           active: true,
 
           intensityHistory: [
             ...currentIntensityHistory,
-
             {
               id: generateId(),
-
               time: now,
-
               intensity:
                 currentCrisis.intensity,
-
               location:
                 currentCrisis
                   .locationDetails,
@@ -297,19 +325,14 @@ export function CrisisMode({
 
           events: [
             ...currentEvents,
-
             {
               id: generateId(),
-
               type: 'intensity',
-
               timestamp: now,
-
               data: {
                 intensity:
                   currentCrisis
                     .intensity,
-
                 anatomicalLocation:
                   currentCrisis
                     .anatomicalLocation,
@@ -318,7 +341,6 @@ export function CrisisMode({
           ],
         });
     };
-
 
   const handleLocationChange = (
     location: AnatomicalPainMap,
@@ -339,10 +361,8 @@ export function CrisisMode({
     const normalizedLocation:
       AnatomicalPainMap = {
       ...location,
-
       additional:
         location.additional ?? [],
-
       radiation:
         location.radiation ?? [],
     };
@@ -350,39 +370,30 @@ export function CrisisMode({
     const locationRecord =
       createLocationRecord(
         normalizedLocation,
-
         currentCrisis
           .locationDetails,
-
         currentLocationHistory.length >
           0,
       );
-
 
     useMigraineStore
       .getState()
       .updateCrisis({
         ...currentCrisis,
-
         active: true,
-
         anatomicalLocation:
           normalizedLocation,
-
         locationDetails:
           locationRecord,
 
         locationHistory: [
           ...currentLocationHistory,
-
           {
             id: generateId(),
-
             occurredAt:
               createExactPhaseTime(
                 now,
               ),
-
             location:
               locationRecord,
           },
@@ -390,14 +401,10 @@ export function CrisisMode({
 
         events: [
           ...currentEvents,
-
           {
             id: generateId(),
-
             type: 'location',
-
             timestamp: now,
-
             data: {
               anatomicalLocation:
                 normalizedLocation,
@@ -407,23 +414,30 @@ export function CrisisMode({
       });
   };
 
-
   const handleMedicationRegister = (
     medication: string,
     dose: string,
+    takenAt: string,
+    notes: string,
   ) => {
     const normalizedMedication =
       medication.trim();
 
-    const normalizedDose =
-      dose.trim();
-
-    if (!normalizedMedication) {
+    if (
+      !normalizedMedication ||
+      !takenAt
+    ) {
       return;
     }
 
-    const now =
-      new Date().toISOString();
+    const normalizedTakenAt =
+      normalizeLocalDateTime(
+        takenAt,
+      );
+
+    if (!normalizedTakenAt) {
+      return;
+    }
 
     const currentCrisis =
       ensureCrisisStarted();
@@ -431,50 +445,183 @@ export function CrisisMode({
     const currentEvents =
       currentCrisis.events ?? [];
 
-
     useMigraineStore
       .getState()
       .updateCrisis({
         ...currentCrisis,
-
         active: true,
 
         events: [
           ...currentEvents,
-
           {
             id: generateId(),
-
             type: 'medication',
-
-            timestamp: now,
-
+            timestamp:
+              normalizedTakenAt,
             data: {
               medication:
                 normalizedMedication,
-
               dose:
-                normalizedDose,
+                dose.trim(),
+              takenAt:
+                normalizedTakenAt,
+              recordedAt:
+                new Date()
+                  .toISOString(),
+              notes:
+                notes.trim(),
             },
           },
         ],
       });
   };
 
+  const handleNonPharmacologicalRegister =
+    (
+      measures:
+        NonPharmacologicalMeasure[],
+      appliedAt: string,
+      notes: string,
+    ) => {
+      if (
+        measures.length === 0 ||
+        !appliedAt
+      ) {
+        return;
+      }
+
+      const normalizedAppliedAt =
+        normalizeLocalDateTime(
+          appliedAt,
+        );
+
+      if (!normalizedAppliedAt) {
+        return;
+      }
+
+      const currentCrisis =
+        ensureCrisisStarted();
+
+      const currentEvents =
+        currentCrisis.events ?? [];
+
+      useMigraineStore
+        .getState()
+        .updateCrisis({
+          ...currentCrisis,
+          active: true,
+
+          events: [
+            ...currentEvents,
+            {
+              id: generateId(),
+              type: 'note',
+              timestamp:
+                normalizedAppliedAt,
+              data: {
+                kind:
+                  'nonPharmacological',
+                measures: [
+                  ...measures,
+                ],
+                appliedAt:
+                  normalizedAppliedAt,
+                recordedAt:
+                  new Date()
+                    .toISOString(),
+                notes:
+                  notes.trim(),
+              },
+            },
+          ],
+        });
+    };
+
+  const handleFunctionalCapacityRegister =
+    (
+      level:
+        FunctionalCapacityLevel,
+      affectedActivities:
+        AffectedActivity[],
+      occurredAt: string,
+      notes: string,
+    ) => {
+      if (!occurredAt) {
+        return;
+      }
+
+      const normalizedOccurredAt =
+        normalizeLocalDateTime(
+          occurredAt,
+        );
+
+      if (!normalizedOccurredAt) {
+        return;
+      }
+
+      const currentCrisis =
+        ensureCrisisStarted();
+
+      const currentEvents =
+        currentCrisis.events ?? [];
+
+      useMigraineStore
+        .getState()
+        .updateCrisis({
+          ...currentCrisis,
+          active: true,
+          unableToFunction:
+            level === 'unable',
+
+          events: [
+            ...currentEvents,
+            {
+              id: generateId(),
+              type: 'note',
+              timestamp:
+                normalizedOccurredAt,
+              data: {
+                kind:
+                  'functionalCapacity',
+                level,
+                affectedActivities: [
+                  ...affectedActivities,
+                ],
+                occurredAt:
+                  normalizedOccurredAt,
+                recordedAt:
+                  new Date()
+                    .toISOString(),
+                notes:
+                  notes.trim(),
+              },
+            },
+          ],
+        });
+    };
 
   const handleSymptomToggle = (
     symptom: CrisisSymptom,
   ) => {
+    const now =
+      new Date().toISOString();
+
     const currentCrisis =
       ensureCrisisStarted();
 
     const currentSymptoms =
       currentCrisis.symptoms ?? [];
 
-    const updatedSymptoms =
+    const currentEvents =
+      currentCrisis.events ?? [];
+
+    const symptomWasActive =
       currentSymptoms.includes(
         symptom,
-      )
+      );
+
+    const updatedSymptoms =
+      symptomWasActive
         ? currentSymptoms.filter(
             currentSymptom =>
               currentSymptom !==
@@ -485,19 +632,34 @@ export function CrisisMode({
             symptom,
           ];
 
-
     useMigraineStore
       .getState()
       .updateCrisis({
         ...currentCrisis,
-
         active: true,
-
         symptoms:
           updatedSymptoms,
+
+        events: [
+          ...currentEvents,
+          {
+            id: generateId(),
+            type: 'symptom',
+            timestamp: now,
+            data: {
+              symptom,
+              action:
+                symptomWasActive
+                  ? 'removed'
+                  : 'added',
+              symptoms: [
+                ...updatedSymptoms,
+              ],
+            },
+          },
+        ],
       });
   };
-
 
   const handleFinish = (
     selection?:
@@ -507,11 +669,6 @@ export function CrisisMode({
       return;
     }
 
-    /*
-     * Antes de finalizar, verificamos
-     * que el store conserve la última
-     * versión completa de la crisis.
-     */
     const currentCrisis =
       getCurrentCrisis();
 
@@ -521,24 +678,19 @@ export function CrisisMode({
         currentCrisis,
       );
 
-
     finishCrisis({
       endTime:
         selection.endTime,
-
       precision:
         selection.precision,
-
       recordMode:
         selection.recordMode,
-
       hadPostdrome:
         selection.hadPostdrome,
     });
 
     onExit?.();
   };
-
 
   return (
     <section
@@ -553,7 +705,6 @@ export function CrisisMode({
 
         <p>
           Desde{' '}
-
           {formatCrisisStart(
             crisisStart,
           )}
@@ -565,11 +716,8 @@ export function CrisisMode({
         </p>
       </header>
 
-
       <PainCard
-        crisis={
-          crisis
-        }
+        crisis={crisis}
         onChange={
           handlePainChange
         }
@@ -577,7 +725,6 @@ export function CrisisMode({
           handlePainRegister
         }
       />
-
 
       <PainLocationSelector
         value={
@@ -589,23 +736,43 @@ export function CrisisMode({
         title="¿Dónde sentís el dolor?"
       />
 
-
       <MedicationCard
+        records={
+          medicationRecords
+        }
         onRegister={
           handleMedicationRegister
         }
       />
 
+      <NonPharmacologicalCard
+        records={
+          nonPharmacologicalRecords
+        }
+        onRegister={
+          handleNonPharmacologicalRegister
+        }
+      />
+
+      <FunctionalCapacityCard
+        records={
+          functionalCapacityRecords
+        }
+        onRegister={
+          handleFunctionalCapacityRegister
+        }
+      />
 
       <SymptomsCard
-        symptoms={
-          symptoms
-        }
+        symptoms={symptoms}
         onToggle={
           handleSymptomToggle
         }
       />
 
+      <CrisisEvolutionCard
+        crisis={crisis}
+      />
 
       <FinishCrisisButton
         crisisStart={

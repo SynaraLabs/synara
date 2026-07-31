@@ -1,6 +1,13 @@
 import type {
   TreatmentEffectiveness,
+  TreatmentType,
 } from '../types/migraine.types';
+
+import {
+  TREATMENT_EFFECTIVENESS_OPTIONS,
+  TREATMENT_TYPE_OPTIONS,
+  treatmentRequiresMedicationDetails,
+} from '../data/treatmentCatalog';
 
 import {
   useMigraineStore,
@@ -8,46 +15,79 @@ import {
 
 import styles from '../migraine.module.css';
 
-const effectivenessOptions: {
-  value: TreatmentEffectiveness;
-  label: string;
-}[] = [
-  {
-    value: 'none',
-    label: 'No funcionó',
-  },
-  {
-    value: 'low',
-    label: 'Funcionó poco',
-  },
-  {
-    value: 'medium',
-    label: 'Funcionó moderadamente',
-  },
-  {
-    value: 'high',
-    label: 'Funcionó mucho',
-  },
-];
+const isTreatmentType = (
+  value: string,
+): value is TreatmentType => {
+  return TREATMENT_TYPE_OPTIONS.some(
+    option =>
+      option.value === value,
+  );
+};
+
+const isTreatmentEffectiveness = (
+  value: string,
+): value is TreatmentEffectiveness => {
+  return TREATMENT_EFFECTIVENESS_OPTIONS.some(
+    option =>
+      option.value === value,
+  );
+};
 
 export function TreatmentSelector() {
-  const treatment = useMigraineStore(
-    state => state.episode.treatment,
-  );
+  const treatment =
+    useMigraineStore(
+      state =>
+        state.episode.treatment,
+    );
 
   const updateTreatment =
     useMigraineStore(
-      state => state.updateTreatment,
+      state =>
+        state.updateTreatment,
     );
 
-  const hasTreatmentData = Boolean(
-    treatment.medication?.trim() ||
+  const selectedType =
+    treatment.type ??
+    'medication';
+
+  const showMedicationDetails =
+    treatmentRequiresMedicationDetails(
+      selectedType,
+    );
+
+  const sideEffectsValue =
+    (
+      treatment.sideEffects ??
+      []
+    ).join(', ');
+
+  const hasTreatmentData =
+    Boolean(
+      treatment.type ||
+      treatment.medication?.trim() ||
       treatment.dose?.trim() ||
       treatment.takenAt ||
       treatment.effectiveness ||
       treatment.responseTimeMinutes !==
-        undefined,
-  );
+        undefined ||
+      treatment.sideEffects?.length ||
+      treatment.notes?.trim(),
+    );
+
+  const handleTypeChange = (
+    value: string,
+  ) => {
+    if (
+      !isTreatmentType(value)
+    ) {
+      return;
+    }
+
+    updateTreatment({
+      ...treatment,
+      type: value,
+    });
+  };
 
   const handleMedicationChange = (
     value: string,
@@ -81,10 +121,13 @@ export function TreatmentSelector() {
   ) => {
     updateTreatment({
       ...treatment,
+
       effectiveness:
-        value === ''
-          ? undefined
-          : (value as TreatmentEffectiveness),
+        isTreatmentEffectiveness(
+          value,
+        )
+          ? value
+          : undefined,
     });
   };
 
@@ -94,16 +137,20 @@ export function TreatmentSelector() {
     if (value === '') {
       updateTreatment({
         ...treatment,
-        responseTimeMinutes: undefined,
+        responseTimeMinutes:
+          undefined,
       });
 
       return;
     }
 
-    const parsedValue = Number(value);
+    const parsedValue =
+      Number(value);
 
     if (
-      Number.isNaN(parsedValue) ||
+      !Number.isFinite(
+        parsedValue,
+      ) ||
       parsedValue < 0
     ) {
       return;
@@ -111,8 +158,38 @@ export function TreatmentSelector() {
 
     updateTreatment({
       ...treatment,
+
       responseTimeMinutes:
-        parsedValue,
+        Math.round(
+          parsedValue,
+        ),
+    });
+  };
+
+  const handleSideEffectsChange = (
+    value: string,
+  ) => {
+    const sideEffects =
+      value
+        .split(',')
+        .map(
+          sideEffect =>
+            sideEffect.trim(),
+        )
+        .filter(Boolean);
+
+    updateTreatment({
+      ...treatment,
+      sideEffects,
+    });
+  };
+
+  const handleNotesChange = (
+    value: string,
+  ) => {
+    updateTreatment({
+      ...treatment,
+      notes: value,
     });
   };
 
@@ -129,9 +206,8 @@ export function TreatmentSelector() {
         </h3>
 
         <p>
-          Registrá qué tomaste durante
-          la crisis y cómo respondió tu
-          cuerpo.
+          Registrá qué utilizaste y cómo
+          respondió tu cuerpo.
         </p>
       </div>
 
@@ -141,48 +217,87 @@ export function TreatmentSelector() {
         }
       >
         <label>
-          Medicación
+          Tipo de tratamiento
 
-          <input
-            type="text"
-            value={
-              treatment.medication ?? ''
-            }
-            placeholder="Ejemplo: ibuprofeno"
-            autoComplete="off"
+          <select
+            value={selectedType}
             onChange={event =>
-              handleMedicationChange(
+              handleTypeChange(
                 event.target.value,
               )
             }
-          />
+          >
+            {TREATMENT_TYPE_OPTIONS.map(
+              option => (
+                <option
+                  key={option.value}
+                  value={option.value}
+                >
+                  {option.label}
+                </option>
+              ),
+            )}
+          </select>
         </label>
 
-        <label>
-          Dosis
+        {showMedicationDetails && (
+          <>
+            <label>
+              {selectedType ===
+              'supplement'
+                ? 'Suplemento'
+                : 'Medicación'}
 
-          <input
-            type="text"
-            value={
-              treatment.dose ?? ''
-            }
-            placeholder="Ejemplo: 600 mg"
-            autoComplete="off"
-            onChange={event =>
-              handleDoseChange(
-                event.target.value,
-              )
-            }
-          />
-        </label>
+              <input
+                type="text"
+                value={
+                  treatment.medication ??
+                  ''
+                }
+                placeholder={
+                  selectedType ===
+                  'supplement'
+                    ? 'Ejemplo: magnesio'
+                    : 'Ejemplo: ibuprofeno'
+                }
+                autoComplete="off"
+                onChange={event =>
+                  handleMedicationChange(
+                    event.target.value,
+                  )
+                }
+              />
+            </label>
+
+            <label>
+              Dosis
+
+              <input
+                type="text"
+                value={
+                  treatment.dose ??
+                  ''
+                }
+                placeholder="Ejemplo: 600 mg"
+                autoComplete="off"
+                onChange={event =>
+                  handleDoseChange(
+                    event.target.value,
+                  )
+                }
+              />
+            </label>
+          </>
+        )}
 
         <label>
-          Hora de toma
+          Hora de uso
 
           <input
             type="time"
             value={
-              treatment.takenAt ?? ''
+              treatment.takenAt ??
+              ''
             }
             onChange={event =>
               handleTakenAtChange(
@@ -210,7 +325,7 @@ export function TreatmentSelector() {
               Seleccionar resultado
             </option>
 
-            {effectivenessOptions.map(
+            {TREATMENT_EFFECTIVENESS_OPTIONS.map(
               option => (
                 <option
                   key={option.value}
@@ -253,8 +368,46 @@ export function TreatmentSelector() {
               }
             />
 
-            <span>minutos</span>
+            <span>
+              minutos
+            </span>
           </div>
+        </label>
+
+        <label>
+          Efectos secundarios
+
+          <input
+            type="text"
+            value={
+              sideEffectsValue
+            }
+            placeholder="Separalos con comas"
+            autoComplete="off"
+            onChange={event =>
+              handleSideEffectsChange(
+                event.target.value,
+              )
+            }
+          />
+        </label>
+
+        <label>
+          Notas opcionales
+
+          <textarea
+            value={
+              treatment.notes ??
+              ''
+            }
+            placeholder="Ej.: alivió el dolor, pero continuaron las náuseas"
+            rows={3}
+            onChange={event =>
+              handleNotesChange(
+                event.target.value,
+              )
+            }
+          />
         </label>
       </div>
 

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import {
+  useState,
+} from 'react';
 
 import { AuraSelector } from '../components/AuraSelector';
 
@@ -10,12 +12,12 @@ import {
 import { PhaseDateSelector } from '../components/common/PhaseDateSelector';
 import { CrisisMode } from '../components/crisis-mode/CrisisMode';
 import { MigraineDevTools } from '../components/dev/MigraineDevTools';
-import { PostdromeSelector } from '../components/PostdromeSelector';
 import { PremonitorySelector } from '../components/PremonitorySelector';
-import { TreatmentSelector } from '../components/TreatmentSelector';
-import { TriggerSelector } from '../components/TriggerSelector';
+import { RecoveryStage } from '../components/RecoveryStage';
 
-import { useMigraineStore } from '../store/migraine.store';
+import {
+  useMigraineStore,
+} from '../store/migraine.store';
 
 import styles from '../migraine.module.css';
 
@@ -25,18 +27,23 @@ type PremonitoryCrisisOutcome =
   | 'continuesWithCrisis'
   | 'unknownEnd';
 
-function createLocalDateTime(
+const createLocalDateTime = (
   date: string,
-): string | undefined {
+): string | undefined => {
   const [
     yearValue,
     monthValue,
     dayValue,
   ] = date.split('-');
 
-  const year = Number(yearValue);
-  const month = Number(monthValue);
-  const day = Number(dayValue);
+  const year =
+    Number(yearValue);
+
+  const month =
+    Number(monthValue);
+
+  const day =
+    Number(dayValue);
 
   if (
     !Number.isInteger(year) ||
@@ -48,15 +55,16 @@ function createLocalDateTime(
 
   const now = new Date();
 
-  const selectedDate = new Date(
-    year,
-    month - 1,
-    day,
-    now.getHours(),
-    now.getMinutes(),
-    now.getSeconds(),
-    0,
-  );
+  const selectedDate =
+    new Date(
+      year,
+      month - 1,
+      day,
+      now.getHours(),
+      now.getMinutes(),
+      now.getSeconds(),
+      0,
+    );
 
   const isValidDate =
     !Number.isNaN(
@@ -66,7 +74,8 @@ function createLocalDateTime(
       year &&
     selectedDate.getMonth() ===
       month - 1 &&
-    selectedDate.getDate() === day;
+    selectedDate.getDate() ===
+      day;
 
   if (
     !isValidDate ||
@@ -77,7 +86,7 @@ function createLocalDateTime(
   }
 
   return selectedDate.toISOString();
-}
+};
 
 export function MigrainePage() {
   const [
@@ -109,33 +118,22 @@ export function MigrainePage() {
     PhaseEndSelection | null
   >(null);
 
-  const [
-    showRecoveryPremonitoryOptions,
-    setShowRecoveryPremonitoryOptions,
-  ] = useState(false);
-
-  const [
-    showRecoveryPremonitoryEnd,
-    setShowRecoveryPremonitoryEnd,
-  ] = useState(false);
-
-  const [
-    premonitoryRecoveryFeedback,
-    setPremonitoryRecoveryFeedback,
-  ] = useState('');
-
-  const episode = useMigraineStore(
-    state => state.activeEpisode,
-  );
+  const episode =
+    useMigraineStore(
+      state =>
+        state.activeEpisode,
+    );
 
   const startEpisode =
     useMigraineStore(
-      state => state.startEpisode,
+      state =>
+        state.startEpisode,
     );
 
   const startCrisis =
     useMigraineStore(
-      state => state.startCrisis,
+      state =>
+        state.startCrisis,
     );
 
   const resolvePremonitory =
@@ -146,21 +144,19 @@ export function MigrainePage() {
 
   const updateTimeline =
     useMigraineStore(
-      state => state.updateTimeline,
-    );
-
-  const completeEpisode =
-    useMigraineStore(
-      state => state.completeEpisode,
+      state =>
+        state.updateTimeline,
     );
 
   const isCrisisActive =
-    episode?.crisis.active === true;
+    episode?.crisis.active ===
+    true;
 
   const isRecoveryStage =
     Boolean(episode) &&
     !isCrisisActive &&
-    episode?.status === 'postdrome';
+    episode?.status ===
+      'postdrome';
 
   const isTrackingStage =
     Boolean(episode) &&
@@ -188,43 +184,6 @@ export function MigrainePage() {
     episode?.premonitory.time
       ?.start?.value;
 
-  const crisisEnd =
-    episode?.timeline?.crisisEnd ??
-    episode?.crisis.endTime ??
-    episode?.crisis.time?.end?.value;
-
-  const postdromeStart =
-    episode?.timeline
-      ?.postdromeStart ??
-    episode?.postdrome.startTime ??
-    episode?.postdrome.time
-      ?.start?.value;
-
-  const postdromeEnd =
-    episode?.timeline
-      ?.postdromeEnd ??
-    episode?.postdrome.endTime ??
-    episode?.postdrome.time
-      ?.end?.value;
-
-  const hasPostdrome =
-    episode?.postdrome.present ===
-      true ||
-    Boolean(postdromeStart);
-
-  const isPostdromeEnded =
-    episode?.postdrome.status ===
-      'ended' ||
-    Boolean(postdromeEnd);
-
-  const isPostdromeActive =
-    hasPostdrome &&
-    !isPostdromeEnded;
-
-  const canCompleteEpisode =
-    !hasOpenPremonitory &&
-    !isPostdromeActive;
-
   const resetCrisisStartFlow =
     () => {
       setShowCrisisDate(false);
@@ -246,25 +205,8 @@ export function MigrainePage() {
       );
     };
 
-  const resetRecoveryPremonitoryFlow =
-    () => {
-      setShowRecoveryPremonitoryOptions(
-        false,
-      );
-
-      setShowRecoveryPremonitoryEnd(
-        false,
-      );
-
-      setPremonitoryRecoveryFeedback(
-        '',
-      );
-    };
-
   const handleNewEpisode = () => {
     resetCrisisStartFlow();
-
-    resetRecoveryPremonitoryFlow();
 
     startEpisode();
   };
@@ -353,25 +295,20 @@ export function MigrainePage() {
     setShowCrisisDate(true);
   };
 
-  const handlePremonitoryEnd =
-    (
-      selection: PhaseEndSelection,
-    ) => {
-      setPremonitoryEndSelection(
-        selection,
-      );
+  const handlePremonitoryEnd = (
+    selection:
+      PhaseEndSelection,
+  ) => {
+    setPremonitoryEndSelection(
+      selection,
+    );
 
-      setShowPremonitoryEndSelector(
-        false,
-      );
+    setShowPremonitoryEndSelector(
+      false,
+    );
 
-      setShowCrisisDate(true);
-    };
-
-  const handlePremonitoryContinues =
-    () => {
-      handleContinuesWithCrisis();
-    };
+    setShowCrisisDate(true);
+  };
 
   const applyPremonitoryOutcome = (
     crisisStart: string,
@@ -388,9 +325,11 @@ export function MigrainePage() {
         outcome:
           'evolvedToCrisis',
 
-        endTime: crisisStart,
+        endTime:
+          crisisStart,
 
-        precision: 'exact',
+        precision:
+          'exact',
       });
 
       return;
@@ -441,7 +380,8 @@ export function MigrainePage() {
         outcome:
           'evolvedToCrisis',
 
-        precision: 'unknown',
+        precision:
+          'unknown',
 
         recordMode:
           'retrospective',
@@ -457,7 +397,9 @@ export function MigrainePage() {
     }
 
     const selectedDate =
-      createLocalDateTime(date);
+      createLocalDateTime(
+        date,
+      );
 
     if (!selectedDate) {
       return;
@@ -473,7 +415,8 @@ export function MigrainePage() {
           ?.episodeStart ??
         selectedDate,
 
-      crisisStart: selectedDate,
+      crisisStart:
+        selectedDate,
     });
 
     startCrisis();
@@ -481,172 +424,11 @@ export function MigrainePage() {
     resetCrisisStartFlow();
   };
 
-  const handleOpenRecoveryResolution =
-    () => {
-      setShowRecoveryPremonitoryOptions(
-        true,
-      );
-
-      setShowRecoveryPremonitoryEnd(
-        false,
-      );
-
-      setPremonitoryRecoveryFeedback(
-        '',
-      );
-    };
-
-  const handleCancelRecoveryResolution =
-    () => {
-      setShowRecoveryPremonitoryOptions(
-        false,
-      );
-
-      setShowRecoveryPremonitoryEnd(
-        false,
-      );
-    };
-
-  const handleEndedWithCrisis =
-    () => {
-      if (!crisisEnd) {
-        setPremonitoryRecoveryFeedback(
-          'No se encontró la hora de finalización de la crisis.',
-        );
-
-        return;
-      }
-
-      resolvePremonitory({
-        outcome:
-          'evolvedToCrisis',
-
-        endTime: crisisEnd,
-
-        precision:
-          episode?.crisis.time?.end
-            ?.precision ??
-          'exact',
-
-        recordMode:
-          episode?.crisis.time?.end
-            ?.recordMode,
-      });
-
-      setShowRecoveryPremonitoryOptions(
-        false,
-      );
-
-      setPremonitoryRecoveryFeedback(
-        'Las señales quedaron cerradas al finalizar la crisis.',
-      );
-    };
-
-  const handleEndedDuringCrisis =
-    () => {
-      setShowRecoveryPremonitoryOptions(
-        false,
-      );
-
-      setShowRecoveryPremonitoryEnd(
-        true,
-      );
-
-      setPremonitoryRecoveryFeedback(
-        '',
-      );
-    };
-
-  const handleRecoveryPremonitoryEnd =
-    (
-      selection: PhaseEndSelection,
-    ) => {
-      resolvePremonitory({
-        outcome:
-          'evolvedToCrisis',
-
-        endTime:
-          selection.endTime,
-
-        precision:
-          selection.precision,
-
-        recordMode:
-          selection.recordMode,
-      });
-
-      setShowRecoveryPremonitoryEnd(
-        false,
-      );
-
-      setShowRecoveryPremonitoryOptions(
-        false,
-      );
-
-      setPremonitoryRecoveryFeedback(
-        'Final de las señales registrado.',
-      );
-    };
-
-  const handleContinuesAfterCrisis =
-    () => {
-      resolvePremonitory({
-        outcome:
-          'continuesWithCrisis',
-      });
-
-      setShowRecoveryPremonitoryOptions(
-        false,
-      );
-
-      setShowRecoveryPremonitoryEnd(
-        false,
-      );
-
-      setPremonitoryRecoveryFeedback(
-        'Las señales continúan abiertas después de la crisis.',
-      );
-    };
-
-  const handleUnknownRecoveryEnd =
-    () => {
-      resolvePremonitory({
-        outcome:
-          'evolvedToCrisis',
-
-        precision: 'unknown',
-
-        recordMode:
-          'retrospective',
-      });
-
-      setShowRecoveryPremonitoryOptions(
-        false,
-      );
-
-      setShowRecoveryPremonitoryEnd(
-        false,
-      );
-
-      setPremonitoryRecoveryFeedback(
-        'Las señales quedaron cerradas con hora de finalización desconocida.',
-      );
-    };
-
-  const handleCompleteEpisode =
-    () => {
-      if (!canCompleteEpisode) {
-        return;
-      }
-
-      completeEpisode();
-
-      resetRecoveryPremonitoryFlow();
-    };
-
   return (
     <section
-      className={styles.container}
+      className={
+        styles.container
+      }
     >
       <h1>
         Seguimiento de migraña
@@ -673,7 +455,9 @@ export function MigrainePage() {
 
           <button
             type="button"
-            onClick={handleNewEpisode}
+            onClick={
+              handleNewEpisode
+            }
           >
             Registrar nueva migraña
           </button>
@@ -748,10 +532,11 @@ export function MigrainePage() {
                   </h3>
 
                   <p>
-                    Esto permite saber si
-                    terminaron antes del
-                    dolor o si continúan
-                    durante la crisis.
+                    Esto permite saber
+                    si terminaron antes
+                    del dolor o si
+                    continúan durante la
+                    crisis.
                   </p>
 
                   <button
@@ -816,7 +601,7 @@ export function MigrainePage() {
                       handlePremonitoryEnd
                     }
                     onContinue={
-                      handlePremonitoryContinues
+                      handleContinuesWithCrisis
                     }
                   />
 
@@ -854,9 +639,8 @@ export function MigrainePage() {
                         }
                       >
                         Las señales se
-                        cerrarán en el
-                        mismo momento en
-                        que comience la
+                        cerrarán cuando
+                        comience la
                         crisis.
                       </p>
                     )}
@@ -888,10 +672,8 @@ export function MigrainePage() {
                       >
                         Las señales
                         permanecerán
-                        abiertas y podrás
-                        actualizarlas
-                        durante la
-                        crisis.
+                        abiertas durante
+                        la crisis.
                       </p>
                     )}
 
@@ -904,11 +686,8 @@ export function MigrainePage() {
                         }
                       >
                         Las señales
-                        quedarán
-                        vinculadas a la
-                        crisis, pero con
-                        hora de
-                        finalización
+                        quedarán con hora
+                        de finalización
                         desconocida.
                       </p>
                     )}
@@ -937,198 +716,9 @@ export function MigrainePage() {
 
       {episode &&
         isRecoveryStage && (
-          <>
-            <section>
-              <h2>
-                Recuperación después de
-                la crisis
-              </h2>
-
-              {hasPostdrome ? (
-                <p>
-                  La crisis terminó y el
-                  postdromo comenzó en ese
-                  mismo momento. Registrá
-                  su evolución hasta
-                  recuperarte por completo.
-                </p>
-              ) : (
-                <p>
-                  La crisis terminó y
-                  registraste que no hubo
-                  postdromo. Podés completar
-                  los datos restantes y
-                  finalizar el episodio.
-                </p>
-              )}
-            </section>
-
-            {hasOpenPremonitory && (
-              <section>
-                <h2>
-                  Señales previas todavía
-                  abiertas
-                </h2>
-
-                <p>
-                  Antes de finalizar el
-                  episodio debemos
-                  registrar qué ocurrió
-                  con estas señales.
-                </p>
-
-                <PremonitorySelector
-                  context="recovery"
-                />
-
-                {!showRecoveryPremonitoryOptions &&
-                  !showRecoveryPremonitoryEnd && (
-                    <button
-                      type="button"
-                      onClick={
-                        handleOpenRecoveryResolution
-                      }
-                    >
-                      Indicar cuándo
-                      terminaron las
-                      señales
-                    </button>
-                  )}
-
-                {showRecoveryPremonitoryOptions && (
-                  <section>
-                    <h3>
-                      ¿Qué pasó con las
-                      señales?
-                    </h3>
-
-                    <button
-                      type="button"
-                      onClick={
-                        handleEndedWithCrisis
-                      }
-                    >
-                      Terminaron cuando
-                      terminó la crisis
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={
-                        handleEndedDuringCrisis
-                      }
-                    >
-                      Terminaron en otro
-                      momento
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={
-                        handleContinuesAfterCrisis
-                      }
-                    >
-                      Continúan después
-                      de la crisis
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={
-                        handleUnknownRecoveryEnd
-                      }
-                    >
-                      No recuerdo cuándo
-                      terminaron
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={
-                        handleCancelRecoveryResolution
-                      }
-                    >
-                      Cancelar
-                    </button>
-                  </section>
-                )}
-
-                {showRecoveryPremonitoryEnd && (
-                  <PhaseEndSelector
-                    title="¿Cuándo terminaron las señales previas?"
-                    startTime={
-                      premonitoryStart
-                    }
-                    onConfirm={
-                      handleRecoveryPremonitoryEnd
-                    }
-                    onContinue={
-                      handleContinuesAfterCrisis
-                    }
-                  />
-                )}
-
-                {premonitoryRecoveryFeedback && (
-                  <p
-                    className={
-                      styles.helperText
-                    }
-                    aria-live="polite"
-                  >
-                    {
-                      premonitoryRecoveryFeedback
-                    }
-                  </p>
-                )}
-              </section>
-            )}
-
-            <PostdromeSelector />
-
-            <TriggerSelector />
-
-            <TreatmentSelector />
-
-            {hasOpenPremonitory && (
-              <p
-                className={
-                  styles.helperText
-                }
-              >
-                Las señales previas
-                todavía continúan.
-                Primero debés registrar
-                cuándo terminaron.
-              </p>
-            )}
-
-            {isPostdromeActive && (
-              <p
-                className={
-                  styles.helperText
-                }
-              >
-                El postdromo todavía
-                continúa. Primero
-                registrá cuándo sentiste
-                la recuperación completa.
-              </p>
-            )}
-
-            <button
-              type="button"
-              disabled={
-                !canCompleteEpisode
-              }
-              onClick={
-                handleCompleteEpisode
-              }
-            >
-              Finalizar episodio
-            </button>
-
-            <MigraineDevTools />
-          </>
+          <RecoveryStage
+            episode={episode}
+          />
         )}
     </section>
   );
