@@ -1,27 +1,20 @@
 import {
-  useMemo,
-  type CSSProperties,
+  useState,
 } from 'react';
-
-import {
-  painRegionCatalog,
-} from '../../data/painLocationCatalog';
 
 import type {
   BodySide,
   PainAnatomicalRegion,
   PainLocationPoint,
+  PainLocationRole,
 } from '../../types/migraine.types';
 
+import styles from './PainBodyMap.module.css';
 
 interface PainBodyMapProps {
   selectedPoints?: PainLocationPoint[];
-
-  pendingRegion?:
-    PainAnatomicalRegion;
-
+  pendingRegion?: PainAnatomicalRegion;
   pendingSide?: BodySide;
-
   disabled?: boolean;
 
   onSelect: (
@@ -30,1194 +23,311 @@ interface PainBodyMapProps {
   ) => void;
 }
 
-
 type MapView =
   | 'front'
   | 'back';
 
-
-interface HotspotDefinition {
+interface MapZone {
   id: string;
-
   label: string;
-
+  shortLabel: string;
   view: MapView;
-
-  side: BodySide;
-
-  regionTerms: string[];
-
-  x: number;
-
-  y: number;
-
-  width?: number;
-
-  height?: number;
-}
-
-
-interface ResolvedHotspot
-  extends HotspotDefinition {
   region: PainAnatomicalRegion;
+  side: BodySide;
+  className: string;
 }
 
-
-const mapContainerStyle:
-  CSSProperties = {
-  display: 'grid',
-
-  gridTemplateColumns:
-    'repeat(auto-fit, minmax(250px, 1fr))',
-
-  gap: '1rem',
-
-  marginTop: '1rem',
-};
-
-
-const viewStyle:
-  CSSProperties = {
-  display: 'grid',
-
-  justifyItems: 'center',
-
-  gap: '0.75rem',
-};
-
-
-const figureStyle:
-  CSSProperties = {
-  position: 'relative',
-
-  width: '250px',
-
-  height: '390px',
-
-  maxWidth: '100%',
-
-  border:
-    '1px solid var(--color-border, #d1d5db)',
-
-  borderRadius:
-    'var(--radius-medium, 16px)',
-
-  background:
-    'var(--color-surface-soft, #f8fafc)',
-
-  overflow: 'hidden',
-};
-
-
-const figureLabelStyle:
-  CSSProperties = {
-  margin: 0,
-
-  fontWeight: 700,
-};
-
-
-const hotspotBaseStyle:
-  CSSProperties = {
-  position: 'absolute',
-
-  display: 'grid',
-
-  placeItems: 'center',
-
-  minWidth: '34px',
-
-  minHeight: '34px',
-
-  padding: '0.25rem',
-
-  border:
-    '2px solid var(--color-primary, #5667d8)',
-
-  borderRadius: '999px',
-
-  color:
-    'var(--color-text-strong, #111827)',
-
-  background:
-    'var(--color-surface, #ffffff)',
-
-  fontSize: '0.7rem',
-
-  fontWeight: 700,
-
-  lineHeight: 1,
-
-  cursor: 'pointer',
-
-  transform:
-    'translate(-50%, -50%)',
-
-  zIndex: 2,
-};
-
-
-const selectedHotspotStyle:
-  CSSProperties = {
-  color: '#ffffff',
-
-  background:
-    'var(--color-primary, #5667d8)',
-
-  boxShadow:
-    '0 0 0 4px rgba(86, 103, 216, 0.18)',
-};
-
-
-const pendingHotspotStyle:
-  CSSProperties = {
-  outline:
-    '3px solid var(--color-warning, #d97706)',
-
-  outlineOffset: '2px',
-};
-
-
-const HOTSPOTS:
-  readonly HotspotDefinition[] = [
-  // FRONT — HEAD
+const MAP_ZONES:
+  readonly MapZone[] = [
   {
-    id: 'front-top',
-
-    label: 'Parte superior',
-
+    id: 'front-crown',
+    label: 'Coronilla',
+    shortLabel: 'Coronilla',
     view: 'front',
-
+    region: 'crown',
     side: 'central',
-
-    regionTerms: [
-      'topOfHead',
-      'top of head',
-      'parte superior',
-      'coronilla',
-    ],
-
-    x: 50,
-
-    y: 12,
-
-    width: 42,
-
-    height: 28,
+    className: styles.frontCrown,
   },
-
   {
-    id: 'front-forehead',
-
-    label: 'Frente',
-
+    id: 'front-forehead-left',
+    label: 'Frente izquierda',
+    shortLabel: 'Frente',
     view: 'front',
-
-    side: 'central',
-
-    regionTerms: [
-      'forehead',
-      'frente',
-      'frontal',
-    ],
-
-    x: 50,
-
-    y: 23,
-
-    width: 54,
-
-    height: 30,
+    region: 'forehead',
+    side: 'left',
+    className:
+      styles.frontForeheadLeft,
   },
-
   {
-    id: 'front-left-temple',
-
+    id: 'front-forehead-right',
+    label: 'Frente derecha',
+    shortLabel: 'Frente',
+    view: 'front',
+    region: 'forehead',
+    side: 'right',
+    className:
+      styles.frontForeheadRight,
+  },
+  {
+    id: 'front-temple-left',
     label: 'Sien izquierda',
-
+    shortLabel: 'Sien',
     view: 'front',
-
+    region: 'temple',
     side: 'left',
-
-    regionTerms: [
-      'temple',
-      'sien',
-      'temporal',
-    ],
-
-    x: 28,
-
-    y: 28,
+    className:
+      styles.frontTempleLeft,
   },
-
   {
-    id: 'front-right-temple',
-
+    id: 'front-temple-right',
     label: 'Sien derecha',
-
+    shortLabel: 'Sien',
     view: 'front',
-
+    region: 'temple',
     side: 'right',
-
-    regionTerms: [
-      'temple',
-      'sien',
-      'temporal',
-    ],
-
-    x: 72,
-
-    y: 28,
+    className:
+      styles.frontTempleRight,
   },
-
   {
-    id: 'front-left-eye',
-
-    label: 'Ojo izquierdo',
-
+    id: 'front-eye-left',
+    label: 'Alrededor del ojo izquierdo',
+    shortLabel: 'Ojo',
     view: 'front',
-
+    region: 'aroundEye',
     side: 'left',
-
-    regionTerms: [
-      'eyeArea',
-      'eye area',
-      'orbital',
-      'alrededor del ojo',
-      'ojo',
-    ],
-
-    x: 39,
-
-    y: 35,
+    className:
+      styles.frontEyeLeft,
   },
-
   {
-    id: 'front-right-eye',
-
-    label: 'Ojo derecho',
-
+    id: 'front-eye-right',
+    label: 'Alrededor del ojo derecho',
+    shortLabel: 'Ojo',
     view: 'front',
-
+    region: 'aroundEye',
     side: 'right',
-
-    regionTerms: [
-      'eyeArea',
-      'eye area',
-      'orbital',
-      'alrededor del ojo',
-      'ojo',
-    ],
-
-    x: 61,
-
-    y: 35,
+    className:
+      styles.frontEyeRight,
   },
-
-  {
-    id: 'front-left-behind-eye',
-
-    label: 'Detrás del ojo izquierdo',
-
-    view: 'front',
-
-    side: 'left',
-
-    regionTerms: [
-      'behindEye',
-      'behind eye',
-      'detrás del ojo',
-      'detras del ojo',
-      'retroocular',
-    ],
-
-    x: 36,
-
-    y: 41,
-
-    width: 28,
-
-    height: 24,
-  },
-
-  {
-    id: 'front-right-behind-eye',
-
-    label: 'Detrás del ojo derecho',
-
-    view: 'front',
-
-    side: 'right',
-
-    regionTerms: [
-      'behindEye',
-      'behind eye',
-      'detrás del ojo',
-      'detras del ojo',
-      'retroocular',
-    ],
-
-    x: 64,
-
-    y: 41,
-
-    width: 28,
-
-    height: 24,
-  },
-
   {
     id: 'front-sinus',
-
     label: 'Senos paranasales',
-
+    shortLabel: 'Senos',
     view: 'front',
-
+    region: 'sinus',
     side: 'central',
-
-    regionTerms: [
-      'sinusArea',
-      'sinus',
-      'senos paranasales',
-      'zona sinusal',
-    ],
-
-    x: 50,
-
-    y: 44,
-
-    width: 36,
-
-    height: 24,
+    className: styles.frontSinus,
   },
-
   {
-    id: 'front-left-cheek',
-
+    id: 'front-cheek-left',
     label: 'Mejilla izquierda',
-
+    shortLabel: 'Mejilla',
     view: 'front',
-
+    region: 'cheek',
     side: 'left',
-
-    regionTerms: [
-      'cheek',
-      'mejilla',
-      'pómulo',
-      'pomulo',
-    ],
-
-    x: 35,
-
-    y: 49,
+    className:
+      styles.frontCheekLeft,
   },
-
   {
-    id: 'front-right-cheek',
-
+    id: 'front-cheek-right',
     label: 'Mejilla derecha',
-
+    shortLabel: 'Mejilla',
     view: 'front',
-
+    region: 'cheek',
     side: 'right',
-
-    regionTerms: [
-      'cheek',
-      'mejilla',
-      'pómulo',
-      'pomulo',
-    ],
-
-    x: 65,
-
-    y: 49,
+    className:
+      styles.frontCheekRight,
   },
-
   {
-    id: 'front-left-ear',
-
-    label: 'Oído izquierdo',
-
-    view: 'front',
-
-    side: 'left',
-
-    regionTerms: [
-      'ear',
-      'oído',
-      'oido',
-      'oreja',
-    ],
-
-    x: 20,
-
-    y: 42,
-  },
-
-  {
-    id: 'front-right-ear',
-
-    label: 'Oído derecho',
-
-    view: 'front',
-
-    side: 'right',
-
-    regionTerms: [
-      'ear',
-      'oído',
-      'oido',
-      'oreja',
-    ],
-
-    x: 80,
-
-    y: 42,
-  },
-
-  {
-    id: 'front-left-jaw',
-
+    id: 'front-jaw-left',
     label: 'Mandíbula izquierda',
-
+    shortLabel: 'Mandíbula',
     view: 'front',
-
+    region: 'jaw',
     side: 'left',
-
-    regionTerms: [
-      'jaw',
-      'mandíbula',
-      'mandibula',
-      'maxilar',
-    ],
-
-    x: 39,
-
-    y: 57,
+    className:
+      styles.frontJawLeft,
   },
-
   {
-    id: 'front-right-jaw',
-
+    id: 'front-jaw-right',
     label: 'Mandíbula derecha',
-
+    shortLabel: 'Mandíbula',
     view: 'front',
-
+    region: 'jaw',
     side: 'right',
-
-    regionTerms: [
-      'jaw',
-      'mandíbula',
-      'mandibula',
-      'maxilar',
-    ],
-
-    x: 61,
-
-    y: 57,
+    className:
+      styles.frontJawRight,
   },
-
   {
-    id: 'front-teeth',
-
-    label: 'Dientes',
-
-    view: 'front',
-
-    side: 'central',
-
-    regionTerms: [
-      'teeth',
-      'dientes',
-      'dental',
-    ],
-
-    x: 50,
-
-    y: 54,
-
-    width: 34,
-
-    height: 24,
-  },
-
-  // FRONT — NECK AND SHOULDERS
-  {
-    id: 'front-left-neck',
-
+    id: 'front-neck-left',
     label: 'Cuello izquierdo',
-
+    shortLabel: 'Cuello',
     view: 'front',
-
+    region: 'middleNeck',
     side: 'left',
-
-    regionTerms: [
-      'neck',
-      'cuello',
-      'cervical',
-    ],
-
-    x: 43,
-
-    y: 68,
+    className:
+      styles.frontNeckLeft,
   },
-
   {
-    id: 'front-right-neck',
-
+    id: 'front-neck-right',
     label: 'Cuello derecho',
-
+    shortLabel: 'Cuello',
     view: 'front',
-
+    region: 'middleNeck',
     side: 'right',
-
-    regionTerms: [
-      'neck',
-      'cuello',
-      'cervical',
-    ],
-
-    x: 57,
-
-    y: 68,
+    className:
+      styles.frontNeckRight,
   },
-
   {
-    id: 'front-central-neck',
-
-    label: 'Centro del cuello',
-
-    view: 'front',
-
+    id: 'back-crown',
+    label: 'Coronilla',
+    shortLabel: 'Coronilla',
+    view: 'back',
+    region: 'crown',
     side: 'central',
-
-    regionTerms: [
-      'centralNeck',
-      'central neck',
-      'centro del cuello',
-      'cuello central',
-    ],
-
-    x: 50,
-
-    y: 72,
-
-    width: 28,
-
-    height: 30,
+    className: styles.backCrown,
   },
-
   {
-    id: 'front-left-shoulder',
-
-    label: 'Hombro izquierdo',
-
-    view: 'front',
-
+    id: 'back-parietal-left',
+    label: 'Lateral superior izquierdo',
+    shortLabel: 'Lateral',
+    view: 'back',
+    region: 'parietal',
     side: 'left',
-
-    regionTerms: [
-      'shoulder',
-      'hombro',
-    ],
-
-    x: 26,
-
-    y: 82,
-
-    width: 50,
-
-    height: 30,
+    className:
+      styles.backParietalLeft,
   },
-
   {
-    id: 'front-right-shoulder',
-
-    label: 'Hombro derecho',
-
-    view: 'front',
-
+    id: 'back-parietal-right',
+    label: 'Lateral superior derecho',
+    shortLabel: 'Lateral',
+    view: 'back',
+    region: 'parietal',
     side: 'right',
-
-    regionTerms: [
-      'shoulder',
-      'hombro',
-    ],
-
-    x: 74,
-
-    y: 82,
-
-    width: 50,
-
-    height: 30,
+    className:
+      styles.backParietalRight,
   },
-
-  // BACK — HEAD
   {
-    id: 'back-top',
-
-    label: 'Parte superior',
-
+    id: 'back-occipital-left',
+    label: 'Parte posterior izquierda',
+    shortLabel: 'Occipital',
     view: 'back',
-
-    side: 'central',
-
-    regionTerms: [
-      'topOfHead',
-      'top of head',
-      'parte superior',
-      'coronilla',
-    ],
-
-    x: 50,
-
-    y: 12,
-
-    width: 42,
-
-    height: 28,
-  },
-
-  {
-    id: 'back-left-side-head',
-
-    label: 'Lado izquierdo de la cabeza',
-
-    view: 'back',
-
+    region: 'occipital',
     side: 'left',
-
-    regionTerms: [
-      'sideOfHead',
-      'side of head',
-      'lateral de la cabeza',
-      'costado de la cabeza',
-    ],
-
-    x: 31,
-
-    y: 29,
-
-    width: 34,
-
-    height: 44,
+    className:
+      styles.backOccipitalLeft,
   },
-
   {
-    id: 'back-right-side-head',
-
-    label: 'Lado derecho de la cabeza',
-
+    id: 'back-occipital-right',
+    label: 'Parte posterior derecha',
+    shortLabel: 'Occipital',
     view: 'back',
-
+    region: 'occipital',
     side: 'right',
-
-    regionTerms: [
-      'sideOfHead',
-      'side of head',
-      'lateral de la cabeza',
-      'costado de la cabeza',
-    ],
-
-    x: 69,
-
-    y: 29,
-
-    width: 34,
-
-    height: 44,
+    className:
+      styles.backOccipitalRight,
   },
-
   {
-    id: 'back-head',
-
-    label: 'Parte posterior',
-
+    id: 'back-skull-left',
+    label: 'Base izquierda del cráneo',
+    shortLabel: 'Base',
     view: 'back',
-
-    side: 'central',
-
-    regionTerms: [
-      'backOfHead',
-      'back of head',
-      'nuca',
-      'occipital',
-      'parte posterior',
-    ],
-
-    x: 50,
-
-    y: 36,
-
-    width: 54,
-
-    height: 40,
+    region: 'baseOfSkull',
+    side: 'left',
+    className:
+      styles.backSkullLeft,
   },
-
   {
-    id: 'back-base-skull',
-
-    label: 'Base del cráneo',
-
+    id: 'back-skull-right',
+    label: 'Base derecha del cráneo',
+    shortLabel: 'Base',
     view: 'back',
-
-    side: 'central',
-
-    regionTerms: [
-      'baseOfSkull',
-      'base of skull',
-      'base del cráneo',
-      'base del craneo',
-      'suboccipital',
-    ],
-
-    x: 50,
-
-    y: 55,
-
-    width: 46,
-
-    height: 25,
+    region: 'baseOfSkull',
+    side: 'right',
+    className:
+      styles.backSkullRight,
   },
-
-  // BACK — NECK AND UPPER BODY
   {
-    id: 'back-left-neck',
-
+    id: 'back-neck-left',
     label: 'Cuello izquierdo',
-
+    shortLabel: 'Cuello',
     view: 'back',
-
+    region: 'middleNeck',
     side: 'left',
-
-    regionTerms: [
-      'neck',
-      'cuello',
-      'cervical',
-    ],
-
-    x: 42,
-
-    y: 67,
-
-    width: 28,
-
-    height: 38,
+    className:
+      styles.backNeckLeft,
   },
-
   {
-    id: 'back-right-neck',
-
+    id: 'back-neck-right',
     label: 'Cuello derecho',
-
+    shortLabel: 'Cuello',
     view: 'back',
-
+    region: 'middleNeck',
     side: 'right',
-
-    regionTerms: [
-      'neck',
-      'cuello',
-      'cervical',
-    ],
-
-    x: 58,
-
-    y: 67,
-
-    width: 28,
-
-    height: 38,
+    className:
+      styles.backNeckRight,
   },
-
   {
-    id: 'back-central-neck',
-
-    label: 'Centro del cuello',
-
-    view: 'back',
-
-    side: 'central',
-
-    regionTerms: [
-      'centralNeck',
-      'central neck',
-      'centro del cuello',
-      'cuello central',
-    ],
-
-    x: 50,
-
-    y: 70,
-
-    width: 25,
-
-    height: 42,
-  },
-
-  {
-    id: 'back-left-trapezius',
-
+    id: 'back-trapezius-left',
     label: 'Trapecio izquierdo',
-
+    shortLabel: 'Trapecio',
     view: 'back',
-
+    region: 'trapezius',
     side: 'left',
-
-    regionTerms: [
-      'trapezius',
-      'trapecio',
-    ],
-
-    x: 35,
-
-    y: 77,
-
-    width: 42,
-
-    height: 34,
+    className:
+      styles.backTrapeziusLeft,
   },
-
   {
-    id: 'back-right-trapezius',
-
+    id: 'back-trapezius-right',
     label: 'Trapecio derecho',
-
+    shortLabel: 'Trapecio',
     view: 'back',
-
+    region: 'trapezius',
     side: 'right',
-
-    regionTerms: [
-      'trapezius',
-      'trapecio',
-    ],
-
-    x: 65,
-
-    y: 77,
-
-    width: 42,
-
-    height: 34,
+    className:
+      styles.backTrapeziusRight,
   },
-
   {
-    id: 'back-left-shoulder',
-
+    id: 'back-shoulder-left',
     label: 'Hombro izquierdo',
-
+    shortLabel: 'Hombro',
     view: 'back',
-
+    region: 'shoulder',
     side: 'left',
-
-    regionTerms: [
-      'shoulder',
-      'hombro',
-    ],
-
-    x: 24,
-
-    y: 83,
-
-    width: 48,
-
-    height: 30,
+    className:
+      styles.backShoulderLeft,
   },
-
   {
-    id: 'back-right-shoulder',
-
+    id: 'back-shoulder-right',
     label: 'Hombro derecho',
-
+    shortLabel: 'Hombro',
     view: 'back',
-
+    region: 'shoulder',
     side: 'right',
-
-    regionTerms: [
-      'shoulder',
-      'hombro',
-    ],
-
-    x: 76,
-
-    y: 83,
-
-    width: 48,
-
-    height: 30,
-  },
-
-  {
-    id: 'back-left-shoulder-blade',
-
-    label: 'Omóplato izquierdo',
-
-    view: 'back',
-
-    side: 'left',
-
-    regionTerms: [
-      'shoulderBlade',
-      'shoulder blade',
-      'omóplato',
-      'omoplato',
-      'escápula',
-      'escapula',
-    ],
-
-    x: 36,
-
-    y: 91,
-
-    width: 40,
-
-    height: 28,
-  },
-
-  {
-    id: 'back-right-shoulder-blade',
-
-    label: 'Omóplato derecho',
-
-    view: 'back',
-
-    side: 'right',
-
-    regionTerms: [
-      'shoulderBlade',
-      'shoulder blade',
-      'omóplato',
-      'omoplato',
-      'escápula',
-      'escapula',
-    ],
-
-    x: 64,
-
-    y: 91,
-
-    width: 40,
-
-    height: 28,
+    className:
+      styles.backShoulderRight,
   },
 ];
 
+const roleLabels:
+  Partial<Record<
+    PainLocationRole,
+    string
+  >> = {
+  primary: 'Principal',
+  origin: 'Inicio',
+  additional: 'Adicional',
+};
 
-function normalizeText(
-  value: string,
-): string {
-  return value
-    .normalize('NFD')
-    .replace(
-      /[\u0300-\u036f]/g,
-      '',
-    )
-    .toLocaleLowerCase('es-AR');
-}
-
-
-function resolveRegion(
-  terms: string[],
-): PainAnatomicalRegion | undefined {
-  const normalizedTerms =
-    terms.map(normalizeText);
-
-  const exactMatch =
-    painRegionCatalog.find(
-      definition => {
-        const value =
-          normalizeText(
-            definition.value,
-          );
-
-        return normalizedTerms.includes(
-          value,
-        );
-      },
-    );
-
-  if (exactMatch) {
-    return exactMatch.value;
-  }
-
-  const semanticMatch =
-    painRegionCatalog.find(
-      definition => {
-        const searchableText =
-          normalizeText(
-            [
-              definition.value,
-              definition.label,
-              ...(
-                definition.searchTerms ??
-                []
-              ),
-            ].join(' '),
-          );
-
-        return normalizedTerms.some(
-          term =>
-            searchableText.includes(
-              term,
-            ),
-        );
-      },
-    );
-
-  return semanticMatch?.value;
-}
-
-
-function resolveHotspots():
-  ResolvedHotspot[] {
-  return HOTSPOTS.flatMap(
-    hotspot => {
-      const region =
-        resolveRegion(
-          hotspot.regionTerms,
-        );
-
-      if (!region) {
-        return [];
-      }
-
-      return [
-        {
-          ...hotspot,
-          region,
-        },
-      ];
-    },
+function findPoint(
+  points: PainLocationPoint[],
+  zone: MapZone,
+): PainLocationPoint | undefined {
+  return points.find(
+    point =>
+      point.region === zone.region &&
+      point.side === zone.side,
   );
 }
-
-
-function isSamePoint(
-  point: PainLocationPoint,
-  region: PainAnatomicalRegion,
-  side: BodySide,
-): boolean {
-  return (
-    point.region === region &&
-    point.side === side
-  );
-}
-
-
-function HumanSilhouette({
-  view,
-}: {
-  view: MapView;
-}) {
-  return (
-    <svg
-      viewBox="0 0 250 390"
-      width="250"
-      height="390"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <ellipse
-        cx="125"
-        cy="115"
-        rx="64"
-        ry="86"
-        fill="var(--color-surface, #ffffff)"
-        stroke="var(--color-border-strong, #94a3b8)"
-        strokeWidth="2"
-      />
-
-      {view === 'front' && (
-        <>
-          <ellipse
-            cx="100"
-            cy="112"
-            rx="11"
-            ry="7"
-            fill="none"
-            stroke="var(--color-border-strong, #94a3b8)"
-          />
-
-          <ellipse
-            cx="150"
-            cy="112"
-            rx="11"
-            ry="7"
-            fill="none"
-            stroke="var(--color-border-strong, #94a3b8)"
-          />
-
-          <path
-            d="M125 120 L119 151 L131 151"
-            fill="none"
-            stroke="var(--color-border-strong, #94a3b8)"
-          />
-
-          <path
-            d="M104 170 Q125 182 146 170"
-            fill="none"
-            stroke="var(--color-border-strong, #94a3b8)"
-          />
-        </>
-      )}
-
-      {view === 'back' && (
-        <path
-          d="M88 100 Q125 72 162 100"
-          fill="none"
-          stroke="var(--color-border-strong, #94a3b8)"
-        />
-      )}
-
-      <path
-        d="M101 192 L101 235"
-        fill="none"
-        stroke="var(--color-border-strong, #94a3b8)"
-        strokeWidth="18"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M149 192 L149 235"
-        fill="none"
-        stroke="var(--color-border-strong, #94a3b8)"
-        strokeWidth="18"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M24 340 Q34 246 95 229 Q125 218 155 229 Q216 246 226 340"
-        fill="var(--color-surface, #ffffff)"
-        stroke="var(--color-border-strong, #94a3b8)"
-        strokeWidth="2"
-      />
-
-      {view === 'back' && (
-        <>
-          <path
-            d="M125 228 L125 360"
-            fill="none"
-            stroke="var(--color-border, #d1d5db)"
-            strokeDasharray="5 5"
-          />
-
-          <path
-            d="M69 280 Q100 302 125 280"
-            fill="none"
-            stroke="var(--color-border, #d1d5db)"
-          />
-
-          <path
-            d="M181 280 Q150 302 125 280"
-            fill="none"
-            stroke="var(--color-border, #d1d5db)"
-          />
-        </>
-      )}
-    </svg>
-  );
-}
-
 
 export function PainBodyMap({
   selectedPoints = [],
@@ -1226,146 +336,200 @@ export function PainBodyMap({
   disabled = false,
   onSelect,
 }: PainBodyMapProps) {
-  const resolvedHotspots =
-    useMemo(
-      resolveHotspots,
-      [],
+  const [view, setView] =
+    useState<MapView>('front');
+
+  const visibleZones =
+    MAP_ZONES.filter(
+      zone =>
+        zone.view === view,
     );
-
-  const renderView = (
-    view: MapView,
-    title: string,
-  ) => {
-    const hotspots =
-      resolvedHotspots.filter(
-        hotspot =>
-          hotspot.view === view,
-      );
-
-    return (
-      <section style={viewStyle}>
-        <h4 style={figureLabelStyle}>
-          {title}
-        </h4>
-
-        <div style={figureStyle}>
-          <HumanSilhouette
-            view={view}
-          />
-
-          {hotspots.map(
-            hotspot => {
-              const isSelected =
-                selectedPoints.some(
-                  point =>
-                    isSamePoint(
-                      point,
-                      hotspot.region,
-                      hotspot.side,
-                    ),
-                );
-
-              const isPending =
-                pendingRegion ===
-                  hotspot.region &&
-                pendingSide ===
-                  hotspot.side;
-
-              const style:
-                CSSProperties = {
-                ...hotspotBaseStyle,
-
-                left:
-                  `${hotspot.x}%`,
-
-                top:
-                  `${hotspot.y}%`,
-
-                width:
-                  hotspot.width
-                    ? `${hotspot.width}px`
-                    : undefined,
-
-                height:
-                  hotspot.height
-                    ? `${hotspot.height}px`
-                    : undefined,
-
-                ...(isSelected
-                  ? selectedHotspotStyle
-                  : {}),
-
-                ...(isPending
-                  ? pendingHotspotStyle
-                  : {}),
-              };
-
-              return (
-                <button
-                  key={hotspot.id}
-                  type="button"
-                  style={style}
-                  disabled={disabled}
-                  aria-label={
-                    hotspot.label
-                  }
-                  aria-pressed={
-                    isSelected ||
-                    isPending
-                  }
-                  title={
-                    hotspot.label
-                  }
-                  onClick={() =>
-                    onSelect(
-                      hotspot.region,
-                      hotspot.side,
-                    )
-                  }
-                >
-                  <span
-                    aria-hidden="true"
-                  >
-                    ●
-                  </span>
-                </button>
-              );
-            },
-          )}
-        </div>
-      </section>
-    );
-  };
-
 
   return (
     <section
+      className={styles.container}
       aria-labelledby="pain-map-title"
     >
-      <header>
-        <h4 id="pain-map-title">
-          Mapa del dolor
-        </h4>
+      <header
+        className={styles.header}
+      >
+        <div>
+          <h4 id="pain-map-title">
+            Tocá dónde sentís el dolor
+          </h4>
 
-        <p>
-          Tocá una zona para
-          seleccionarla. Después podés
-          indicar si es la zona
-          principal, el punto de inicio
-          o una zona adicional.
-        </p>
+          <p>
+            Elegí una vista y tocá
+            directamente una zona.
+          </p>
+        </div>
+
+        <div
+          className={styles.viewSwitch}
+          role="group"
+          aria-label="Vista del mapa anatómico"
+        >
+          <button
+            type="button"
+            aria-pressed={
+              view === 'front'
+            }
+            onClick={() =>
+              setView('front')
+            }
+          >
+            Frente
+          </button>
+
+          <button
+            type="button"
+            aria-pressed={
+              view === 'back'
+            }
+            onClick={() =>
+              setView('back')
+            }
+          >
+            Atrás
+          </button>
+        </div>
       </header>
 
-      <div style={mapContainerStyle}>
-        {renderView(
-          'front',
-          'Vista frontal',
-        )}
+      <div
+        className={styles.mapStage}
+        data-view={view}
+      >
+        <svg
+          className={styles.silhouette}
+          viewBox="0 0 320 440"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <ellipse
+            cx="160"
+            cy="135"
+            rx="82"
+            ry="108"
+          />
 
-        {renderView(
-          'back',
-          'Vista posterior',
+          {view === 'front' && (
+            <g
+              className={
+                styles.faceDetails
+              }
+            >
+              <path d="M112 128 Q128 117 143 128" />
+              <path d="M177 128 Q192 117 208 128" />
+              <path d="M160 137 L153 174 L168 174" />
+              <path d="M132 199 Q160 215 188 199" />
+            </g>
+          )}
+
+          {view === 'back' && (
+            <g
+              className={
+                styles.backDetails
+              }
+            >
+              <path d="M104 120 Q160 78 216 120" />
+              <path d="M160 245 L160 425" />
+            </g>
+          )}
+
+          <path
+            className={styles.neck}
+            d="M127 226 L127 297 Q160 316 193 297 L193 226"
+          />
+
+          <path
+            className={styles.shoulders}
+            d="M34 430 Q45 325 126 297 Q160 314 194 297 Q275 325 286 430 Z"
+          />
+        </svg>
+
+        {visibleZones.map(
+          zone => {
+            const point =
+              findPoint(
+                selectedPoints,
+                zone,
+              );
+
+            const isPending =
+              pendingRegion ===
+                zone.region &&
+              pendingSide ===
+                zone.side;
+
+            const role =
+              point?.role;
+
+            return (
+              <button
+                key={zone.id}
+                type="button"
+                className={`${styles.zone} ${zone.className}`}
+                disabled={disabled}
+                aria-label={zone.label}
+                aria-pressed={
+                  Boolean(point) ||
+                  isPending
+                }
+                data-role={role}
+                data-pending={
+                  isPending
+                    ? 'true'
+                    : undefined
+                }
+                title={zone.label}
+                onClick={() =>
+                  onSelect(
+                    zone.region,
+                    zone.side,
+                  )
+                }
+              >
+                <span>
+                  {zone.shortLabel}
+                </span>
+
+                {role && (
+                  <small>
+                    {
+                      roleLabels[
+                        role
+                      ] ??
+                      'Seleccionada'
+                    }
+                  </small>
+                )}
+              </button>
+            );
+          },
         )}
+      </div>
+
+      <div
+        className={styles.legend}
+        aria-label="Leyenda del mapa"
+      >
+        <span
+          className={styles.primaryLegend}
+        >
+          Zona principal
+        </span>
+
+        <span
+          className={styles.originLegend}
+        >
+          Punto de inicio
+        </span>
+
+        <span
+          className={styles.additionalLegend}
+        >
+          Zona adicional
+        </span>
       </div>
     </section>
   );

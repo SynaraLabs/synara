@@ -1,3 +1,7 @@
+import {
+  useState,
+} from 'react';
+
 import styles from './crisis-mode.module.css';
 
 import type {
@@ -216,6 +220,11 @@ const normalizeLocalDateTime = (
 export function CrisisMode({
   onExit,
 }: Props) {
+  const [
+    isConfirmingDiscard,
+    setIsConfirmingDiscard,
+  ] = useState(false);
+
   const crisis =
     useMigraineStore(
       state =>
@@ -232,6 +241,12 @@ export function CrisisMode({
     useMigraineStore(
       state =>
         state.finishCrisis,
+    );
+
+  const resetEpisode =
+    useMigraineStore(
+      state =>
+        state.resetEpisode,
     );
 
   const symptoms =
@@ -696,6 +711,15 @@ export function CrisisMode({
     onExit?.();
   };
 
+  const handleDiscardEpisode =
+    () => {
+      resetEpisode();
+      setIsConfirmingDiscard(
+        false,
+      );
+      onExit?.();
+    };
+
   return (
     <section
       className={
@@ -719,6 +743,79 @@ export function CrisisMode({
           Los cambios se guardan durante
           la evolución de la crisis.
         </p>
+
+        <button
+          type="button"
+          aria-expanded={
+            isConfirmingDiscard
+          }
+          onClick={() =>
+            setIsConfirmingDiscard(
+              true,
+            )
+          }
+        >
+          Cancelar registro
+        </button>
+
+        {isConfirmingDiscard && (
+          <div
+            className={
+              styles.discardConfirmation
+            }
+            role="alertdialog"
+            aria-labelledby="crisis-discard-title"
+            aria-describedby="crisis-discard-description"
+          >
+            <div>
+              <h2
+                id="crisis-discard-title"
+              >
+                ¿Eliminar este episodio?
+              </h2>
+
+              <p
+                id="crisis-discard-description"
+              >
+                El registro se descartará
+                y no aparecerá en tu
+                historial.
+              </p>
+            </div>
+
+            <div
+              className={
+                styles.discardActions
+              }
+            >
+              <button
+                type="button"
+                className={
+                  styles.keepEpisode
+                }
+                onClick={() =>
+                  setIsConfirmingDiscard(
+                    false,
+                  )
+                }
+              >
+                Volver
+              </button>
+
+              <button
+                type="button"
+                className={
+                  styles.confirmDiscard
+                }
+                onClick={
+                  handleDiscardEpisode
+                }
+              >
+                Sí, eliminar
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       <PainCard

@@ -1,4 +1,5 @@
 import {
+  useId,
   useMemo,
   useState,
 } from 'react';
@@ -6,10 +7,8 @@ import {
 import {
   bodySideLabels,
   createPainLocationPoint,
-  formatPainLocationPoint,
   getAvailableSidesForRegion,
   painRegionCatalog,
-  painRegionCategoryLabels,
 } from '../../data/painLocationCatalog';
 
 import type {
@@ -17,17 +16,18 @@ import type {
   BodySide,
   PainAnatomicalRegion,
   PainLocationPoint,
-  PainRegionCategory,
 } from '../../types/migraine.types';
 
-import { PainBodyMap } from './PainBodyMap';
+import {
+  PainBodyMap,
+} from './PainBodyMap';
 
+import styles from './PainLocationSelector.module.css';
 
 type SelectableLocationRole =
   | 'primary'
   | 'additional'
   | 'origin';
-
 
 interface PainLocationSelectorProps {
   value?: AnatomicalPainMap;
@@ -37,61 +37,44 @@ interface PainLocationSelectorProps {
   ) => void;
 
   disabled?: boolean;
-
   title?: string;
 }
 
-
 interface SelectedLocationItem {
   key: string;
-
   point: PainLocationPoint;
-
   role: SelectableLocationRole;
-
   index?: number;
 }
-
-
-const CATEGORY_ORDER:
-  PainRegionCategory[] = [
-  'head',
-  'eye',
-  'face',
-  'ear',
-  'jaw',
-  'neck',
-  'upperBody',
-  'diffuse',
-  'other',
-];
-
 
 const locationRoleLabels:
   Record<
     SelectableLocationRole,
     string
   > = {
-  primary:
-    'Zona principal',
-
-  additional:
-    'Zona adicional',
-
-  origin:
-    'Punto de inicio',
+  primary: 'Zona principal',
+  additional: 'Zona adicional',
+  origin: 'Punto de inicio',
 };
 
+const roleInstructions:
+  Record<
+    SelectableLocationRole,
+    string
+  > = {
+  primary:
+    'La zona donde el dolor es más importante.',
+  additional:
+    'Otra zona donde también sentís dolor.',
+  origin:
+    'El lugar donde comenzó el dolor.',
+};
 
-function createPointKey(
+function pointKey(
   point: PainLocationPoint,
 ): string {
-  return [
-    point.region,
-    point.side ?? 'unknown',
-  ].join(':');
+  return `${point.region}:${point.side ?? 'unknown'}`;
 }
-
 
 function normalizeText(
   value: string,
@@ -102,26 +85,20 @@ function normalizeText(
       /[\u0300-\u036f]/g,
       '',
     )
-    .toLocaleLowerCase(
-      'es-AR',
-    );
+    .toLocaleLowerCase('es-AR');
 }
 
-
-function isSameLocation(
+function isSamePoint(
   point: PainLocationPoint,
   region: PainAnatomicalRegion,
   side: BodySide,
 ): boolean {
   return (
     point.region === region &&
-    (
-      point.side ??
-      'unknown'
-    ) === side
+    (point.side ?? 'unknown') ===
+      side
   );
 }
-
 
 export function PainLocationSelector({
   value,
@@ -129,29 +106,30 @@ export function PainLocationSelector({
   disabled = false,
   title = '¿Dónde sentís el dolor?',
 }: PainLocationSelectorProps) {
+  const searchId = useId();
+
   const currentValue:
     AnatomicalPainMap = {
     ...value,
-
     additional:
       value?.additional ?? [],
-
     radiation:
       value?.radiation ?? [],
   };
 
-
   const [
-    search,
-    setSearch,
-  ] = useState('');
-
-  const [
-    selectedCategory,
-    setSelectedCategory,
+    activeRole,
+    setActiveRole,
   ] = useState<
-    PainRegionCategory | 'all'
-  >('all');
+    SelectableLocationRole
+  >(
+    value?.primary
+      ? 'additional'
+      : 'primary',
+  );
+
+  const [search, setSearch] =
+    useState('');
 
   const [
     pendingRegion,
@@ -167,73 +145,6 @@ export function PainLocationSelector({
     'unknown',
   );
 
-  const [
-    activeRole,
-    setActiveRole,
-  ] = useState<
-    SelectableLocationRole
-  >(
-    value?.primary
-      ? 'additional'
-      : 'primary',
-  );
-
-
-  const visibleRegions =
-    useMemo(() => {
-      const normalizedSearch =
-        normalizeText(
-          search.trim(),
-        );
-
-      return painRegionCatalog.filter(
-        definition => {
-          if (
-            selectedCategory !==
-              'all' &&
-            definition.category !==
-              selectedCategory
-          ) {
-            return false;
-          }
-
-          if (!normalizedSearch) {
-            return true;
-          }
-
-          const searchableText =
-            normalizeText(
-              [
-                definition.label,
-
-                definition.value,
-
-                ...(
-                  definition.searchTerms ??
-                  []
-                ),
-              ].join(' '),
-            );
-
-          return searchableText.includes(
-            normalizedSearch,
-          );
-        },
-      );
-    }, [
-      search,
-      selectedCategory,
-    ]);
-
-
-  const availableSides =
-    pendingRegion
-      ? getAvailableSidesForRegion(
-          pendingRegion,
-        )
-      : [];
-
-
   const selectedLocations =
     useMemo<
       SelectedLocationItem[]
@@ -244,49 +155,36 @@ export function PainLocationSelector({
       if (currentValue.primary) {
         items.push({
           key:
-            `primary-${createPointKey(
+            `primary-${pointKey(
               currentValue.primary,
             )}`,
-
           point:
             currentValue.primary,
-
-          role:
-            'primary',
+          role: 'primary',
         });
       }
 
       if (currentValue.origin) {
         items.push({
           key:
-            `origin-${createPointKey(
+            `origin-${pointKey(
               currentValue.origin,
             )}`,
-
           point:
             currentValue.origin,
-
-          role:
-            'origin',
+          role: 'origin',
         });
       }
 
       currentValue.additional.forEach(
-        (
-          point,
-          index,
-        ) => {
+        (point, index) => {
           items.push({
             key:
-              `additional-${index}-${createPointKey(
+              `additional-${index}-${pointKey(
                 point,
               )}`,
-
             point,
-
-            role:
-              'additional',
-
+            role: 'additional',
             index,
           });
         },
@@ -299,62 +197,68 @@ export function PainLocationSelector({
       currentValue.additional,
     ]);
 
-
   const selectedMapPoints =
     useMemo<
       PainLocationPoint[]
     >(() => {
-      const points = [
-        ...(currentValue.primary
-          ? [
-              currentValue.primary,
-            ]
-          : []),
-
-        ...(currentValue.origin
-          ? [
-              currentValue.origin,
-            ]
-          : []),
-
-        ...currentValue.additional,
-      ];
-
-      return points.filter(
-        (
-          point,
-          index,
-          allPoints,
-        ) =>
-          allPoints.findIndex(
-            candidate =>
-              createPointKey(
-                candidate,
-              ) ===
-              createPointKey(
-                point,
-              ),
-          ) === index,
+      return selectedLocations.map(
+        item => ({
+          ...item.point,
+          role: item.role,
+        }),
       );
-    }, [
-      currentValue.primary,
-      currentValue.origin,
-      currentValue.additional,
-    ]);
+    }, [selectedLocations]);
 
+  const visibleRegions =
+    useMemo(() => {
+      const normalizedSearch =
+        normalizeText(
+          search.trim(),
+        );
 
-  const findSelectedLocation = (
-    region:
-      PainAnatomicalRegion,
+      const regions =
+        normalizedSearch
+          ? painRegionCatalog.filter(
+              definition => {
+                const searchable =
+                  normalizeText(
+                    [
+                      definition.label,
+                      definition.value,
+                      ...(
+                        definition.searchTerms ??
+                        []
+                      ),
+                    ].join(' '),
+                  );
 
-    side:
-      BodySide,
-  ):
-    | SelectedLocationItem
-    | undefined => {
+                return searchable.includes(
+                  normalizedSearch,
+                );
+              },
+            )
+          : painRegionCatalog.filter(
+              definition =>
+                definition.frequent,
+            );
+
+      return regions;
+    }, [search]);
+
+  const availableSides =
+    pendingRegion
+      ? getAvailableSidesForRegion(
+          pendingRegion,
+        )
+      : [];
+
+  const findSelected = (
+    region: PainAnatomicalRegion,
+    side: BodySide,
+  ) => {
     return selectedLocations.find(
       item =>
-        isSameLocation(
+        isSamePoint(
           item.point,
           region,
           side,
@@ -362,42 +266,27 @@ export function PainLocationSelector({
     );
   };
 
-
-  const removeSelectedLocation = (
-    item:
-      SelectedLocationItem,
+  const removeLocation = (
+    item: SelectedLocationItem,
   ) => {
     if (disabled) {
       return;
     }
 
-    if (
-      item.role ===
-      'primary'
-    ) {
+    if (item.role === 'primary') {
       onChange({
         ...currentValue,
-
-        primary:
-          undefined,
+        primary: undefined,
       });
 
-      setActiveRole(
-        'primary',
-      );
-
+      setActiveRole('primary');
       return;
     }
 
-    if (
-      item.role ===
-      'origin'
-    ) {
+    if (item.role === 'origin') {
       onChange({
         ...currentValue,
-
-        origin:
-          undefined,
+        origin: undefined,
       });
 
       return;
@@ -405,33 +294,35 @@ export function PainLocationSelector({
 
     onChange({
       ...currentValue,
-
       additional:
         currentValue.additional.filter(
-          (
-            _,
-            index,
-          ) =>
-            index !==
-            item.index,
+          (_, index) =>
+            index !== item.index,
         ),
     });
   };
 
-
   const addLocation = (
-    region:
-      PainAnatomicalRegion,
-
-    side:
-      BodySide,
-
-    role:
-      SelectableLocationRole,
+    region: PainAnatomicalRegion,
+    side: BodySide,
   ) => {
     if (disabled) {
       return;
     }
+
+    const selected =
+      findSelected(region, side);
+
+    if (selected) {
+      removeLocation(selected);
+      return;
+    }
+
+    const role:
+      SelectableLocationRole =
+      currentValue.primary
+        ? activeRole
+        : 'primary';
 
     const point =
       createPainLocationPoint(
@@ -440,262 +331,111 @@ export function PainLocationSelector({
         role,
       );
 
-
-    if (
-      role ===
-      'primary'
-    ) {
+    if (role === 'primary') {
       onChange({
         ...currentValue,
-
-        primary:
-          point,
+        primary: point,
       });
 
-      /*
-       * Después de registrar la zona
-       * principal, los siguientes
-       * toques agregan nuevas zonas.
-       */
-      setActiveRole(
-        'additional',
-      );
-
+      setActiveRole('additional');
       return;
     }
 
-
-    if (
-      role ===
-      'origin'
-    ) {
+    if (role === 'origin') {
       onChange({
         ...currentValue,
-
-        origin:
-          point,
+        origin: point,
       });
 
-      /*
-       * Después de indicar el origen,
-       * volvemos al modo de varias
-       * zonas adicionales.
-       */
-      setActiveRole(
-        'additional',
-      );
-
+      setActiveRole('additional');
       return;
     }
-
-
-    const pointKey =
-      createPointKey(
-        point,
-      );
-
-    const additionalWithoutDuplicate =
-      currentValue.additional.filter(
-        existingPoint =>
-          createPointKey(
-            existingPoint,
-          ) !== pointKey,
-      );
 
     onChange({
       ...currentValue,
-
       additional: [
-        ...additionalWithoutDuplicate,
+        ...currentValue.additional,
         point,
       ],
     });
   };
 
-
-  const handleMapSelection = (
-    region:
-      PainAnatomicalRegion,
-
-    side:
-      BodySide,
-  ) => {
-    if (disabled) {
-      return;
-    }
-
-    const selectedLocation =
-      findSelectedLocation(
-        region,
-        side,
-      );
-
-    /*
-     * Volver a tocar una zona ya
-     * marcada la elimina.
-     */
-    if (selectedLocation) {
-      removeSelectedLocation(
-        selectedLocation,
-      );
-
-      return;
-    }
-
-    /*
-     * Si todavía no existe una zona
-     * principal, la primera selección
-     * siempre se registra como tal.
-     */
-    const effectiveRole =
-      !currentValue.primary
-        ? 'primary'
-        : activeRole;
-
-    addLocation(
-      region,
-      side,
-      effectiveRole,
-    );
-  };
-
-
-  const handleTextRegionSelection = (
-    region:
-      PainAnatomicalRegion,
+  const selectTextRegion = (
+    region: PainAnatomicalRegion,
   ) => {
     const sides =
       getAvailableSidesForRegion(
         region,
       );
 
-    setPendingRegion(
-      region,
-    );
+    const preferredSide =
+      sides.includes('central')
+        ? 'central'
+        : sides.includes('bilateral')
+          ? 'bilateral'
+          : sides[0] ?? 'unknown';
 
-    if (
-      sides.includes(
-        pendingSide,
-      )
-    ) {
-      return;
-    }
-
-    if (
-      sides.includes(
-        'unknown',
-      )
-    ) {
-      setPendingSide(
-        'unknown',
-      );
-
-      return;
-    }
-
-    setPendingSide(
-      sides[0],
-    );
+    setPendingRegion(region);
+    setPendingSide(preferredSide);
   };
 
-
-  const handleAddPendingLocation =
+  const addPendingLocation =
     () => {
-      if (
-        !pendingRegion ||
-        disabled
-      ) {
+      if (!pendingRegion) {
         return;
       }
-
-      const selectedLocation =
-        findSelectedLocation(
-          pendingRegion,
-          pendingSide,
-        );
-
-      if (selectedLocation) {
-        removeSelectedLocation(
-          selectedLocation,
-        );
-
-        return;
-      }
-
-      const effectiveRole =
-        !currentValue.primary
-          ? 'primary'
-          : activeRole;
 
       addLocation(
         pendingRegion,
         pendingSide,
-        effectiveRole,
       );
+
+      setPendingRegion(undefined);
     };
 
+  const clearAll = () => {
+    if (disabled) {
+      return;
+    }
 
-  const handleClearAll =
-    () => {
-      if (disabled) {
-        return;
-      }
+    onChange({
+      ...currentValue,
+      primary: undefined,
+      origin: undefined,
+      additional: [],
+      radiation: [],
+      changesSide: false,
+    });
 
-      onChange({
-        ...currentValue,
-
-        primary:
-          undefined,
-
-        origin:
-          undefined,
-
-        additional: [],
-
-        radiation: [],
-
-        changesSide:
-          false,
-      });
-
-      setPendingRegion(
-        undefined,
-      );
-
-      setPendingSide(
-        'unknown',
-      );
-
-      setActiveRole(
-        'primary',
-      );
-    };
-
+    setPendingRegion(undefined);
+    setPendingSide('unknown');
+    setActiveRole('primary');
+  };
 
   return (
     <section
-      className="pain-location-selector"
+      className={styles.container}
       aria-labelledby="pain-location-title"
     >
-      <header className="pain-location-selector__header">
+      <header
+        className={styles.header}
+      >
         <div>
           <h3
             id="pain-location-title"
-            className="pain-location-selector__title"
+            className={styles.title}
           >
             {title}
           </h3>
 
-          <p className="pain-location-selector__description">
-            La primera zona será la
-            principal. Después podés
-            tocar todas las zonas
-            adicionales que necesites.
-          </p>
-
-          <p className="pain-location-selector__description">
-            Para quitar una zona,
-            volvé a tocarla.
+          <p
+            className={
+              styles.description
+            }
+          >
+            Elegí qué querés marcar y
+            tocá directamente una zona
+            del mapa.
           </p>
         </div>
 
@@ -703,343 +443,193 @@ export function PainLocationSelector({
           0 && (
           <button
             type="button"
-            onClick={
-              handleClearAll
+            className={
+              styles.clearButton
             }
-            disabled={
-              disabled
-            }
-            className="pain-location-selector__clear"
+            disabled={disabled}
+            onClick={clearAll}
           >
-            Limpiar mapa
+            Limpiar
           </button>
         )}
       </header>
 
+      <section
+        className={styles.rolePicker}
+        aria-labelledby="location-role-title"
+      >
+        <div>
+          <h4 id="location-role-title">
+            ¿Qué querés marcar?
+          </h4>
 
-      <section className="pain-location-selector__configuration">
-        <h4>
-          ¿Qué representa la próxima
-          zona?
-        </h4>
+          <p>
+            {
+              roleInstructions[
+                activeRole
+              ]
+            }
+          </p>
+        </div>
 
-        <div className="pain-location-selector__options">
+        <div
+          className={styles.roleOptions}
+          role="group"
+          aria-label="Tipo de localización"
+        >
           {(
             Object.keys(
               locationRoleLabels,
             ) as
               SelectableLocationRole[]
-          ).map(
-            role => (
-              <button
-                key={
+          ).map(role => (
+            <button
+              key={role}
+              type="button"
+              disabled={disabled}
+              aria-pressed={
+                activeRole === role
+              }
+              data-role={role}
+              onClick={() =>
+                setActiveRole(role)
+              }
+            >
+              {
+                locationRoleLabels[
                   role
-                }
-                type="button"
-                onClick={() =>
-                  setActiveRole(
-                    role,
-                  )
-                }
-                disabled={
-                  disabled
-                }
-                aria-pressed={
-                  activeRole ===
-                  role
-                }
-                className="pain-location-selector__option"
-              >
-                {
-                  locationRoleLabels[
-                    role
-                  ]
-                }
-              </button>
-            ),
-          )}
+                ]
+              }
+            </button>
+          ))}
         </div>
-
-        <p className="pain-location-selector__description">
-          Modo actual:{' '}
-
-          <b>
-            {
-              locationRoleLabels[
-                activeRole
-              ]
-            }
-          </b>
-        </p>
       </section>
-
 
       <PainBodyMap
         selectedPoints={
           selectedMapPoints
         }
-        disabled={
-          disabled
+        pendingRegion={
+          pendingRegion
         }
-        onSelect={
-          handleMapSelection
-        }
+        pendingSide={pendingSide}
+        disabled={disabled}
+        onSelect={addLocation}
       />
 
-
-      <details className="pain-location-selector__text-selector">
+      <details
+        className={styles.textSelector}
+      >
         <summary>
-          Buscar zona en una lista
+          No encuentro la zona en el
+          mapa
         </summary>
 
-        <div className="pain-location-selector__search">
-          <label
-            htmlFor="pain-location-search"
-            className="pain-location-selector__label"
-          >
-            Buscar una zona
+        <div
+          className={styles.search}
+        >
+          <label htmlFor={searchId}>
+            Buscar zona anatómica
           </label>
 
           <input
-            id="pain-location-search"
+            id={searchId}
             type="search"
-            value={
-              search
-            }
+            value={search}
+            disabled={disabled}
+            placeholder="Ej.: detrás del ojo, oído, cervical…"
             onChange={event =>
               setSearch(
                 event.target.value,
               )
             }
-            placeholder="Ej.: sien, ojo, cuello…"
-            disabled={
-              disabled
-            }
-            className="pain-location-selector__search-input"
           />
         </div>
 
-
         <div
-          className="pain-location-selector__categories"
-          aria-label="Categorías anatómicas"
+          className={styles.regionList}
         >
-          <button
-            type="button"
-            onClick={() =>
-              setSelectedCategory(
-                'all',
-              )
-            }
-            disabled={
-              disabled
-            }
-            aria-pressed={
-              selectedCategory ===
-              'all'
-            }
-            className="pain-location-selector__category"
-          >
-            Todas
-          </button>
-
-          {CATEGORY_ORDER.map(
-            category => (
+          {visibleRegions.map(
+            definition => (
               <button
                 key={
-                  category
+                  definition.value
                 }
                 type="button"
+                disabled={disabled}
+                aria-pressed={
+                  pendingRegion ===
+                  definition.value
+                }
                 onClick={() =>
-                  setSelectedCategory(
-                    category,
+                  selectTextRegion(
+                    definition.value,
                   )
                 }
-                disabled={
-                  disabled
-                }
-                aria-pressed={
-                  selectedCategory ===
-                  category
-                }
-                className="pain-location-selector__category"
               >
-                {
-                  painRegionCategoryLabels[
-                    category
-                  ]
-                }
+                {definition.label}
               </button>
             ),
           )}
         </div>
 
-
-        <div className="pain-location-selector__regions">
-          {visibleRegions.length ===
-          0 ? (
-            <p className="pain-location-selector__empty">
-              No encontramos una zona
-              con ese nombre.
-            </p>
-          ) : (
-            visibleRegions.map(
-              definition => (
-                <button
-                  key={
-                    definition.value
-                  }
-                  type="button"
-                  onClick={() =>
-                    handleTextRegionSelection(
-                      definition.value,
-                    )
-                  }
-                  disabled={
-                    disabled
-                  }
-                  aria-pressed={
-                    pendingRegion ===
-                    definition.value
-                  }
-                  className="pain-location-selector__region"
-                >
-                  {
-                    definition.label
-                  }
-                </button>
-              ),
-            )
-          )}
-        </div>
-
-
         {pendingRegion && (
-          <section className="pain-location-selector__configuration">
+          <section
+            className={
+              styles.sideConfiguration
+            }
+          >
             <h4>
-              Configurar zona
+              Elegí el lado
             </h4>
 
-            <p>
-              {
-                painRegionCatalog.find(
-                  definition =>
-                    definition.value ===
-                    pendingRegion,
-                )?.label
+            <div
+              className={
+                styles.sideOptions
               }
-            </p>
-
-            <div className="pain-location-selector__configuration-group">
-              <span className="pain-location-selector__label">
-                Lado
-              </span>
-
-              <div className="pain-location-selector__options">
-                {availableSides.map(
-                  side => (
-                    <button
-                      key={
+            >
+              {availableSides.map(
+                side => (
+                  <button
+                    key={side}
+                    type="button"
+                    disabled={disabled}
+                    aria-pressed={
+                      pendingSide ===
+                      side
+                    }
+                    onClick={() =>
+                      setPendingSide(
+                        side,
+                      )
+                    }
+                  >
+                    {
+                      bodySideLabels[
                         side
-                      }
-                      type="button"
-                      onClick={() =>
-                        setPendingSide(
-                          side,
-                        )
-                      }
-                      disabled={
-                        disabled
-                      }
-                      aria-pressed={
-                        pendingSide ===
-                        side
-                      }
-                      className="pain-location-selector__option"
-                    >
-                      {
-                        bodySideLabels[
-                          side
-                        ]
-                      }
-                    </button>
-                  ),
-                )}
-              </div>
+                      ]
+                    }
+                  </button>
+                ),
+              )}
             </div>
 
             <button
               type="button"
+              className={
+                styles.addButton
+              }
+              disabled={disabled}
               onClick={
-                handleAddPendingLocation
+                addPendingLocation
               }
-              disabled={
-                disabled
-              }
-              className="pain-location-selector__add"
             >
-              Agregar esta zona
+              Agregar zona
             </button>
           </section>
         )}
       </details>
 
-
-      {selectedLocations.length >
-        0 && (
-        <section className="pain-location-selector__selected">
-          <h4 className="pain-location-selector__selected-title">
-            Localizaciones registradas
-          </h4>
-
-          <ul className="pain-location-selector__selected-list">
-            {selectedLocations.map(
-              item => (
-                <li
-                  key={
-                    item.key
-                  }
-                  className="pain-location-selector__selected-item"
-                >
-                  <div>
-                    <span className="pain-location-selector__selected-role">
-                      {
-                        locationRoleLabels[
-                          item.role
-                        ]
-                      }
-                    </span>
-
-                    <span className="pain-location-selector__selected-location">
-                      {formatPainLocationPoint(
-                        item.point,
-                      )}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removeSelectedLocation(
-                        item,
-                      )
-                    }
-                    disabled={
-                      disabled
-                    }
-                    aria-label={`Eliminar ${formatPainLocationPoint(
-                      item.point,
-                    )}`}
-                    className="pain-location-selector__remove"
-                  >
-                    Eliminar
-                  </button>
-                </li>
-              ),
-            )}
-          </ul>
-        </section>
-      )}
     </section>
   );
 }

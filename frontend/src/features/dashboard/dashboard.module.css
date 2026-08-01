@@ -1,3 +1,6 @@
+rd.module.css
+
+
 .dashboard {
   width: 100%;
 
@@ -453,6 +456,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: var(--space-5);
 
   padding: var(--space-5);
@@ -476,6 +480,131 @@
   box-shadow: var(--shadow-medium);
 
   transform: translateY(-2px);
+}
+
+.episodeActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.continueButton,
+.discardButton,
+.keepButton,
+.confirmDiscardButton {
+  min-height: 42px;
+
+  padding:
+    var(--space-2)
+    var(--space-4);
+
+  border-radius:
+    var(--radius-medium);
+
+  box-shadow: none;
+}
+
+.continueButton {
+  color: #ffffff;
+  background:
+    var(--color-primary);
+}
+
+.continueButton:hover {
+  background:
+    var(--color-primary-hover);
+}
+
+.discardButton {
+  border: 1px solid
+    rgba(162, 79, 85, 0.35);
+
+  color:
+    var(--color-danger);
+  background:
+    var(--color-danger-soft);
+}
+
+.discardButton:hover {
+  border-color:
+    var(--color-danger);
+
+  background:
+    rgba(162, 79, 85, 0.14);
+}
+
+.discardConfirmation {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: var(--space-4);
+
+  padding: var(--space-4);
+
+  border: 1px solid
+    rgba(162, 79, 85, 0.3);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--color-danger-soft);
+}
+
+.discardConfirmation h4 {
+  margin-bottom:
+    var(--space-1);
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.95rem;
+}
+
+.discardConfirmation p {
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.confirmationActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.keepButton {
+  border: 1px solid
+    var(--color-border-strong);
+
+  color:
+    var(--color-text);
+  background:
+    var(--color-surface);
+}
+
+.keepButton:hover {
+  border-color:
+    var(--color-primary-border);
+
+  color:
+    var(--color-primary);
+}
+
+.confirmDiscardButton {
+  color: #ffffff;
+  background:
+    var(--color-danger);
+}
+
+.confirmDiscardButton:hover {
+  background: #8f4349;
 }
 
 .episodeMain {
@@ -685,6 +814,26 @@
   .episodeCard {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .episodeActions {
+    width: 100%;
+  }
+
+  .episodeActions button {
+    flex: 1 1 150px;
+  }
+
+  .discardConfirmation {
+    grid-template-columns: 1fr;
+  }
+
+  .confirmationActions {
+    width: 100%;
+  }
+
+  .confirmationActions button {
+    flex: 1;
   }
 
   .episodeMain {

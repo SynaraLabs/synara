@@ -1,4 +1,8 @@
 import {
+  useState,
+} from 'react';
+
+import {
   useNavigate,
 } from 'react-router-dom';
 
@@ -89,10 +93,21 @@ export function HealthSummary() {
   const navigate =
     useNavigate();
 
+  const [
+    isConfirmingDiscard,
+    setIsConfirmingDiscard,
+  ] = useState(false);
+
   const activeEpisode =
     useMigraineStore(
       state =>
         state.activeEpisode,
+    );
+
+  const resetEpisode =
+    useMigraineStore(
+      state =>
+        state.resetEpisode,
     );
 
   if (!activeEpisode) {
@@ -108,6 +123,14 @@ export function HealthSummary() {
     formatLastUpdate(
       activeEpisode,
     );
+
+  const handleDiscardEpisode =
+    () => {
+      resetEpisode();
+      setIsConfirmingDiscard(
+        false,
+      );
+    };
 
   return (
     <section
@@ -203,16 +226,101 @@ export function HealthSummary() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() =>
-            navigate(
-              '/migraine',
-            )
+        <div
+          className={
+            styles.episodeActions
           }
         >
-          Continuar registro
-        </button>
+          <button
+            type="button"
+            className={
+              styles.continueButton
+            }
+            onClick={() =>
+              navigate(
+                '/migraine',
+              )
+            }
+          >
+            Continuar registro
+          </button>
+
+          <button
+            type="button"
+            className={
+              styles.discardButton
+            }
+            aria-expanded={
+              isConfirmingDiscard
+            }
+            onClick={() =>
+              setIsConfirmingDiscard(
+                true,
+              )
+            }
+          >
+            Eliminar episodio
+          </button>
+        </div>
+
+        {isConfirmingDiscard && (
+          <div
+            className={
+              styles.discardConfirmation
+            }
+            role="alertdialog"
+            aria-labelledby="discard-episode-title"
+            aria-describedby="discard-episode-description"
+          >
+            <div>
+              <h4
+                id="discard-episode-title"
+              >
+                ¿Eliminar este episodio?
+              </h4>
+
+              <p
+                id="discard-episode-description"
+              >
+                El registro en curso se
+                descartará y no aparecerá
+                en tu historial.
+              </p>
+            </div>
+
+            <div
+              className={
+                styles.confirmationActions
+              }
+            >
+              <button
+                type="button"
+                className={
+                  styles.keepButton
+                }
+                onClick={() =>
+                  setIsConfirmingDiscard(
+                    false,
+                  )
+                }
+              >
+                Volver
+              </button>
+
+              <button
+                type="button"
+                className={
+                  styles.confirmDiscardButton
+                }
+                onClick={
+                  handleDiscardEpisode
+                }
+              >
+                Sí, eliminar
+              </button>
+            </div>
+          </div>
+        )}
       </article>
     </section>
   );
