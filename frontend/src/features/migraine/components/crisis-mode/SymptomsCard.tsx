@@ -20,14 +20,23 @@ import {
 
 interface Props {
   symptoms: CrisisSymptom[];
+
   onToggle: (
     symptom: CrisisSymptom,
   ) => void;
+
+  onDone: () => void;
 }
+
+type SymptomDefinition =
+  (typeof CRISIS_SYMPTOM_CATALOG)[number];
+
+const MAX_FREQUENT_SYMPTOMS = 8;
 
 export function SymptomsCard({
   symptoms,
   onToggle,
+  onDone,
 }: Props) {
   const [
     searchTerm,
@@ -35,14 +44,26 @@ export function SymptomsCard({
   ] = useState('');
 
   const [
-    showAllSymptoms,
-    setShowAllSymptoms,
-  ] = useState(false);
+    activeCategory,
+    setActiveCategory,
+  ] = useState<
+    CrisisSymptomCategory | null
+  >(null);
 
   const normalizedSearch =
     normalizeCrisisSymptomSearch(
       searchTerm.trim(),
     );
+
+  const selectedDefinitions =
+    useMemo(() => {
+      return CRISIS_SYMPTOM_CATALOG.filter(
+        definition =>
+          symptoms.includes(
+            definition.value,
+          ),
+      );
+    }, [symptoms]);
 
   const frequentSymptoms =
     useMemo(() => {
@@ -51,10 +72,13 @@ export function SymptomsCard({
           FREQUENT_CRISIS_SYMPTOMS.includes(
             definition.value,
           ),
+      ).slice(
+        0,
+        MAX_FREQUENT_SYMPTOMS,
       );
     }, []);
 
-  const filteredSymptoms =
+  const searchResults =
     useMemo(() => {
       if (!normalizedSearch) {
         return [];
@@ -80,72 +104,37 @@ export function SymptomsCard({
       );
     }, [normalizedSearch]);
 
-  const symptomsByCategory =
+  const categorySymptoms =
     useMemo(() => {
-      const grouped = new Map<
-        CrisisSymptomCategory,
-        typeof CRISIS_SYMPTOM_CATALOG
-      >();
-
-      for (
-        const category
-        of CRISIS_CATEGORY_ORDER
-      ) {
-        const categorySymptoms =
-          CRISIS_SYMPTOM_CATALOG.filter(
-            definition =>
-              definition.category ===
-                category &&
-              !definition.frequent,
-          );
-
-        if (
-          categorySymptoms.length > 0
-        ) {
-          grouped.set(
-            category,
-            categorySymptoms,
-          );
-        }
+      if (!activeCategory) {
+        return [];
       }
 
-      return grouped;
+      return CRISIS_SYMPTOM_CATALOG.filter(
+        definition =>
+          definition.category ===
+          activeCategory,
+      );
+    }, [activeCategory]);
+
+  const categoryCounts =
+    useMemo(() => {
+      return new Map(
+        CRISIS_CATEGORY_ORDER.map(
+          category => [
+            category,
+            CRISIS_SYMPTOM_CATALOG.filter(
+              definition =>
+                definition.category ===
+                category,
+            ).length,
+          ],
+        ),
+      );
     }, []);
 
-  const searchResultsByCategory =
-    useMemo(() => {
-      const grouped = new Map<
-        CrisisSymptomCategory,
-        typeof CRISIS_SYMPTOM_CATALOG
-      >();
-
-      for (
-        const category
-        of CRISIS_CATEGORY_ORDER
-      ) {
-        const categorySymptoms =
-          filteredSymptoms.filter(
-            definition =>
-              definition.category ===
-              category,
-          );
-
-        if (
-          categorySymptoms.length > 0
-        ) {
-          grouped.set(
-            category,
-            categorySymptoms,
-          );
-        }
-      }
-
-      return grouped;
-    }, [filteredSymptoms]);
-
   const renderSymptomButton = (
-    symptom:
-      (typeof CRISIS_SYMPTOM_CATALOG)[number],
+    symptom: SymptomDefinition,
   ) => {
     const isActive =
       symptoms.includes(
@@ -173,70 +162,84 @@ export function SymptomsCard({
     );
   };
 
-  const renderCategories = (
-    groupedSymptoms: Map<
-      CrisisSymptomCategory,
-      typeof CRISIS_SYMPTOM_CATALOG
-    >,
-  ) => {
-    return CRISIS_CATEGORY_ORDER.map(
-      category => {
-        const categorySymptoms =
-          groupedSymptoms.get(
-            category,
-          );
-
-        if (
-          !categorySymptoms ||
-          categorySymptoms.length === 0
-        ) {
-          return null;
-        }
-
-        return (
-          <section key={category}>
-            <h3>
-              {
-                CRISIS_CATEGORY_LABELS[
-                  category
-                ]
-              }
-            </h3>
-
-            <div
-              className={styles.grid}
-            >
-              {categorySymptoms.map(
-                renderSymptomButton,
-              )}
-            </div>
-          </section>
-        );
-      },
-    );
-  };
-
   const isSearching =
     normalizedSearch.length > 0;
 
   return (
-    <div className={styles.card}>
-      <h2>
-        Síntomas durante la crisis
-      </h2>
+    <div
+      className={styles.symptomsCard}
+    >
+      <header
+        className={
+          styles.symptomsHeader
+        }
+      >
+        <div>
+          <h2>
+            Síntomas durante la crisis
+          </h2>
 
-      <p>
-        {symptoms.length === 0
-          ? 'Ningún síntoma seleccionado'
-          : `${symptoms.length} ${
-              symptoms.length === 1
-                ? 'síntoma seleccionado'
-                : 'síntomas seleccionados'
-            }`}
-      </p>
+          <p>
+            {symptoms.length === 0
+              ? 'Ningún síntoma seleccionado'
+              : `${symptoms.length} ${
+                  symptoms.length === 1
+                    ? 'síntoma seleccionado'
+                    : 'síntomas seleccionados'
+                }`}
+          </p>
+        </div>
+      </header>
 
-      <label>
-        Buscar síntomas
+      {selectedDefinitions.length >
+        0 && (
+        <section
+          className={
+            styles.selectedSymptoms
+          }
+          aria-labelledby="selected-crisis-symptoms"
+        >
+          <h3
+            id="selected-crisis-symptoms"
+          >
+            Seleccionados
+          </h3>
+
+          <div>
+            {selectedDefinitions.map(
+              definition => (
+                <button
+                  key={
+                    definition.value
+                  }
+                  type="button"
+                  aria-label={`Quitar ${definition.label}`}
+                  onClick={() =>
+                    onToggle(
+                      definition.value,
+                    )
+                  }
+                >
+                  {definition.label}
+                  <span aria-hidden="true">
+                    ×
+                  </span>
+                </button>
+              ),
+            )}
+          </div>
+        </section>
+      )}
+
+      <label
+        className={
+          styles.symptomSearch
+        }
+      >
+        <span>
+          Buscar síntomas
+        </span>
+
         <input
           type="search"
           value={searchTerm}
@@ -251,28 +254,52 @@ export function SymptomsCard({
       </label>
 
       {isSearching ? (
-        <>
-          {filteredSymptoms.length >
-          0 ? (
-            renderCategories(
-              searchResultsByCategory,
-            )
+        <section
+          className={
+            styles.symptomResults
+          }
+          aria-live="polite"
+        >
+          <h3>
+            Resultados
+          </h3>
+
+          {searchResults.length > 0 ? (
+            <div
+              className={
+                styles.symptomGrid
+              }
+            >
+              {searchResults.map(
+                renderSymptomButton,
+              )}
+            </div>
           ) : (
-            <p>
-              No se encontraron
-              síntomas.
+            <p
+              className={
+                styles.symptomEmpty
+              }
+            >
+              No encontramos síntomas
+              con ese nombre.
             </p>
           )}
-        </>
+        </section>
       ) : (
         <>
-          <section>
+          <section
+            className={
+              styles.quickSymptoms
+            }
+          >
             <h3>
-              Síntomas frecuentes
+              Frecuentes
             </h3>
 
             <div
-              className={styles.grid}
+              className={
+                styles.symptomGrid
+              }
             >
               {frequentSymptoms.map(
                 renderSymptomButton,
@@ -280,29 +307,119 @@ export function SymptomsCard({
             </div>
           </section>
 
-          <button
-            type="button"
-            aria-expanded={
-              showAllSymptoms
+          <section
+            className={
+              styles.symptomCategories
             }
-            onClick={() =>
-              setShowAllSymptoms(
-                current =>
-                  !current,
-              )
-            }
+            aria-labelledby="crisis-symptom-categories"
           >
-            {showAllSymptoms
-              ? 'Ocultar síntomas adicionales'
-              : 'Mostrar todos los síntomas'}
-          </button>
+            <h3
+              id="crisis-symptom-categories"
+            >
+              Buscar por categoría
+            </h3>
 
-          {showAllSymptoms &&
-            renderCategories(
-              symptomsByCategory,
+            <div
+              className={
+                styles.categoryScroller
+              }
+              role="list"
+            >
+              {CRISIS_CATEGORY_ORDER.map(
+                category => (
+                  <button
+                    key={category}
+                    type="button"
+                    role="listitem"
+                    aria-pressed={
+                      activeCategory ===
+                      category
+                    }
+                    onClick={() =>
+                      setActiveCategory(
+                        current =>
+                          current ===
+                          category
+                            ? null
+                            : category,
+                      )
+                    }
+                  >
+                    <span>
+                      {
+                        CRISIS_CATEGORY_LABELS[
+                          category
+                        ]
+                      }
+                    </span>
+
+                    <small>
+                      {
+                        categoryCounts.get(
+                          category,
+                        ) ?? 0
+                      }
+                    </small>
+                  </button>
+                ),
+              )}
+            </div>
+
+            {activeCategory && (
+              <div
+                className={
+                  styles.categoryPanel
+                }
+              >
+                <div
+                  className={
+                    styles.categoryPanelHeader
+                  }
+                >
+                  <h4>
+                    {
+                      CRISIS_CATEGORY_LABELS[
+                        activeCategory
+                      ]
+                    }
+                  </h4>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveCategory(
+                        null,
+                      )
+                    }
+                  >
+                    Cerrar
+                  </button>
+                </div>
+
+                <div
+                  className={
+                    styles.symptomGrid
+                  }
+                >
+                  {categorySymptoms.map(
+                    renderSymptomButton,
+                  )}
+                </div>
+              </div>
             )}
+          </section>
         </>
       )}
+
+      <button
+        type="button"
+        className={
+          styles.symptomsDone
+        }
+        onClick={onDone}
+      >
+        Listo
+      </button>
     </div>
   );
 }

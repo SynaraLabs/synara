@@ -220,6 +220,76 @@
   flex: 1;
 }
 
+.crisisMode {
+  --color-background: #07181c;
+  --color-surface: #0d2529;
+  --color-surface-soft: #123035;
+  --color-border: #24474b;
+  --color-border-strong: #3b5e62;
+  --color-primary: #78b9b3;
+  --color-primary-hover: #8fc9c3;
+  --color-primary-soft: #173c40;
+  --color-primary-border: #35666a;
+  --color-text: #d2dfdd;
+  --color-text-strong: #f0f5f3;
+  --color-text-soft: #a7bcba;
+  --color-focus: rgb(120 185 179 / 28%);
+
+  min-height: 100dvh;
+
+  color: var(--color-text);
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgb(37 82 85 / 30%),
+      transparent 40%
+    ),
+    var(--color-background);
+}
+
+.crisisMode .sidebar {
+  display: none;
+}
+
+.crisisMode .content {
+  min-height: 100dvh;
+
+  background: transparent;
+}
+
+.crisisMode .header {
+  border-bottom-color:
+    var(--color-border);
+
+  color:
+    var(--color-text-strong);
+  background:
+    rgb(8 27 31 / 92%);
+
+  box-shadow:
+    0 8px 28px
+      rgb(1 10 12 / 18%);
+}
+
+.crisisMode .main {
+  max-width: none;
+
+  padding:
+    var(--space-5)
+    var(--space-4)
+    calc(
+      104px +
+      env(safe-area-inset-bottom)
+    );
+
+  background: transparent;
+}
+
+.crisisMode .main > section > h1,
+.crisisMode .main > section > h1 + p {
+  display: none;
+}
+
 @media (max-width: 1100px) {
   .sidebar {
     width: 232px;
@@ -232,6 +302,16 @@
 
   .main {
     padding: var(--space-6);
+  }
+
+  .crisisMode .main {
+    padding:
+      var(--space-5)
+      var(--space-4)
+      calc(
+        104px +
+        env(safe-area-inset-bottom)
+      );
   }
 }
 
@@ -359,6 +439,18 @@
         env(safe-area-inset-bottom)
       );
   }
+
+  .crisisMode .main {
+    max-width: none;
+
+    padding:
+      var(--space-3)
+      var(--space-3)
+      calc(
+        100px +
+        env(safe-area-inset-bottom)
+      );
+  }
 }
 
 @media (max-width: 560px) {
@@ -385,6 +477,25 @@
 
   .sidebar a {
     min-width: 76px;
+  }
+
+  .crisisMode .header {
+    min-height: 58px;
+
+    padding-inline: var(--space-3);
+  }
+
+  .crisisMode .header h1 {
+    font-size: 1rem;
+  }
+
+  .crisisMode .header span {
+    font-size: 0.68rem;
+  }
+
+  .crisisMode .main {
+    padding-top: var(--space-2);
+    padding-inline: 0;
   }
 }
 

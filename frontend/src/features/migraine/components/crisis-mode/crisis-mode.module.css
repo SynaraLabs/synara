@@ -28,6 +28,12 @@
 
   margin: 0 auto;
   padding: var(--space-5);
+  padding-bottom:
+    calc(
+      var(--space-5) +
+      92px +
+      env(safe-area-inset-bottom)
+    );
 
   border: 1px solid #24474b;
   border-radius:
@@ -511,11 +517,554 @@
   color: #78918f;
 }
 
+.finishBar {
+  position: fixed;
+  z-index: 50;
+  left: 50%;
+  bottom:
+    max(
+      12px,
+      env(safe-area-inset-bottom)
+    );
+
+  width:
+    min(
+      900px,
+      calc(100vw - 32px)
+    );
+  min-height: 68px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+
+  padding:
+    10px 10px
+    10px var(--space-4);
+
+  border: 1px solid
+    var(--color-primary-border);
+  border-radius:
+    var(--radius-large);
+
+  color:
+    var(--color-text);
+  background:
+    rgb(12 35 39 / 96%);
+
+  box-shadow:
+    0 18px 48px
+      rgb(1 10 12 / 42%);
+
+  transform:
+    translateX(-50%);
+
+  backdrop-filter: blur(14px);
+}
+
+.finishBarStatus {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.finishBarStatus > span {
+  width: 10px;
+  height: 10px;
+
+  flex: 0 0 auto;
+
+  border-radius: 50%;
+
+  background:
+    var(--crisis-accent);
+
+  box-shadow:
+    0 0 0 5px
+      var(--crisis-accent-soft);
+}
+
+.finishBarStatus div {
+  min-width: 0;
+
+  display: grid;
+  gap: 1px;
+}
+
+.finishBarStatus strong {
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.88rem;
+}
+
+.finishBarStatus small {
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.7rem;
+}
+
+.finishBarButton {
+  min-height: 48px;
+
+  flex: 0 0 auto;
+
+  padding:
+    10px var(--space-5);
+
+  border: 1px solid
+    var(--crisis-accent);
+  border-radius:
+    var(--radius-medium);
+
+  color: #22180e;
+  background:
+    var(--crisis-accent);
+
+  font-size: 0.86rem;
+  font-weight: 800;
+
+  box-shadow: none;
+}
+
+.finishBarButton:hover {
+  background: #e7b779;
+}
+
+.finishSheetBackdrop {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  padding:
+    var(--space-4)
+    var(--space-4)
+    max(
+      var(--space-4),
+      env(safe-area-inset-bottom)
+    );
+
+  background:
+    rgb(2 12 15 / 72%);
+
+  backdrop-filter: blur(5px);
+}
+
+.finishSheet {
+  overflow-y: auto;
+
+  width: 100%;
+  max-width: 680px;
+  max-height: 88dvh;
+
+  padding:
+    var(--space-3)
+    var(--space-4)
+    var(--space-4);
+
+  border: 1px solid
+    var(--color-primary-border);
+  border-radius:
+    var(--radius-large)
+    var(--radius-large)
+    var(--radius-medium)
+    var(--radius-medium);
+
+  color:
+    var(--color-text);
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    0 24px 70px
+      rgb(1 10 12 / 56%);
+}
+
+.finishSheetHandle {
+  width: 42px;
+  height: 4px;
+
+  margin:
+    0 auto
+    var(--space-3);
+
+  border-radius:
+    var(--radius-pill);
+
+  background:
+    var(--color-border-strong);
+}
+
+.symptomsCard {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.symptomsHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.symptomsHeader h2 {
+  margin-bottom: var(--space-1);
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 1.1rem;
+}
+
+.symptomsHeader p {
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.82rem;
+}
+
+.selectedSymptoms {
+  display: grid;
+  gap: var(--space-2);
+
+  padding: var(--space-3);
+
+  border: 1px solid
+    var(--color-primary-border);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--color-primary-soft);
+}
+
+.selectedSymptoms h3,
+.quickSymptoms h3,
+.symptomResults h3,
+.symptomCategories > h3 {
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.86rem;
+}
+
+.selectedSymptoms > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.selectedSymptoms button {
+  min-height: 36px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 6px 10px;
+
+  border: 1px solid
+    var(--color-primary);
+  border-radius:
+    var(--radius-pill);
+
+  color: #0b2024;
+  background:
+    var(--color-primary);
+
+  font-size: 0.75rem;
+  font-weight: 750;
+
+  box-shadow: none;
+}
+
+.selectedSymptoms button span {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.symptomSearch {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.symptomSearch > span {
+  color:
+    var(--color-text);
+
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.symptomSearch input {
+  width: 100%;
+  min-height: 46px;
+
+  padding: 10px 14px;
+
+  border: 1px solid
+    var(--color-border-strong);
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--color-text);
+  background: #10272b;
+
+  font: inherit;
+}
+
+.symptomSearch input:focus {
+  border-color:
+    var(--color-primary);
+
+  outline: 3px solid
+    var(--color-focus);
+  outline-offset: 1px;
+}
+
+.quickSymptoms,
+.symptomResults,
+.symptomCategories {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.symptomGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.symptomGrid button {
+  min-height: 46px;
+
+  justify-content: flex-start;
+
+  padding:
+    var(--space-2)
+    var(--space-3);
+
+  border: 1px solid
+    var(--color-border-strong);
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--color-text);
+  background:
+    var(--color-surface);
+
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: left;
+
+  box-shadow: none;
+}
+
+.symptomGrid button:hover {
+  border-color:
+    var(--color-primary);
+
+  color:
+    var(--color-text-strong);
+  background:
+    var(--color-primary-soft);
+}
+
+.symptomGrid button[aria-pressed='true'] {
+  border-color:
+    var(--color-primary);
+
+  color: #0b2024;
+  background:
+    var(--color-primary);
+}
+
+.categoryScroller {
+  display: flex;
+  gap: var(--space-2);
+
+  padding-bottom: var(--space-1);
+
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.categoryScroller > button {
+  min-width: 130px;
+  min-height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+
+  flex: 0 0 auto;
+
+  padding:
+    var(--space-2)
+    var(--space-3);
+
+  border: 1px solid
+    var(--color-border-strong);
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--color-text);
+  background:
+    var(--color-surface);
+
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: left;
+
+  box-shadow: none;
+  scroll-snap-align: start;
+}
+
+.categoryScroller > button:hover,
+.categoryScroller > button[aria-pressed='true'] {
+  border-color:
+    var(--color-primary);
+
+  color:
+    var(--color-text-strong);
+  background:
+    var(--color-primary-soft);
+}
+
+.categoryScroller small {
+  min-width: 24px;
+  height: 24px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  color:
+    var(--color-primary);
+  background:
+    var(--color-surface-soft);
+
+  font-size: 0.66rem;
+}
+
+.categoryPanel {
+  display: grid;
+  gap: var(--space-3);
+
+  padding: var(--space-3);
+
+  border: 1px solid
+    var(--color-primary-border);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--color-surface-soft);
+}
+
+.categoryPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.categoryPanelHeader h4 {
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.86rem;
+}
+
+.categoryPanelHeader button {
+  min-height: 34px;
+
+  padding: 5px 9px;
+
+  border: 1px solid
+    var(--color-border-strong);
+  border-radius:
+    var(--radius-pill);
+
+  color:
+    var(--color-text-soft);
+  background:
+    var(--color-surface);
+
+  font-size: 0.7rem;
+
+  box-shadow: none;
+}
+
+.symptomEmpty {
+  padding: var(--space-4);
+
+  border: 1px dashed
+    var(--color-border-strong);
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.symptomsDone {
+  width: 100%;
+  min-height: 48px;
+
+  padding:
+    var(--space-2)
+    var(--space-4);
+
+  border: 1px solid
+    var(--color-primary);
+  border-radius:
+    var(--radius-medium);
+
+  color: #0b2024;
+  background:
+    var(--color-primary);
+
+  font-size: 0.86rem;
+  font-weight: 800;
+
+  box-shadow: none;
+}
+
+.symptomsDone:hover {
+  background:
+    var(--color-primary-hover);
+}
+
 @media (max-width: 640px) {
   .container {
     gap: var(--space-3);
 
     padding: var(--space-3);
+    padding-bottom:
+      calc(
+        var(--space-3) +
+        88px +
+        env(safe-area-inset-bottom)
+      );
 
     border-radius:
       var(--radius-medium);
@@ -556,6 +1105,52 @@
 
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .symptomGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .finishBar {
+    width:
+      calc(100vw - 20px);
+    min-height: 64px;
+
+    bottom:
+      max(
+        8px,
+        env(safe-area-inset-bottom)
+      );
+
+    padding:
+      8px 8px
+      8px var(--space-3);
+
+    border-radius:
+      var(--radius-medium);
+  }
+
+  .finishBarButton {
+    min-height: 46px;
+
+    padding:
+      9px var(--space-4);
+  }
+
+  .finishSheetBackdrop {
+    padding: 0;
+  }
+
+  .finishSheet {
+    max-height: 92dvh;
+
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius:
+      var(--radius-large)
+      var(--radius-large)
+      0 0;
   }
 }
 

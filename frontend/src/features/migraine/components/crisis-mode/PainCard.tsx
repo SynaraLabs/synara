@@ -1,3 +1,8 @@
+import {
+  useEffect,
+  useState,
+} from 'react';
+
 import styles from './crisis-mode.module.css';
 
 import type {
@@ -5,17 +10,15 @@ import type {
   PainIntensity,
 } from '../../types/migraine.types';
 
-
 interface Props {
   crisis: CrisisPhase;
 
-  onChange: (
-    value: string,
+  onRegister: (
+    intensity: PainIntensity,
   ) => void;
 
-  onRegister: () => void;
+  onUndo: () => void;
 }
-
 
 const PAIN_LEVELS:
   readonly PainIntensity[] = [
@@ -31,7 +34,6 @@ const PAIN_LEVELS:
   9,
   10,
 ];
-
 
 const getPainDescription = (
   intensity: PainIntensity,
@@ -54,7 +56,6 @@ const getPainDescription = (
 
   return 'Dolor muy intenso';
 };
-
 
 const formatTime = (
   value?: string,
@@ -83,11 +84,10 @@ const formatTime = (
   );
 };
 
-
 export function PainCard({
   crisis,
-  onChange,
   onRegister,
+  onUndo,
 }: Props) {
   const intensityHistory =
     crisis.intensityHistory ?? [];
@@ -95,29 +95,55 @@ export function PainCard({
   const lastRecord =
     intensityHistory.at(-1);
 
+  const [
+    draftIntensity,
+    setDraftIntensity,
+  ] = useState<PainIntensity>(
+    crisis.intensity,
+  );
 
-  const handleQuickRegister = (
+  const [
+    hasPendingSelection,
+    setHasPendingSelection,
+  ] = useState(false);
+
+  useEffect(() => {
+    if (hasPendingSelection) {
+      return;
+    }
+
+    setDraftIntensity(
+      crisis.intensity,
+    );
+  }, [
+    crisis.intensity,
+    hasPendingSelection,
+  ]);
+
+  const selectIntensity = (
     intensity: PainIntensity,
   ) => {
-    /*
-     * Zustand actualiza el store de
-     * manera sincrónica. CrisisMode
-     * vuelve a leer el estado más
-     * reciente antes de registrar.
-     */
-    onChange(
-      String(intensity),
-    );
-
-    onRegister();
+    setDraftIntensity(intensity);
+    setHasPendingSelection(true);
   };
 
+  const handleRegister = () => {
+    if (!hasPendingSelection) {
+      return;
+    }
+
+    onRegister(draftIntensity);
+    setHasPendingSelection(false);
+  };
+
+  const handleUndo = () => {
+    onUndo();
+    setHasPendingSelection(false);
+  };
 
   return (
     <section
-      className={
-        styles.card
-      }
+      className={styles.card}
       aria-labelledby="current-pain-title"
     >
       <header>
@@ -126,54 +152,55 @@ export function PainCard({
         </h2>
 
         <p>
-          Tocá un número para guardar
-          rápidamente la intensidad
-          actual.
+          Elegí una intensidad. No se
+          guardará hasta que confirmes
+          la actualización.
         </p>
       </header>
 
-
       <div aria-live="polite">
         <strong>
-          {crisis.intensity}/10
+          {draftIntensity}/10
         </strong>
 
         <p>
           {getPainDescription(
-            crisis.intensity,
+            draftIntensity,
           )}
         </p>
-      </div>
 
+        {hasPendingSelection && (
+          <span>
+            Sin guardar
+          </span>
+        )}
+      </div>
 
       <div
         role="group"
-        aria-label="Intensidad rápida del dolor"
+        aria-label="Seleccionar intensidad del dolor"
       >
         {PAIN_LEVELS.map(
           intensity => (
             <button
-              key={
-                intensity
-              }
+              key={intensity}
               type="button"
               onClick={() =>
-                handleQuickRegister(
+                selectIntensity(
                   intensity,
                 )
               }
               aria-pressed={
-                crisis.intensity ===
+                draftIntensity ===
                 intensity
               }
-              aria-label={`Registrar dolor ${intensity} de 10`}
+              aria-label={`Seleccionar dolor ${intensity} de 10`}
             >
               {intensity}
             </button>
           ),
         )}
       </div>
-
 
       <label>
         Ajustar intensidad
@@ -183,38 +210,35 @@ export function PainCard({
           min="0"
           max="10"
           step="1"
-          value={
-            crisis.intensity
-          }
+          value={draftIntensity}
           aria-valuemin={0}
           aria-valuemax={10}
           aria-valuenow={
-            crisis.intensity
+            draftIntensity
           }
-          aria-valuetext={`${crisis.intensity} de 10, ${getPainDescription(
-            crisis.intensity,
+          aria-valuetext={`${draftIntensity} de 10, ${getPainDescription(
+            draftIntensity,
           )}`}
           onChange={event =>
-            onChange(
-              event.target.value,
+            selectIntensity(
+              Number(
+                event.target.value,
+              ) as PainIntensity,
             )
           }
         />
       </label>
 
-
       <button
         type="button"
-        className={
-          styles.primary
+        className={styles.primary}
+        disabled={
+          !hasPendingSelection
         }
-        onClick={
-          onRegister
-        }
+        onClick={handleRegister}
       >
-        Guardar intensidad actual
+        Registrar actualización
       </button>
-
 
       {lastRecord ? (
         <aside aria-live="polite">
@@ -237,6 +261,16 @@ export function PainCard({
               intensityHistory.length
             }
           </p>
+
+          <button
+            type="button"
+            className={
+              styles.secondary
+            }
+            onClick={handleUndo}
+          >
+            Deshacer última actualización
+          </button>
         </aside>
       ) : (
         <p>

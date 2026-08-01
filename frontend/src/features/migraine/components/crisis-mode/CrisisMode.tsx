@@ -93,16 +93,6 @@ const formatCrisisStart = (
   );
 };
 
-const isValidPainIntensity = (
-  value: number,
-): value is PainIntensity => {
-  return (
-    Number.isInteger(value) &&
-    value >= 0 &&
-    value <= 10
-  );
-};
-
 const createExactPhaseTime = (
   value: string,
 ): PhaseTime => {
@@ -281,35 +271,11 @@ export function CrisisMode({
       radiation: [],
     };
 
-  const handlePainChange = (
-    value: string,
-  ) => {
-    const numericValue =
-      Number(value);
-
-    if (
-      !isValidPainIntensity(
-        numericValue,
-      )
-    ) {
-      return;
-    }
-
-    const currentCrisis =
-      ensureCrisisStarted();
-
-    useMigraineStore
-      .getState()
-      .updateCrisis({
-        ...currentCrisis,
-        active: true,
-        intensity:
-          numericValue,
-      });
-  };
-
   const handlePainRegister =
-    () => {
+    (
+      intensity:
+        PainIntensity,
+    ) => {
       const now =
         new Date().toISOString();
 
@@ -328,14 +294,14 @@ export function CrisisMode({
         .updateCrisis({
           ...currentCrisis,
           active: true,
+          intensity,
 
           intensityHistory: [
             ...currentIntensityHistory,
             {
               id: generateId(),
               time: now,
-              intensity:
-                currentCrisis.intensity,
+              intensity,
               location:
                 currentCrisis
                   .locationDetails,
@@ -349,15 +315,82 @@ export function CrisisMode({
               type: 'intensity',
               timestamp: now,
               data: {
-                intensity:
-                  currentCrisis
-                    .intensity,
+                intensity,
                 anatomicalLocation:
                   currentCrisis
                     .anatomicalLocation,
               },
             },
           ],
+        });
+    };
+
+  const handlePainUndo =
+    () => {
+      const currentCrisis =
+        getCurrentCrisis();
+
+      const currentIntensityHistory =
+        currentCrisis
+          .intensityHistory ?? [];
+
+      if (
+        currentIntensityHistory.length ===
+        0
+      ) {
+        return;
+      }
+
+      const updatedIntensityHistory =
+        currentIntensityHistory.slice(
+          0,
+          -1,
+        );
+
+      const previousIntensity =
+        updatedIntensityHistory.at(-1)
+          ?.intensity ?? 0;
+
+      const currentEvents =
+        currentCrisis.events ?? [];
+
+      let lastIntensityEventIndex =
+        -1;
+
+      for (
+        let index =
+          currentEvents.length - 1;
+        index >= 0;
+        index -= 1
+      ) {
+        if (
+          currentEvents[index]
+            ?.type === 'intensity'
+        ) {
+          lastIntensityEventIndex =
+            index;
+          break;
+        }
+      }
+
+      const updatedEvents =
+        lastIntensityEventIndex >= 0
+          ? currentEvents.filter(
+              (_, index) =>
+                index !==
+                lastIntensityEventIndex,
+            )
+          : currentEvents;
+
+      useMigraineStore
+        .getState()
+        .updateCrisis({
+          ...currentCrisis,
+          intensity:
+            previousIntensity,
+          intensityHistory:
+            updatedIntensityHistory,
+          events: updatedEvents,
         });
     };
 
@@ -820,11 +853,11 @@ export function CrisisMode({
 
       <PainCard
         crisis={crisis}
-        onChange={
-          handlePainChange
-        }
         onRegister={
           handlePainRegister
+        }
+        onUndo={
+          handlePainUndo
         }
       />
 

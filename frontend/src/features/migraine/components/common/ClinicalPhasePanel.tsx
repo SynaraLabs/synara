@@ -7,18 +7,17 @@ import styles from './ClinicalPhasePanel.module.css';
 
 interface Props {
   id: string;
-
   eyebrow: string;
-
   title: string;
-
   description: string;
-
   icon: string;
-
   status?: string;
-
   defaultOpen?: boolean;
+  isOpen?: boolean;
+
+  onOpenChange?: (
+    isOpen: boolean,
+  ) => void;
 
   children: ReactNode;
 }
@@ -31,41 +30,50 @@ export function ClinicalPhasePanel({
   icon,
   status,
   defaultOpen = false,
+  isOpen,
+  onOpenChange,
   children,
 }: Props) {
   const [
-    isOpen,
-    setIsOpen,
-  ] = useState(
-    defaultOpen,
-  );
+    internalIsOpen,
+    setInternalIsOpen,
+  ] = useState(defaultOpen);
+
+  const resolvedIsOpen =
+    isOpen ?? internalIsOpen;
+
+  const handleToggle = (
+    nextIsOpen: boolean,
+  ) => {
+    if (isOpen === undefined) {
+      setInternalIsOpen(
+        nextIsOpen,
+      );
+    }
+
+    onOpenChange?.(
+      nextIsOpen,
+    );
+  };
 
   return (
     <details
-      className={
-        styles.panel
-      }
-      open={isOpen}
+      className={styles.panel}
+      open={resolvedIsOpen}
       onToggle={event =>
-        setIsOpen(
+        handleToggle(
           event.currentTarget.open,
         )
       }
     >
       <summary
-        className={
-          styles.summary
-        }
+        className={styles.summary}
       >
         <span
-          className={
-            styles.main
-          }
+          className={styles.main}
         >
           <span
-            className={
-              styles.icon
-            }
+            className={styles.icon}
             aria-hidden="true"
           >
             {icon}
@@ -100,9 +108,7 @@ export function ClinicalPhasePanel({
         </span>
 
         <span
-          className={
-            styles.side
-          }
+          className={styles.side}
         >
           {status && (
             <span
@@ -126,9 +132,7 @@ export function ClinicalPhasePanel({
       </summary>
 
       <div
-        className={
-          styles.content
-        }
+        className={styles.content}
         aria-labelledby={id}
       >
         {children}

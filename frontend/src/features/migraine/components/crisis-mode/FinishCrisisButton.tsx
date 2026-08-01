@@ -31,10 +31,6 @@ export function FinishCrisisButton({
     setShowSelector,
   ] = useState(false);
 
-  const handleOpen = () => {
-    setShowSelector(true);
-  };
-
   const handleEndTimeConfirm = (
     selection: PhaseEndSelection,
   ) => {
@@ -56,35 +52,78 @@ export function FinishCrisisButton({
     setShowSelector(false);
   };
 
-  const handleContinueCrisis =
-    () => {
-      setShowSelector(false);
-    };
-
-  if (!showSelector) {
-    return (
-      <button
-        type="button"
-        className={
-          styles.secondary
-        }
-        onClick={handleOpen}
-      >
-        Finalizar crisis
-      </button>
-    );
-  }
-
   return (
-    <PhaseEndSelector
-      title="¿Cuándo terminó la crisis?"
-      startTime={crisisStart}
-      onConfirm={
-        handleEndTimeConfirm
-      }
-      onContinue={
-        handleContinueCrisis
-      }
-    />
+    <>
+      <aside
+        className={styles.finishBar}
+        aria-label="Acciones de la crisis"
+      >
+        <div
+          className={
+            styles.finishBarStatus
+          }
+        >
+          <span aria-hidden="true" />
+
+          <div>
+            <strong>
+              Crisis activa
+            </strong>
+
+            <small>
+              El registro continúa
+            </small>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className={
+            styles.finishBarButton
+          }
+          onClick={() =>
+            setShowSelector(true)
+          }
+        >
+          Finalizar
+        </button>
+      </aside>
+
+      {showSelector && (
+        <div
+          className={
+            styles.finishSheetBackdrop
+          }
+          role="presentation"
+        >
+          <section
+            className={
+              styles.finishSheet
+            }
+            role="dialog"
+            aria-modal="true"
+            aria-label="Finalizar crisis"
+          >
+            <div
+              className={
+                styles.finishSheetHandle
+              }
+              aria-hidden="true"
+            />
+
+            <PhaseEndSelector
+              title="¿Cuándo terminó la crisis?"
+              startTime={crisisStart}
+              onConfirm={
+                handleEndTimeConfirm
+              }
+              onContinue={() =>
+                setShowSelector(false)
+              }
+            />
+          </section>
+        </div>
+      )}
+    </>
   );
 }

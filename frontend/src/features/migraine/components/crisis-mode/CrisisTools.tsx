@@ -1,3 +1,7 @@
+import {
+  useState,
+} from 'react';
+
 import type {
   AnatomicalPainMap,
   CrisisPhase,
@@ -45,18 +49,13 @@ import styles from './CrisisTools.module.css';
 
 interface Props {
   crisis: CrisisPhase;
-
   symptoms: CrisisSymptom[];
-
   anatomicalLocation:
     AnatomicalPainMap;
-
   medicationRecords:
     CrisisMedicationRecord[];
-
   nonPharmacologicalRecords:
     NonPharmacologicalRecord[];
-
   functionalCapacityRecords:
     FunctionalCapacityRecord[];
 
@@ -92,17 +91,22 @@ interface Props {
   ) => void;
 }
 
+type CrisisPanelId =
+  | 'symptoms'
+  | 'medication'
+  | 'location'
+  | 'relief'
+  | 'capacity'
+  | 'evolution';
+
 const getLocationCount = (
   location: AnatomicalPainMap,
 ): number => {
-  const keys =
-    new Set<string>();
+  const keys = new Set<string>();
 
   const addPoint = (
     point:
-      | AnatomicalPainMap[
-          'primary'
-        ]
+      | AnatomicalPainMap['primary']
       | undefined,
   ) => {
     if (!point) {
@@ -114,13 +118,8 @@ const getLocationCount = (
     );
   };
 
-  addPoint(
-    location.primary,
-  );
-
-  addPoint(
-    location.origin,
-  );
+  addPoint(location.primary);
+  addPoint(location.origin);
 
   (
     location.additional ?? []
@@ -158,6 +157,13 @@ export function CrisisTools({
   onNonPharmacologicalRegister,
   onFunctionalCapacityRegister,
 }: Props) {
+  const [
+    activePanel,
+    setActivePanel,
+  ] = useState<
+    CrisisPanelId | null
+  >(null);
+
   const locationCount =
     getLocationCount(
       anatomicalLocation,
@@ -166,12 +172,76 @@ export function CrisisTools({
   const eventCount =
     crisis.events?.length ?? 0;
 
-  return (
-    <div
-      className={
-        styles.list
+  const handlePanelChange = (
+    panel: CrisisPanelId,
+    isOpen: boolean,
+  ) => {
+    setActivePanel(current => {
+      if (isOpen) {
+        return panel;
       }
-    >
+
+      return current === panel
+        ? null
+        : current;
+    });
+  };
+
+  const closePanel = () => {
+    setActivePanel(null);
+  };
+
+  const handleMedicationRegister = (
+    medication: string,
+    dose: string,
+    takenAt: string,
+    notes: string,
+  ) => {
+    onMedicationRegister(
+      medication,
+      dose,
+      takenAt,
+      notes,
+    );
+
+    closePanel();
+  };
+
+  const handleReliefRegister = (
+    measures:
+      NonPharmacologicalMeasure[],
+    appliedAt: string,
+    notes: string,
+  ) => {
+    onNonPharmacologicalRegister(
+      measures,
+      appliedAt,
+      notes,
+    );
+
+    closePanel();
+  };
+
+  const handleCapacityRegister = (
+    level:
+      FunctionalCapacityLevel,
+    affectedActivities:
+      AffectedActivity[],
+    occurredAt: string,
+    notes: string,
+  ) => {
+    onFunctionalCapacityRegister(
+      level,
+      affectedActivities,
+      occurredAt,
+      notes,
+    );
+
+    closePanel();
+  };
+
+  return (
+    <div className={styles.list}>
       <ClinicalPhasePanel
         id="crisis-symptoms-title"
         eyebrow="Actualización rápida"
@@ -185,12 +255,22 @@ export function CrisisTools({
             'seleccionados',
           )
         }
+        isOpen={
+          activePanel === 'symptoms'
+        }
+        onOpenChange={isOpen =>
+          handlePanelChange(
+            'symptoms',
+            isOpen,
+          )
+        }
       >
         <SymptomsCard
           symptoms={symptoms}
           onToggle={
             onSymptomToggle
           }
+          onDone={closePanel}
         />
       </ClinicalPhasePanel>
 
@@ -207,13 +287,20 @@ export function CrisisTools({
             'tomas',
           )
         }
+        isOpen={
+          activePanel === 'medication'
+        }
+        onOpenChange={isOpen =>
+          handlePanelChange(
+            'medication',
+            isOpen,
+          )
+        }
       >
         <MedicationCard
-          records={
-            medicationRecords
-          }
+          records={medicationRecords}
           onRegister={
-            onMedicationRegister
+            handleMedicationRegister
           }
         />
       </ClinicalPhasePanel>
@@ -231,16 +318,34 @@ export function CrisisTools({
             'zonas',
           )
         }
+        isOpen={
+          activePanel === 'location'
+        }
+        onOpenChange={isOpen =>
+          handlePanelChange(
+            'location',
+            isOpen,
+          )
+        }
       >
         <PainLocationSelector
-          value={
-            anatomicalLocation
-          }
-          onChange={
-            onLocationChange
-          }
+          value={anatomicalLocation}
+          onChange={onLocationChange}
           title="¿Dónde sentís el dolor?"
         />
+
+        <div
+          className={
+            styles.completion
+          }
+        >
+          <button
+            type="button"
+            onClick={closePanel}
+          >
+            Listo
+          </button>
+        </div>
       </ClinicalPhasePanel>
 
       <ClinicalPhasePanel
@@ -251,10 +356,18 @@ export function CrisisTools({
         icon="◇"
         status={
           formatCount(
-            nonPharmacologicalRecords
-              .length,
+            nonPharmacologicalRecords.length,
             'registro',
             'registros',
+          )
+        }
+        isOpen={
+          activePanel === 'relief'
+        }
+        onOpenChange={isOpen =>
+          handlePanelChange(
+            'relief',
+            isOpen,
           )
         }
       >
@@ -263,7 +376,7 @@ export function CrisisTools({
             nonPharmacologicalRecords
           }
           onRegister={
-            onNonPharmacologicalRegister
+            handleReliefRegister
           }
         />
       </ClinicalPhasePanel>
@@ -276,10 +389,18 @@ export function CrisisTools({
         icon="↔"
         status={
           formatCount(
-            functionalCapacityRecords
-              .length,
+            functionalCapacityRecords.length,
             'registro',
             'registros',
+          )
+        }
+        isOpen={
+          activePanel === 'capacity'
+        }
+        onOpenChange={isOpen =>
+          handlePanelChange(
+            'capacity',
+            isOpen,
           )
         }
       >
@@ -288,7 +409,7 @@ export function CrisisTools({
             functionalCapacityRecords
           }
           onRegister={
-            onFunctionalCapacityRegister
+            handleCapacityRegister
           }
         />
       </ClinicalPhasePanel>
@@ -306,10 +427,32 @@ export function CrisisTools({
             'cambios',
           )
         }
+        isOpen={
+          activePanel === 'evolution'
+        }
+        onOpenChange={isOpen =>
+          handlePanelChange(
+            'evolution',
+            isOpen,
+          )
+        }
       >
         <CrisisEvolutionCard
           crisis={crisis}
         />
+
+        <div
+          className={
+            styles.completion
+          }
+        >
+          <button
+            type="button"
+            onClick={closePanel}
+          >
+            Cerrar resumen
+          </button>
+        </div>
       </ClinicalPhasePanel>
     </div>
   );
