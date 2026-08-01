@@ -1,0 +1,10 @@
+.list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+@media (max-width: 640px) {
+  .list {
+    gap: var(--space-2);
+  }
+}

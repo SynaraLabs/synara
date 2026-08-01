@@ -2,30 +2,36 @@ import {
   useState,
 } from 'react';
 
-import { AuraSelector } from '../components/AuraSelector';
-
-import {
-  PhaseEndSelector,
-  type PhaseEndSelection,
+import type {
+  PhaseEndSelection,
 } from '../components/common/PhaseEndSelector';
 
-import { PhaseDateSelector } from '../components/common/PhaseDateSelector';
-import { CrisisMode } from '../components/crisis-mode/CrisisMode';
-import { MigraineDevTools } from '../components/dev/MigraineDevTools';
-import { PremonitorySelector } from '../components/PremonitorySelector';
-import { RecoveryStage } from '../components/RecoveryStage';
+import {
+  CrisisMode,
+} from '../components/crisis-mode/CrisisMode';
+
+import {
+  MigraineDevTools,
+} from '../components/dev/MigraineDevTools';
+
+import {
+  PremonitorySelector,
+} from '../components/PremonitorySelector';
+
+import {
+  RecoveryStage,
+} from '../components/RecoveryStage';
+
+import {
+  TrackingStage,
+  type PremonitoryCrisisOutcome,
+} from '../components/TrackingStage';
 
 import {
   useMigraineStore,
 } from '../store/migraine.store';
 
 import styles from '../migraine.module.css';
-
-type PremonitoryCrisisOutcome =
-  | 'endsWithCrisis'
-  | 'endedAtAnotherTime'
-  | 'continuesWithCrisis'
-  | 'unknownEnd';
 
 const createLocalDateTime = (
   date: string,
@@ -53,7 +59,8 @@ const createLocalDateTime = (
     return undefined;
   }
 
-  const now = new Date();
+  const now =
+    new Date();
 
   const selectedDate =
     new Date(
@@ -205,25 +212,27 @@ export function MigrainePage() {
       );
     };
 
-  const handleNewEpisode = () => {
-    resetCrisisStartFlow();
+  const handleNewEpisode =
+    () => {
+      resetCrisisStartFlow();
 
-    startEpisode();
-  };
+      startEpisode();
+    };
 
-  const handleStartCrisis = () => {
-    if (hasOpenPremonitory) {
-      setShowPremonitoryCrisisQuestion(
-        true,
-      );
+  const handleStartCrisis =
+    () => {
+      if (hasOpenPremonitory) {
+        setShowPremonitoryCrisisQuestion(
+          true,
+        );
 
-      setShowCrisisDate(false);
+        setShowCrisisDate(false);
 
-      return;
-    }
+        return;
+      }
 
-    setShowCrisisDate(true);
-  };
+      setShowCrisisDate(true);
+    };
 
   const handleCancelCrisisStart =
     () => {
@@ -279,21 +288,22 @@ export function MigrainePage() {
       setShowCrisisDate(true);
     };
 
-  const handleUnknownEnd = () => {
-    setPremonitoryCrisisOutcome(
-      'unknownEnd',
-    );
+  const handleUnknownEnd =
+    () => {
+      setPremonitoryCrisisOutcome(
+        'unknownEnd',
+      );
 
-    setPremonitoryEndSelection(
-      null,
-    );
+      setPremonitoryEndSelection(
+        null,
+      );
 
-    setShowPremonitoryCrisisQuestion(
-      false,
-    );
+      setShowPremonitoryCrisisQuestion(
+        false,
+      );
 
-    setShowCrisisDate(true);
-  };
+      setShowCrisisDate(true);
+    };
 
   const handlePremonitoryEnd = (
     selection:
@@ -435,22 +445,32 @@ export function MigrainePage() {
       </h1>
 
       <p>
-        Acompañamos todo el episodio:
-        señales previas, crisis y
-        recuperación.
+        Registrá cada fase a tu ritmo.
+        Podés volver y actualizar la
+        información cuando lo
+        necesites.
       </p>
 
       {!episode && (
-        <div>
+        <section>
+          <p
+            className={
+              styles.cardEyebrow
+            }
+          >
+            Nuevo registro
+          </p>
+
           <h2>
             No hay un episodio activo
           </h2>
 
           <p>
-            Podés comenzar un nuevo
-            registro cuando aparezcan
-            señales o cuando empiece una
-            crisis.
+            Podés comenzar cuando
+            aparezcan señales, aura o
+            dolor. No hace falta saber
+            todavía cómo va a
+            evolucionar.
           </p>
 
           <button
@@ -459,9 +479,9 @@ export function MigrainePage() {
               handleNewEpisode
             }
           >
-            Registrar nueva migraña
+            Comenzar registro
           </button>
-        </div>
+        </section>
       )}
 
       {episode &&
@@ -477,9 +497,7 @@ export function MigrainePage() {
                 </h2>
 
                 <p>
-                  Las señales no se
-                  cerraron al comenzar
-                  el dolor. Podés seguir
+                  Podés seguir
                   registrando cómo
                   cambian durante la
                   crisis.
@@ -498,217 +516,54 @@ export function MigrainePage() {
       {episode &&
         isTrackingStage && (
           <>
-            <section>
-              <h2>
-                Antes de la crisis
-              </h2>
-
-              <p>
-                Podés registrar señales
-                premonitorias, aura o
-                comenzar directamente
-                una crisis.
-              </p>
-
-              {!showCrisisDate &&
-                !showPremonitoryCrisisQuestion &&
-                !showPremonitoryEndSelector && (
-                  <button
-                    type="button"
-                    onClick={
-                      handleStartCrisis
-                    }
-                  >
-                    Estoy entrando en
-                    crisis
-                  </button>
-                )}
-
-              {showPremonitoryCrisisQuestion && (
-                <section>
-                  <h3>
-                    ¿Qué pasó con las
-                    señales previas?
-                  </h3>
-
-                  <p>
-                    Esto permite saber
-                    si terminaron antes
-                    del dolor o si
-                    continúan durante la
-                    crisis.
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleEndsWithCrisis
-                    }
-                  >
-                    Terminaron cuando
-                    empezó la crisis
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleEndedAtAnotherTime
-                    }
-                  >
-                    Terminaron en otro
-                    momento
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleContinuesWithCrisis
-                    }
-                  >
-                    Continúan durante la
-                    crisis
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleUnknownEnd
-                    }
-                  >
-                    No recuerdo cuándo
-                    terminaron
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleCancelCrisisStart
-                    }
-                  >
-                    Cancelar
-                  </button>
-                </section>
-              )}
-
-              {showPremonitoryEndSelector && (
-                <section>
-                  <PhaseEndSelector
-                    title="¿Cuándo terminaron las señales previas?"
-                    startTime={
-                      premonitoryStart
-                    }
-                    onConfirm={
-                      handlePremonitoryEnd
-                    }
-                    onContinue={
-                      handleContinuesWithCrisis
-                    }
-                  />
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleCancelCrisisStart
-                    }
-                  >
-                    Cancelar inicio de
-                    crisis
-                  </button>
-                </section>
-              )}
-
-              {showCrisisDate && (
-                <>
-                  <PhaseDateSelector
-                    title="¿Cuándo empezó el dolor?"
-                    value={
-                      episode.crisis
-                        .startTime
-                    }
-                    onChange={
-                      handleCrisisDate
-                    }
-                  />
-
-                  {hasOpenPremonitory &&
-                    premonitoryCrisisOutcome ===
-                      'endsWithCrisis' && (
-                      <p
-                        className={
-                          styles.helperText
-                        }
-                      >
-                        Las señales se
-                        cerrarán cuando
-                        comience la
-                        crisis.
-                      </p>
-                    )}
-
-                  {hasOpenPremonitory &&
-                    premonitoryCrisisOutcome ===
-                      'endedAtAnotherTime' &&
-                    premonitoryEndSelection && (
-                      <p
-                        className={
-                          styles.helperText
-                        }
-                      >
-                        Se conservará la
-                        hora de
-                        finalización que
-                        acabás de
-                        registrar.
-                      </p>
-                    )}
-
-                  {hasOpenPremonitory &&
-                    premonitoryCrisisOutcome ===
-                      'continuesWithCrisis' && (
-                      <p
-                        className={
-                          styles.helperText
-                        }
-                      >
-                        Las señales
-                        permanecerán
-                        abiertas durante
-                        la crisis.
-                      </p>
-                    )}
-
-                  {hasOpenPremonitory &&
-                    premonitoryCrisisOutcome ===
-                      'unknownEnd' && (
-                      <p
-                        className={
-                          styles.helperText
-                        }
-                      >
-                        Las señales
-                        quedarán con hora
-                        de finalización
-                        desconocida.
-                      </p>
-                    )}
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleCancelCrisisStart
-                    }
-                  >
-                    Cancelar
-                  </button>
-                </>
-              )}
-            </section>
-
-            <PremonitorySelector
-              context="tracking"
+            <TrackingStage
+              episode={episode}
+              hasOpenPremonitory={
+                hasOpenPremonitory
+              }
+              premonitoryStart={
+                premonitoryStart
+              }
+              showCrisisDate={
+                showCrisisDate
+              }
+              showPremonitoryCrisisQuestion={
+                showPremonitoryCrisisQuestion
+              }
+              showPremonitoryEndSelector={
+                showPremonitoryEndSelector
+              }
+              premonitoryCrisisOutcome={
+                premonitoryCrisisOutcome
+              }
+              premonitoryEndSelection={
+                premonitoryEndSelection
+              }
+              onStartCrisis={
+                handleStartCrisis
+              }
+              onCancelCrisisStart={
+                handleCancelCrisisStart
+              }
+              onEndsWithCrisis={
+                handleEndsWithCrisis
+              }
+              onEndedAtAnotherTime={
+                handleEndedAtAnotherTime
+              }
+              onContinuesWithCrisis={
+                handleContinuesWithCrisis
+              }
+              onUnknownEnd={
+                handleUnknownEnd
+              }
+              onPremonitoryEnd={
+                handlePremonitoryEnd
+              }
+              onCrisisDate={
+                handleCrisisDate
+              }
             />
-
-            <AuraSelector />
 
             <MigraineDevTools />
           </>

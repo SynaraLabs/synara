@@ -20,27 +20,27 @@ import {
   getNonPharmacologicalRecords,
 } from '../../utils/crisisEventRecords';
 
-import { useMigraineStore } from '../../store/migraine.store';
-
-import { PainLocationSelector } from '../common/PainLocationSelector';
-
-import { CrisisEvolutionCard } from './CrisisEvolutionCard';
+import {
+  useMigraineStore,
+} from '../../store/migraine.store';
 
 import {
   FinishCrisisButton,
   type CrisisEndSelection,
 } from './FinishCrisisButton';
 
-import {
-  FunctionalCapacityCard,
-  type AffectedActivity,
-  type FunctionalCapacityLevel,
+import type {
+  AffectedActivity,
+  FunctionalCapacityLevel,
 } from './FunctionalCapacityCard';
 
-import { MedicationCard } from './MedicationCard';
-import { NonPharmacologicalCard } from './NonPharmacologicalCard';
-import { PainCard } from './PainCard';
-import { SymptomsCard } from './SymptomsCard';
+import {
+  CrisisTools,
+} from './CrisisTools';
+
+import {
+  PainCard,
+} from './PainCard';
 
 interface Props {
   onExit?: () => void;
@@ -69,7 +69,11 @@ const formatCrisisStart = (
 
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
     return 'Hora de inicio no registrada';
   }
 
@@ -711,8 +715,9 @@ export function CrisisMode({
         </p>
 
         <p>
-          Registrá cómo evoluciona tu
-          migraña.
+          Registrá solo lo que necesites.
+          Los cambios se guardan durante
+          la evolución de la crisis.
         </p>
       </header>
 
@@ -726,52 +731,36 @@ export function CrisisMode({
         }
       />
 
-      <PainLocationSelector
-        value={
+      <CrisisTools
+        crisis={crisis}
+        symptoms={symptoms}
+        anatomicalLocation={
           anatomicalLocation
         }
-        onChange={
-          handleLocationChange
-        }
-        title="¿Dónde sentís el dolor?"
-      />
-
-      <MedicationCard
-        records={
+        medicationRecords={
           medicationRecords
         }
-        onRegister={
-          handleMedicationRegister
-        }
-      />
-
-      <NonPharmacologicalCard
-        records={
+        nonPharmacologicalRecords={
           nonPharmacologicalRecords
         }
-        onRegister={
-          handleNonPharmacologicalRegister
-        }
-      />
-
-      <FunctionalCapacityCard
-        records={
+        functionalCapacityRecords={
           functionalCapacityRecords
         }
-        onRegister={
-          handleFunctionalCapacityRegister
-        }
-      />
-
-      <SymptomsCard
-        symptoms={symptoms}
-        onToggle={
+        onSymptomToggle={
           handleSymptomToggle
         }
-      />
-
-      <CrisisEvolutionCard
-        crisis={crisis}
+        onLocationChange={
+          handleLocationChange
+        }
+        onMedicationRegister={
+          handleMedicationRegister
+        }
+        onNonPharmacologicalRegister={
+          handleNonPharmacologicalRegister
+        }
+        onFunctionalCapacityRegister={
+          handleFunctionalCapacityRegister
+        }
       />
 
       <FinishCrisisButton
