@@ -2,6 +2,10 @@ import {
   useLocation,
 } from 'react-router-dom';
 
+import {
+  useMigraineStore,
+} from '../../features/migraine/store/migraine.store';
+
 import styles from './layout.module.css';
 
 interface HeaderContent {
@@ -12,7 +16,23 @@ interface HeaderContent {
 
 const getHeaderContent = (
   pathname: string,
+  crisisIsActive: boolean,
 ): HeaderContent => {
+  if (
+    pathname.startsWith(
+      '/migraine',
+    ) &&
+    crisisIsActive
+  ) {
+    return {
+      title:
+        'Crisis en curso',
+
+      description:
+        'Vamos de a poco. Registrá solo lo que cambió.',
+    };
+  }
+
   if (
     pathname.startsWith(
       '/migraine',
@@ -54,9 +74,19 @@ export function Header() {
   const location =
     useLocation();
 
+  const crisisIsActive =
+    useMigraineStore(
+      state =>
+        state.activeEpisode
+          ?.crisis.active === true ||
+        state.episode.crisis
+          .active === true,
+    );
+
   const content =
     getHeaderContent(
       location.pathname,
+      crisisIsActive,
     );
 
   return (

@@ -61,18 +61,13 @@ const formatTime = (
   value?: string,
 ): string => {
   if (!value) {
-    return 'Sin registrar';
+    return 'Sin hora';
   }
 
-  const date =
-    new Date(value);
+  const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime(),
-    )
-  ) {
-    return 'Sin registrar';
+  if (Number.isNaN(date.getTime())) {
+    return 'Sin hora';
   }
 
   return date.toLocaleTimeString(
@@ -143,24 +138,40 @@ export function PainCard({
 
   return (
     <section
-      className={styles.card}
+      className={`${styles.card} ${styles.painCard}`}
       aria-labelledby="current-pain-title"
     >
-      <header>
-        <h2 id="current-pain-title">
-          Dolor actual
-        </h2>
+      <header
+        className={
+          styles.painHeader
+        }
+      >
+        <div>
+          <p
+            className={
+              styles.painEyebrow
+            }
+          >
+            Ahora
+          </p>
+
+          <h2 id="current-pain-title">
+            ¿Cuánto te duele?
+          </h2>
+        </div>
 
         <p>
-          Elegí una intensidad. No se
-          guardará hasta que confirmes
-          la actualización.
+          Elegí un número y confirmalo.
         </p>
       </header>
 
-      <div aria-live="polite">
+      <div
+        className={styles.painValue}
+        aria-live="polite"
+      >
         <strong>
-          {draftIntensity}/10
+          {draftIntensity}
+          <small>/10</small>
         </strong>
 
         <p>
@@ -170,15 +181,20 @@ export function PainCard({
         </p>
 
         {hasPendingSelection && (
-          <span>
+          <span
+            className={
+              styles.pendingBadge
+            }
+          >
             Sin guardar
           </span>
         )}
       </div>
 
       <div
+        className={styles.painScale}
         role="group"
-        aria-label="Seleccionar intensidad del dolor"
+        aria-label="Intensidad rápida del dolor"
       >
         {PAIN_LEVELS.map(
           intensity => (
@@ -192,7 +208,11 @@ export function PainCard({
               }
               aria-pressed={
                 draftIntensity ===
-                intensity
+                  intensity &&
+                (
+                  hasPendingSelection ||
+                  Boolean(lastRecord)
+                )
               }
               aria-label={`Seleccionar dolor ${intensity} de 10`}
             >
@@ -202,8 +222,12 @@ export function PainCard({
         )}
       </div>
 
-      <label>
-        Ajustar intensidad
+      <label
+        className={
+          styles.painSlider
+        }
+      >
+        Ajustar con deslizador
 
         <input
           type="range"
@@ -213,9 +237,7 @@ export function PainCard({
           value={draftIntensity}
           aria-valuemin={0}
           aria-valuemax={10}
-          aria-valuenow={
-            draftIntensity
-          }
+          aria-valuenow={draftIntensity}
           aria-valuetext={`${draftIntensity} de 10, ${getPainDescription(
             draftIntensity,
           )}`}
@@ -229,55 +251,56 @@ export function PainCard({
         />
       </label>
 
-      <button
-        type="button"
-        className={styles.primary}
-        disabled={
-          !hasPendingSelection
-        }
-        onClick={handleRegister}
-      >
-        Registrar actualización
-      </button>
-
       {lastRecord ? (
-        <aside aria-live="polite">
+        <aside
+          className={
+            styles.painHistory
+          }
+          aria-live="polite"
+        >
           <p>
-            <b>
-              Última actualización:
-            </b>{' '}
-
-            {formatTime(
-              lastRecord.time,
-            )}
-            {' · '}
+            <b>Último:</b>{' '}
             {lastRecord.intensity}/10
-          </p>
-
-          <p>
-            Actualizaciones registradas:{' '}
-
-            {
-              intensityHistory.length
-            }
+            {' · '}
+            {formatTime(lastRecord.time)}
+            {' · '}
+            {intensityHistory.length}{' '}
+            {intensityHistory.length === 1
+              ? 'registro'
+              : 'registros'}
           </p>
 
           <button
             type="button"
-            className={
-              styles.secondary
-            }
+            className={styles.secondary}
             onClick={handleUndo}
           >
-            Deshacer última actualización
+            Deshacer
           </button>
         </aside>
       ) : (
-        <p>
-          Todavía no registraste una
+        <p
+          className={
+            styles.painFirstUpdate
+          }
+        >
+          Esta será la primera
           actualización del dolor.
         </p>
       )}
+
+      <button
+        type="button"
+        className={styles.primary}
+        disabled={!hasPendingSelection}
+        onClick={handleRegister}
+      >
+        {hasPendingSelection
+          ? `Guardar dolor ${draftIntensity}/10`
+          : lastRecord
+            ? 'Dolor actual guardado'
+            : 'Elegí una intensidad'}
+      </button>
     </section>
   );
 }

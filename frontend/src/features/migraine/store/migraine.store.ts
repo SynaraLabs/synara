@@ -247,12 +247,10 @@ const calculatePremonitoryTimeline = (
     Boolean(storedPremonitoryEnd);
 
   /*
-   * Una crisis o un aura no cierran el
-   * premonitorio automáticamente.
-   *
-   * Solo conservamos un final cuando
-   * la fase fue resuelta de manera
-   * explícita.
+   * La fase premonitoria no puede
+   * continuar después del inicio de la
+   * crisis. Los síntomas que persistan
+   * se registrarán dentro de crisis.
    */
   const premonitoryEnd =
     isPremonitoryClosed
@@ -260,7 +258,11 @@ const calculatePremonitoryTimeline = (
           storedPremonitoryEnd ??
           timeline.premonitoryEnd
         )
-      : undefined;
+      : isValidDate(
+            timeline.crisisStart,
+          )
+        ? timeline.crisisStart
+        : undefined;
 
   return {
     premonitoryStart:
@@ -571,6 +573,96 @@ const normalizeEpisode = (
       : {}),
   };
 
+  const normalizedCrisisStart =
+    normalizedTimeline.crisisStart ??
+    persistedEpisode.crisis
+      ?.startTime ??
+    persistedEpisode.crisis
+      ?.time?.start?.value;
+
+  const persistedPremonitory:
+    PremonitoryPhase = {
+    ...initialEpisode.premonitory,
+    ...(persistedEpisode.premonitory ??
+      {}),
+
+    symptoms:
+      persistedEpisode.premonitory
+        ?.symptoms ?? [],
+
+    updates:
+      persistedEpisode.premonitory
+        ?.updates ?? [],
+  };
+
+  const premonitoryAlreadyClosed =
+    persistedPremonitory.status ===
+      'ended' ||
+    persistedPremonitory.status ===
+      'uncertain' ||
+    isValidDate(
+      persistedPremonitory.time?.end
+        ?.value,
+    );
+
+  const shouldClosePremonitoryAtCrisis =
+    persistedPremonitory.present ===
+      true &&
+    !premonitoryAlreadyClosed &&
+    isValidDate(
+      normalizedCrisisStart,
+    );
+
+  const crisisStartPhaseTime =
+    shouldClosePremonitoryAtCrisis
+      ? buildPhaseTime(
+          normalizedCrisisStart,
+          persistedEpisode.crisis
+            ?.time?.start
+            ?.precision ?? 'exact',
+          persistedEpisode.crisis
+            ?.time?.start
+            ?.recordMode ??
+            persistedEpisode.recordMode ??
+            'realTime',
+        )
+      : undefined;
+
+  const normalizedPremonitory:
+    PremonitoryPhase =
+    shouldClosePremonitoryAtCrisis
+      ? {
+          ...persistedPremonitory,
+
+          status: 'ended',
+          evolvedToCrisis: true,
+          endedWithoutCrisis: false,
+
+          time: {
+            ...persistedPremonitory.time,
+            end: crisisStartPhaseTime,
+          },
+        }
+      : persistedPremonitory;
+
+  if (
+    shouldClosePremonitoryAtCrisis
+  ) {
+    normalizedTimeline.crisisStart =
+      normalizedCrisisStart;
+
+    normalizedTimeline.premonitoryEnd =
+      normalizedCrisisStart;
+
+    normalizedTimeline.premonitory = {
+      ...normalizedTimeline.premonitory,
+      start:
+        normalizedPremonitory.time
+          ?.start,
+      end: crisisStartPhaseTime,
+    };
+  }
+
   const normalizedPostdrome:
     PostdromePhase =
     clearLegacyPostdrome
@@ -609,19 +701,8 @@ const normalizeEpisode = (
     timeline:
       normalizedTimeline,
 
-    premonitory: {
-      ...initialEpisode.premonitory,
-      ...(persistedEpisode.premonitory ??
-        {}),
-
-      symptoms:
-        persistedEpisode.premonitory
-          ?.symptoms ?? [],
-
-      updates:
-        persistedEpisode.premonitory
-          ?.updates ?? [],
-    },
+    premonitory:
+      normalizedPremonitory,
 
     aura: {
       ...initialEpisode.aura,
@@ -957,17 +1038,29 @@ export const useMigraineStore =
 
               crisisEnd: undefined,
 
-              /*
-               * Protege el premonitorio
-               * activo frente a la
-               * lógica antigua de la
-               * pantalla, que utilizaba
-               * crisisStart como final.
-               */
               ...(premonitoryIsOpen
                 ? {
                     premonitoryEnd:
-                      undefined,
+                      crisisStart,
+
+                    premonitory: {
+                      ...currentTimeline
+                        .premonitory,
+
+                      start:
+                        state.episode
+                          .premonitory
+                          .time?.start,
+
+                      end:
+                        buildPhaseTime(
+                          crisisStart,
+                          'exact',
+                          state.episode
+                            .recordMode ??
+                            'realTime',
+                        ),
+                    },
                   }
                 : {}),
             };
@@ -988,13 +1081,35 @@ export const useMigraineStore =
 
                     status:
                       premonitoryIsOpen
-                        ? 'active' as const
+                        ? 'ended' as const
                         : state.episode
                             .premonitory
                             .status,
 
                     evolvedToCrisis:
                       true,
+
+                    endedWithoutCrisis:
+                      false,
+
+                    time:
+                      premonitoryIsOpen
+                        ? {
+                            ...state
+                              .episode
+                              .premonitory
+                              .time,
+
+                            end:
+                              buildPhaseTime(
+                                crisisStart,
+                                'exact',
+                                startRecordMode,
+                              ),
+                          }
+                        : state.episode
+                            .premonitory
+                            .time,
                   }
                 : state.episode
                     .premonitory;

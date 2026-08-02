@@ -761,7 +761,7 @@ export function CrisisMode({
     >
       <header>
         <h1>
-          Crisis activa
+          Crisis en curso
         </h1>
 
         <p>
@@ -772,9 +772,9 @@ export function CrisisMode({
         </p>
 
         <p>
-          Registrá solo lo que necesites.
-          Los cambios se guardan durante
-          la evolución de la crisis.
+          Vamos de a poco. Registrá solo
+          lo que cambió desde la última
+          vez.
         </p>
 
         <button

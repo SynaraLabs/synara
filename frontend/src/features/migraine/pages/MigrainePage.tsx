@@ -15,10 +15,6 @@ import {
 } from '../components/dev/MigraineDevTools';
 
 import {
-  PremonitorySelector,
-} from '../components/PremonitorySelector';
-
-import {
   RecoveryStage,
 } from '../components/RecoveryStage';
 
@@ -488,26 +484,6 @@ export function MigrainePage() {
         isCrisisActive && (
           <>
             <CrisisMode />
-
-            {hasOpenPremonitory && (
-              <section>
-                <h2>
-                  Señales previas que
-                  continúan
-                </h2>
-
-                <p>
-                  Podés seguir
-                  registrando cómo
-                  cambian durante la
-                  crisis.
-                </p>
-
-                <PremonitorySelector
-                  context="crisis"
-                />
-              </section>
-            )}
 
             <MigraineDevTools />
           </>
