@@ -10,7 +10,13 @@ import {
   useMigraineStore,
 } from '../store/migraine.store';
 
-export function PostdromeTrackingSection() {
+interface Props {
+  onComplete?: () => void;
+}
+
+export function PostdromeTrackingSection({
+  onComplete,
+}: Props) {
   const postdromeIsActive =
     useMigraineStore(
       state => {
@@ -36,7 +42,11 @@ export function PostdromeTrackingSection() {
 
   return (
     <section>
-      <PostdromeSelector />
+      <PostdromeSelector
+        onComplete={
+          onComplete
+        }
+      />
 
       {postdromeIsActive && (
         <NoPostdromeButton />

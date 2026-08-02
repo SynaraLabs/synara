@@ -8,6 +8,10 @@ import {
 
 import styles from '../migraine.module.css';
 
+interface Props {
+  onComplete?: () => void;
+}
+
 const isValidDate = (
   value?: string,
 ): value is string => {
@@ -19,7 +23,9 @@ const isValidDate = (
   );
 };
 
-export function NoPostdromeButton() {
+export function NoPostdromeButton({
+  onComplete,
+}: Props) {
   const [
     showConfirmation,
     setShowConfirmation,
@@ -172,6 +178,8 @@ export function NoPostdromeButton() {
      * coincidirá con el final de crisis.
      */
     completeEpisode();
+
+    onComplete?.();
   };
 
   if (!postdrome.present) {

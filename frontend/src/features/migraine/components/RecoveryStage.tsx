@@ -11,21 +11,57 @@ import {
 } from '../store/migraine.store';
 
 import {
+  ClinicalPhasePanel,
+} from './common/ClinicalPhasePanel';
+
+import {
   PhaseEndSelector,
   type PhaseEndSelection,
 } from './common/PhaseEndSelector';
 
-import { MigraineDevTools } from './dev/MigraineDevTools';
-import { PostdromeTrackingSection } from './PostdromeTrackingSection';
-import { PremonitorySelector } from './PremonitorySelector';
-import { TreatmentSelector } from './TreatmentSelector';
-import { TriggerSelector } from './TriggerSelector';
+import {
+  MigraineDevTools,
+} from './dev/MigraineDevTools';
 
+import {
+  PostdromeTrackingSection,
+} from './PostdromeTrackingSection';
+
+import {
+  PremonitorySelector,
+} from './PremonitorySelector';
+
+import {
+  TreatmentSelector,
+} from './TreatmentSelector';
+
+import {
+  TriggerSelector,
+} from './TriggerSelector';
+
+import panelStyles from './TrackingPhasePanels.module.css';
 import styles from '../migraine.module.css';
 
 interface Props {
   episode: MigraineEpisode;
 }
+
+type RecoveryPanel =
+  | 'premonitory'
+  | 'postdrome'
+  | 'triggers';
+
+const getTriggerStatus = (
+  count: number,
+): string => {
+  if (count === 0) {
+    return 'Sin registrar';
+  }
+
+  return count === 1
+    ? '1 seleccionado'
+    : `${count} seleccionados`;
+};
 
 export function RecoveryStage({
   episode,
@@ -117,6 +153,49 @@ export function RecoveryStage({
     !hasOpenPremonitory &&
     !isPostdromeActive;
 
+  const getInitialPanel =
+    (): RecoveryPanel | null => {
+      if (isPostdromeActive) {
+        return 'postdrome';
+      }
+
+      if (hasOpenPremonitory) {
+        return 'premonitory';
+      }
+
+      return null;
+    };
+
+  const [
+    activePanel,
+    setActivePanel,
+  ] = useState<
+    RecoveryPanel | null
+  >(
+    getInitialPanel,
+  );
+
+  const handlePanelChange = (
+    panel: RecoveryPanel,
+    isOpen: boolean,
+  ) => {
+    setActivePanel(
+      currentPanel => {
+        if (isOpen) {
+          return panel;
+        }
+
+        return currentPanel === panel
+          ? null
+          : currentPanel;
+      },
+    );
+  };
+
+  const closeActivePanel = () => {
+    setActivePanel(null);
+  };
+
   const handleOpenResolution =
     () => {
       setShowPremonitoryOptions(
@@ -175,6 +254,8 @@ export function RecoveryStage({
       setFeedback(
         'Las señales quedaron cerradas al finalizar la crisis.',
       );
+
+      closeActivePanel();
     };
 
   const handleEndedDuringCrisis =
@@ -219,6 +300,8 @@ export function RecoveryStage({
     setFeedback(
       'Final de las señales registrado.',
     );
+
+    closeActivePanel();
   };
 
   const handleContinuesAfterCrisis =
@@ -265,6 +348,8 @@ export function RecoveryStage({
       setFeedback(
         'Las señales quedaron cerradas con hora de finalización desconocida.',
       );
+
+      closeActivePanel();
     };
 
   const handleCompleteEpisode =
@@ -275,6 +360,16 @@ export function RecoveryStage({
 
       completeEpisode();
     };
+
+  const postdromeStatus =
+    !hasPostdrome
+      ? 'Sin postdromo'
+      : isPostdromeEnded
+        ? 'Finalizado'
+        : 'En curso';
+
+  const triggerCount =
+    episode.triggers?.length ?? 0;
 
   return (
     <>
@@ -294,126 +389,190 @@ export function RecoveryStage({
         </p>
       </section>
 
-      {hasOpenPremonitory && (
-        <section>
-          <h2>
-            Señales previas todavía
-            abiertas
-          </h2>
-
-          <p>
-            Antes de finalizar el
-            episodio debemos registrar
-            qué ocurrió con estas
-            señales.
-          </p>
-
-          <PremonitorySelector
-            context="recovery"
-          />
-
-          {!showPremonitoryOptions &&
-            !showPremonitoryEnd && (
-              <button
-                type="button"
-                onClick={
-                  handleOpenResolution
-                }
-              >
-                Indicar cuándo
-                terminaron las señales
-              </button>
-            )}
-
-          {showPremonitoryOptions && (
-            <section>
-              <h3>
-                ¿Qué pasó con las
-                señales?
-              </h3>
-
-              <button
-                type="button"
-                onClick={
-                  handleEndedWithCrisis
-                }
-              >
-                Terminaron cuando
-                terminó la crisis
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  handleEndedDuringCrisis
-                }
-              >
-                Terminaron en otro
-                momento
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  handleContinuesAfterCrisis
-                }
-              >
-                Continúan después de la
-                crisis
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  handleUnknownEnd
-                }
-              >
-                No recuerdo cuándo
-                terminaron
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  handleCancelResolution
-                }
-              >
-                Cancelar
-              </button>
-            </section>
-          )}
-
-          {showPremonitoryEnd && (
-            <PhaseEndSelector
-              title="¿Cuándo terminaron las señales previas?"
-              startTime={
-                premonitoryStart
-              }
-              onConfirm={
-                handlePremonitoryEnd
-              }
-              onContinue={
-                handleContinuesAfterCrisis
+      <div
+        className={
+          panelStyles.list
+        }
+      >
+        {hasOpenPremonitory && (
+          <ClinicalPhasePanel
+            id="recovery-premonitory-title"
+            eyebrow="Fase pendiente"
+            title="Señales premonitorias"
+            description="Indicá cuándo terminaron o registrá una nueva actualización."
+            icon="◌"
+            status="En curso"
+            isOpen={
+              activePanel ===
+              'premonitory'
+            }
+            onOpenChange={isOpen =>
+              handlePanelChange(
+                'premonitory',
+                isOpen,
+              )
+            }
+          >
+            <PremonitorySelector
+              context="recovery"
+              onComplete={
+                closeActivePanel
               }
             />
-          )}
 
-          {feedback && (
-            <p
-              className={
-                styles.helperText
-              }
-              aria-live="polite"
-            >
-              {feedback}
-            </p>
-          )}
-        </section>
-      )}
+            {!showPremonitoryOptions &&
+              !showPremonitoryEnd && (
+                <button
+                  type="button"
+                  onClick={
+                    handleOpenResolution
+                  }
+                >
+                  Indicar cuándo
+                  terminaron las señales
+                </button>
+              )}
 
-      <PostdromeTrackingSection />
+            {showPremonitoryOptions && (
+              <section>
+                <h3>
+                  ¿Qué pasó con las
+                  señales?
+                </h3>
 
-      <TriggerSelector />
+                <button
+                  type="button"
+                  onClick={
+                    handleEndedWithCrisis
+                  }
+                >
+                  Terminaron cuando
+                  terminó la crisis
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    handleEndedDuringCrisis
+                  }
+                >
+                  Terminaron en otro
+                  momento
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    handleContinuesAfterCrisis
+                  }
+                >
+                  Continúan después de
+                  la crisis
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    handleUnknownEnd
+                  }
+                >
+                  No recuerdo cuándo
+                  terminaron
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    handleCancelResolution
+                  }
+                >
+                  Cancelar
+                </button>
+              </section>
+            )}
+
+            {showPremonitoryEnd && (
+              <PhaseEndSelector
+                title="¿Cuándo terminaron las señales previas?"
+                startTime={
+                  premonitoryStart
+                }
+                onConfirm={
+                  handlePremonitoryEnd
+                }
+                onContinue={
+                  handleContinuesAfterCrisis
+                }
+              />
+            )}
+
+            {feedback && (
+              <p
+                className={
+                  styles.helperText
+                }
+                aria-live="polite"
+              >
+                {feedback}
+              </p>
+            )}
+          </ClinicalPhasePanel>
+        )}
+
+        <ClinicalPhasePanel
+          id="recovery-postdrome-title"
+          eyebrow="Recuperación"
+          title="Postdromo"
+          description="Registrá cómo evoluciona la recuperación después de la crisis."
+          icon="◇"
+          status={postdromeStatus}
+          isOpen={
+            activePanel ===
+            'postdrome'
+          }
+          onOpenChange={isOpen =>
+            handlePanelChange(
+              'postdrome',
+              isOpen,
+            )
+          }
+        >
+          <PostdromeTrackingSection
+            onComplete={
+              closeActivePanel
+            }
+          />
+        </ClinicalPhasePanel>
+
+        <ClinicalPhasePanel
+          id="recovery-triggers-title"
+          eyebrow="Contexto"
+          title="Posibles desencadenantes"
+          description="Registrá factores que podrían haber influido en este episodio."
+          icon="⌁"
+          status={
+            getTriggerStatus(
+              triggerCount,
+            )
+          }
+          isOpen={
+            activePanel ===
+            'triggers'
+          }
+          onOpenChange={isOpen =>
+            handlePanelChange(
+              'triggers',
+              isOpen,
+            )
+          }
+        >
+          <TriggerSelector
+            onComplete={
+              closeActivePanel
+            }
+          />
+        </ClinicalPhasePanel>
+      </div>
 
       <TreatmentSelector />
 

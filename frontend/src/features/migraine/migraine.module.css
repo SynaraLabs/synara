@@ -1296,3 +1296,156 @@
     transition: none;
   }
 }
+
+.compactSelected,
+.compactResults {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.compactSelected h4,
+.compactResults h4 {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-size: 0.875rem;
+}
+
+.compactChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.compactChips button {
+  min-height: 36px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  padding: 7px 11px;
+
+  border: 1px solid
+    var(--color-primary-border);
+  border-radius: var(--radius-pill);
+
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+
+  font-size: 0.78rem;
+  font-weight: 700;
+
+  box-shadow: none;
+}
+
+.compactChips button:hover {
+  border-color: var(--color-primary);
+}
+
+.compactChips button span {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.compactCategories {
+  display: flex;
+  gap: var(--space-2);
+
+  padding-bottom: var(--space-1);
+
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.compactCategories button {
+  min-height: 38px;
+
+  flex: 0 0 auto;
+
+  padding: 7px 12px;
+
+  border: 1px solid
+    var(--color-border);
+  border-radius: var(--radius-pill);
+
+  color: var(--color-text-soft);
+  background: var(--color-surface);
+
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  box-shadow: none;
+}
+
+.compactCategories button:hover,
+.compactCategories button[aria-pressed='true'] {
+  border-color:
+    var(--color-primary-border);
+
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.compactChoiceGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.compactChoice {
+  min-height: 46px;
+
+  justify-content: flex-start;
+
+  padding:
+    var(--space-2)
+    var(--space-3);
+
+  border: 1px solid
+    var(--color-border);
+  border-radius:
+    var(--radius-medium);
+
+  color: var(--color-text);
+  background: var(--color-surface);
+
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.3;
+  text-align: left;
+
+  box-shadow: none;
+}
+
+.compactChoice:hover {
+  border-color:
+    var(--color-primary-border);
+
+  background:
+    var(--color-primary-soft);
+}
+
+.compactChoice[aria-pressed='true'] {
+  border-color: var(--color-primary);
+
+  color: #ffffff;
+  background: var(--color-primary);
+}
+
+@media (max-width: 520px) {
+  .compactChoiceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .compactCategories {
+    margin-inline:
+      calc(var(--space-1) * -1);
+
+    padding-inline:
+      var(--space-1);
+  }
+}

@@ -62,6 +62,9 @@ const frequentAuraSymptoms =
     'imbalance',
   ]);
 
+type AuraCategory =
+  (typeof AURA_CATEGORY_ORDER)[number];
+
 
 const categoryLabels:
   Partial<
@@ -107,16 +110,25 @@ function getCategoryLabel(
 }
 
 
-export function AuraSelector() {
+interface AuraSelectorProps {
+  onComplete?: () => void;
+}
+
+
+export function AuraSelector({
+  onComplete,
+}: AuraSelectorProps) {
   const [
     searchQuery,
     setSearchQuery,
   ] = useState('');
 
   const [
-    showAllSymptoms,
-    setShowAllSymptoms,
-  ] = useState(false);
+    activeCategory,
+    setActiveCategory,
+  ] = useState<
+    AuraCategory | null
+  >(null);
 
   const [
     draftSymptoms,
@@ -237,52 +249,53 @@ export function AuraSelector() {
   ]);
 
 
+  const normalizedSearchQuery =
+    normalizeAuraSearch(
+      searchQuery,
+    );
+
+
   const visibleDefinitions =
     useMemo(() => {
-      const normalizedQuery =
-        normalizeAuraSearch(
-          searchQuery,
-        );
-
-      return AURA_CATALOG.filter(
+      const definitions =
+        AURA_CATALOG.filter(
         definition => {
-          const isSelected =
-            draftSymptoms.includes(
-              definition.value,
-            );
-
           const matchesSearch =
-            normalizedQuery.length >
+            normalizedSearchQuery.length >
               0 &&
             normalizeAuraSearch(
               `${definition.label} ${definition.value}`,
             ).includes(
-              normalizedQuery,
+              normalizedSearchQuery,
             );
 
           if (
-            normalizedQuery.length >
+            normalizedSearchQuery.length >
             0
           ) {
             return matchesSearch;
           }
 
-          if (showAllSymptoms) {
-            return true;
+          if (activeCategory) {
+            return (
+              definition.category ===
+              activeCategory
+            );
           }
 
-          return (
-            frequentAuraSymptoms.has(
-              definition.value,
-            ) ||
-            isSelected
+          return frequentAuraSymptoms.has(
+            definition.value,
           );
         },
       );
+
+      return activeCategory ||
+        normalizedSearchQuery
+        ? definitions
+        : definitions.slice(0, 8);
     }, [
-      draftSymptoms,
-      searchQuery,
-      showAllSymptoms,
+      activeCategory,
+      normalizedSearchQuery,
     ]);
 
 
@@ -566,6 +579,8 @@ export function AuraSelector() {
           ? 'Actualización del aura registrada.'
           : 'Aura iniciada y primera actualización registrada.',
       );
+
+      onComplete?.();
     };
 
 
@@ -752,6 +767,8 @@ export function AuraSelector() {
     setFeedback(
       'Final del aura registrado.',
     );
+
+    onComplete?.();
   };
 
 
@@ -816,6 +833,49 @@ export function AuraSelector() {
 
       {!isEnded && (
         <>
+          {draftSymptoms.length > 0 && (
+            <section
+              className={
+                styles.compactSelected
+              }
+              aria-labelledby="selected-aura-symptoms"
+            >
+              <h4 id="selected-aura-symptoms">
+                Seleccionados
+              </h4>
+
+              <div
+                className={
+                  styles.compactChips
+                }
+              >
+                {draftSymptoms.map(
+                  symptom => (
+                    <button
+                      key={symptom}
+                      type="button"
+                      onClick={() =>
+                        toggleSymptom(
+                          symptom,
+                        )
+                      }
+                      aria-label={`Quitar ${getAuraSymptomLabel(symptom)}`}
+                    >
+                      {getAuraSymptomLabel(
+                        symptom,
+                      )}
+
+                      <span aria-hidden="true">
+                        ×
+                      </span>
+                    </button>
+                  ),
+                )}
+              </div>
+            </section>
+          )}
+
+
           <label>
             Buscar síntomas de aura
 
@@ -828,45 +888,92 @@ export function AuraSelector() {
                   event.target.value,
                 );
 
+                if (
+                  event.target.value
+                ) {
+                  setActiveCategory(
+                    null,
+                  );
+                }
+
                 setFeedback('');
               }}
             />
           </label>
 
 
-          <button
-            type="button"
-            onClick={() =>
-              setShowAllSymptoms(
-                current => !current,
-              )
+          {!normalizedSearchQuery && (
+            <div
+              className={
+                styles.compactCategories
+              }
+              aria-label="Categorías de síntomas del aura"
+            >
+              <button
+                type="button"
+                aria-pressed={
+                  activeCategory ===
+                  null
+                }
+                onClick={() =>
+                  setActiveCategory(
+                    null,
+                  )
+                }
+              >
+                Frecuentes
+              </button>
+
+              {AURA_CATEGORY_ORDER.map(
+                category => (
+                  <button
+                    key={category}
+                    type="button"
+                    aria-pressed={
+                      activeCategory ===
+                      category
+                    }
+                    onClick={() =>
+                      setActiveCategory(
+                        category,
+                      )
+                    }
+                  >
+                    {getCategoryLabel(
+                      category,
+                    )}
+                  </button>
+                ),
+              )}
+            </div>
+          )}
+
+
+          <section
+            className={
+              styles.compactResults
             }
           >
-            {showAllSymptoms
-              ? 'Mostrar solo los más frecuentes'
-              : 'Mostrar todos los síntomas'}
-          </button>
+            <h4>
+              {normalizedSearchQuery
+                ? 'Resultados'
+                : activeCategory
+                  ? getCategoryLabel(
+                      activeCategory,
+                    )
+                  : 'Más frecuentes'}
+            </h4>
 
-
-          {visibleCategories.map(
-            group => (
-              <section
+            {visibleCategories.map(
+              group => (
+                <div
                 key={
                   group.category
                 }
-                className={
-                  styles.auraGroup
-                }
               >
-                <h4>
-                  {getCategoryLabel(
-                    group.category,
-                  )}
-                </h4>
-
                 <div
                   className={
-                    styles.symptomGrid
+                    styles.compactChoiceGrid
                   }
                   role="group"
                   aria-label={
@@ -877,51 +984,47 @@ export function AuraSelector() {
                 >
                   {group.symptoms.map(
                     definition => (
-                      <label
+                      <button
                         key={
                           definition.value
                         }
+                        type="button"
                         className={
-                          styles.symptomOption
+                          styles.compactChoice
+                        }
+                        aria-pressed={
+                          draftSymptoms.includes(
+                            definition.value,
+                          )
+                        }
+                        onClick={() =>
+                          toggleSymptom(
+                            definition.value,
+                          )
                         }
                       >
-                        <input
-                          type="checkbox"
-                          checked={draftSymptoms.includes(
-                            definition.value,
-                          )}
-                          onChange={() =>
-                            toggleSymptom(
-                              definition.value,
-                            )
-                          }
-                        />
-
-                        <span>
-                          {
-                            definition.label
-                          }
-                        </span>
-                      </label>
+                        {definition.label}
+                      </button>
                     ),
                   )}
                 </div>
-              </section>
-            ),
-          )}
+                </div>
+              ),
+            )}
 
 
-          {visibleDefinitions.length ===
-            0 && (
-            <p
-              className={
-                styles.helperText
-              }
-            >
-              No encontramos síntomas
-              con esa búsqueda.
-            </p>
-          )}
+            {visibleDefinitions.length ===
+              0 && (
+              <p
+                className={
+                  styles.helperText
+                }
+              >
+                No encontramos síntomas
+                con esa búsqueda.
+              </p>
+            )}
+          </section>
 
 
           <div

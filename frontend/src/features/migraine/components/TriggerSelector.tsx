@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -22,46 +23,66 @@ import {
 
 import styles from '../migraine.module.css';
 
-export function TriggerSelector() {
-  const [
-    searchTerm,
-    setSearchTerm,
-  ] = useState('');
+interface Props {
+  onComplete?: () => void;
+}
 
-  const [
-    showAllTriggers,
-    setShowAllTriggers,
-  ] = useState(false);
+type TriggerCategory =
+  (typeof TRIGGER_CATEGORY_ORDER)[number];
+
+const getTriggerLabel = (
+  trigger: MigraineTrigger,
+): string => {
+  return (
+    TRIGGER_CATALOG.find(
+      definition =>
+        definition.value === trigger,
+    )?.label ?? trigger
+  );
+};
+
+export function TriggerSelector({
+  onComplete,
+}: Props) {
+  const [searchTerm, setSearchTerm] =
+    useState('');
+
+  const [activeCategory, setActiveCategory] =
+    useState<TriggerCategory | null>(null);
 
   const selectedTriggers =
     useMigraineStore(
-      state =>
-        state.episode.triggers,
+      state => state.episode.triggers,
     ) ?? [];
 
   const updateTriggers =
     useMigraineStore(
-      state =>
-        state.updateTriggers,
+      state => state.updateTriggers,
     );
+
+  const [draftTriggers, setDraftTriggers] =
+    useState<MigraineTrigger[]>(
+      selectedTriggers,
+    );
+
+  useEffect(() => {
+    setDraftTriggers(selectedTriggers);
+  }, [selectedTriggers]);
 
   const normalizedSearch =
     normalizeTriggerSearch(
       searchTerm.trim(),
     );
 
-  const quickTriggers =
+  const frequentTriggers =
     useMemo(() => {
       return TRIGGER_CATALOG.filter(
         definition =>
           FREQUENT_TRIGGERS.includes(
             definition.value,
-          ) ||
-          selectedTriggers.includes(
-            definition.value,
           ),
-      );
-    }, [selectedTriggers]);
+      ).slice(0, 8);
+    }, []);
 
   const searchResults =
     useMemo(() => {
@@ -75,10 +96,7 @@ export function TriggerSelector() {
             normalizeTriggerSearch(
               [
                 definition.label,
-                ...(
-                  definition.searchTerms ??
-                  []
-                ),
+                ...(definition.searchTerms ?? []),
               ].join(' '),
             );
 
@@ -89,127 +107,85 @@ export function TriggerSelector() {
       );
     }, [normalizedSearch]);
 
+  const categoryTriggers =
+    useMemo(() => {
+      if (!activeCategory) {
+        return [];
+      }
+
+      return TRIGGER_CATALOG.filter(
+        definition =>
+          definition.category ===
+          activeCategory,
+      );
+    }, [activeCategory]);
+
+  const hasChanges =
+    draftTriggers.length !==
+      selectedTriggers.length ||
+    draftTriggers.some(
+      trigger =>
+        !selectedTriggers.includes(trigger),
+    );
+
   const toggleTrigger = (
     trigger: MigraineTrigger,
   ) => {
-    const isSelected =
-      selectedTriggers.includes(
-        trigger,
-      );
-
-    const updatedTriggers =
-      isSelected
-        ? selectedTriggers.filter(
-            selectedTrigger =>
-              selectedTrigger !==
-              trigger,
+    setDraftTriggers(current =>
+      current.includes(trigger)
+        ? current.filter(
+            value => value !== trigger,
           )
-        : [
-            ...selectedTriggers,
-            trigger,
-          ];
-
-    updateTriggers(
-      updatedTriggers,
+        : [...current, trigger],
     );
   };
 
+  const handleSave = () => {
+    if (!hasChanges) {
+      return;
+    }
+
+    updateTriggers([...draftTriggers]);
+    setSearchTerm('');
+    setActiveCategory(null);
+    onComplete?.();
+  };
+
   const renderTrigger = (
-    trigger:
-      TriggerDefinition,
+    trigger: TriggerDefinition,
   ) => {
     const isSelected =
-      selectedTriggers.includes(
+      draftTriggers.includes(
         trigger.value,
       );
 
     return (
-      <label
+      <button
         key={trigger.value}
+        type="button"
         className={
-          styles.symptomOption
+          styles.compactChoice
+        }
+        aria-pressed={isSelected}
+        onClick={() =>
+          toggleTrigger(trigger.value)
         }
       >
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() =>
-            toggleTrigger(
-              trigger.value,
-            )
-          }
-        />
-
-        <span>
-          {trigger.label}
-        </span>
-      </label>
+        {trigger.label}
+      </button>
     );
   };
 
-  const renderCategories = (
-    definitions:
-      readonly TriggerDefinition[],
-    excludeFrequent = false,
-  ) => {
-    return TRIGGER_CATEGORY_ORDER.map(
-      category => {
-        const categoryTriggers =
-          definitions.filter(
-            definition =>
-              definition.category ===
-                category &&
-              (
-                !excludeFrequent ||
-                !definition.frequent
-              ),
-          );
-
-        if (
-          categoryTriggers.length ===
-          0
-        ) {
-          return null;
-        }
-
-        return (
-          <fieldset
-            key={category}
-            className={
-              styles.triggerCategory
-            }
-          >
-            <legend>
-              {
-                TRIGGER_CATEGORY_LABELS[
-                  category
-                ]
-              }
-            </legend>
-
-            <div
-              className={
-                styles.symptomGrid
-              }
-            >
-              {categoryTriggers.map(
-                renderTrigger,
-              )}
-            </div>
-          </fieldset>
-        );
-      },
-    );
-  };
-
-  const isSearching =
-    normalizedSearch.length > 0;
+  const visibleTriggers =
+    normalizedSearch
+      ? searchResults
+      : activeCategory
+        ? categoryTriggers
+        : frequentTriggers;
 
   return (
     <section
-      className={
-        styles.triggerSelector
-      }
+      className={styles.triggerSelector}
       aria-labelledby="trigger-title"
     >
       <div>
@@ -218,12 +194,40 @@ export function TriggerSelector() {
         </h3>
 
         <p>
-          Seleccioná los factores que
-          podrían haber influido en este
-          episodio. Podés marcar más de
-          uno.
+          Marcá los factores que podrían
+          haber influido y guardá cuando
+          termines.
         </p>
       </div>
+
+      {draftTriggers.length > 0 && (
+        <section
+          className={styles.compactSelected}
+          aria-labelledby="selected-triggers-title"
+        >
+          <h4 id="selected-triggers-title">
+            Seleccionados
+          </h4>
+
+          <div className={styles.compactChips}>
+            {draftTriggers.map(trigger => (
+              <button
+                key={trigger}
+                type="button"
+                onClick={() =>
+                  toggleTrigger(trigger)
+                }
+                aria-label={`Quitar ${getTriggerLabel(trigger)}`}
+              >
+                {getTriggerLabel(trigger)}
+                <span aria-hidden="true">
+                  ×
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       <label>
         Buscar desencadenante
@@ -233,95 +237,107 @@ export function TriggerSelector() {
           value={searchTerm}
           placeholder="Ej.: ovulación, cuello, perfume"
           autoComplete="off"
-          onChange={event =>
-            setSearchTerm(
-              event.target.value,
-            )
-          }
+          onChange={event => {
+            setSearchTerm(event.target.value);
+
+            if (event.target.value) {
+              setActiveCategory(null);
+            }
+          }}
         />
       </label>
 
-      {isSearching ? (
-        <>
-          {searchResults.length > 0 ? (
-            renderCategories(
-              searchResults,
-            )
-          ) : (
-            <p>
-              No se encontraron
-              desencadenantes.
-            </p>
-          )}
-        </>
-      ) : (
-        <>
-          <fieldset
-            className={
-              styles.triggerCategory
-            }
-          >
-            <legend>
-              Frecuentes y seleccionados
-            </legend>
-
-            <div
-              className={
-                styles.symptomGrid
-              }
-            >
-              {quickTriggers.map(
-                renderTrigger,
-              )}
-            </div>
-          </fieldset>
-
+      {!normalizedSearch && (
+        <div
+          className={styles.compactCategories}
+          aria-label="Categorías de desencadenantes"
+        >
           <button
             type="button"
-            aria-expanded={
-              showAllTriggers
+            aria-pressed={
+              activeCategory === null
             }
             onClick={() =>
-              setShowAllTriggers(
-                current =>
-                  !current,
-              )
+              setActiveCategory(null)
             }
           >
-            {showAllTriggers
-              ? 'Ocultar desencadenantes adicionales'
-              : 'Mostrar todos los desencadenantes'}
+            Frecuentes
           </button>
 
-          {showAllTriggers &&
-            renderCategories(
-              TRIGGER_CATALOG,
-              true,
-            )}
-        </>
+          {TRIGGER_CATEGORY_ORDER.map(
+            category => (
+              <button
+                key={category}
+                type="button"
+                aria-pressed={
+                  activeCategory === category
+                }
+                onClick={() =>
+                  setActiveCategory(category)
+                }
+              >
+                {
+                  TRIGGER_CATEGORY_LABELS[
+                    category
+                  ]
+                }
+              </button>
+            ),
+          )}
+        </div>
       )}
 
+      <section className={styles.compactResults}>
+        <h4>
+          {normalizedSearch
+            ? 'Resultados'
+            : activeCategory
+              ? TRIGGER_CATEGORY_LABELS[
+                  activeCategory
+                ]
+              : 'Más frecuentes'}
+        </h4>
+
+        {visibleTriggers.length > 0 ? (
+          <div className={styles.compactChoiceGrid}>
+            {visibleTriggers.map(
+              renderTrigger,
+            )}
+          </div>
+        ) : (
+          <p className={styles.helperText}>
+            No se encontraron
+            desencadenantes.
+          </p>
+        )}
+      </section>
+
       <div
-        className={
-          styles.selectionSummary
-        }
+        className={styles.selectionSummary}
         role="status"
       >
-        {selectedTriggers.length > 0 && (
-          <span aria-hidden="true">
-            ✓
-          </span>
+        {draftTriggers.length > 0 && (
+          <span aria-hidden="true">✓</span>
         )}
 
         <p>
-          {selectedTriggers.length === 0
+          {draftTriggers.length === 0
             ? 'Ningún desencadenante seleccionado'
-            : selectedTriggers.length ===
-                1
+            : draftTriggers.length === 1
               ? '1 desencadenante seleccionado'
-              : `${selectedTriggers.length} desencadenantes seleccionados`}
+              : `${draftTriggers.length} desencadenantes seleccionados`}
         </p>
       </div>
+
+      <button
+        type="button"
+        disabled={!hasChanges}
+        onClick={handleSave}
+      >
+        {hasChanges
+          ? 'Guardar desencadenantes'
+          : 'Desencadenantes guardados'}
+      </button>
     </section>
   );
 }

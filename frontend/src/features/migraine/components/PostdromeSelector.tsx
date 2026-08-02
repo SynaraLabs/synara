@@ -39,6 +39,9 @@ const frequentSymptoms =
     FREQUENT_POSTDROME_SYMPTOMS,
   );
 
+type PostdromeCategory =
+  (typeof POSTDROME_CATEGORY_ORDER)[number];
+
 
 const recoveryLevelLabels:
   Record<RecoveryLevel, string> = {
@@ -283,16 +286,25 @@ const getSymptomLabel = (
 };
 
 
-export function PostdromeSelector() {
+interface PostdromeSelectorProps {
+  onComplete?: () => void;
+}
+
+
+export function PostdromeSelector({
+  onComplete,
+}: PostdromeSelectorProps) {
   const [
     searchQuery,
     setSearchQuery,
   ] = useState('');
 
   const [
-    showAllSymptoms,
-    setShowAllSymptoms,
-  ] = useState(false);
+    activeCategory,
+    setActiveCategory,
+  ] = useState<
+    PostdromeCategory | null
+  >(null);
 
   const [
     showEndSelector,
@@ -472,22 +484,19 @@ export function PostdromeSelector() {
     ]);
 
 
+  const normalizedSearchQuery =
+    normalizePostdromeSearch(
+      searchQuery,
+    );
+
+
   const visibleDefinitions =
     useMemo(() => {
-      const normalizedQuery =
-        normalizePostdromeSearch(
-          searchQuery,
-        );
-
-      return allDefinitions.filter(
+      const definitions =
+        allDefinitions.filter(
         definition => {
-          const isSelected =
-            draftSymptoms.includes(
-              definition.value,
-            );
-
           if (
-            normalizedQuery.length >
+            normalizedSearchQuery.length >
             0
           ) {
             const searchableText =
@@ -507,27 +516,31 @@ export function PostdromeSelector() {
               );
 
             return searchableText.includes(
-              normalizedQuery,
+              normalizedSearchQuery,
             );
           }
 
-          if (showAllSymptoms) {
-            return true;
+          if (activeCategory) {
+            return (
+              definition.category ===
+              activeCategory
+            );
           }
 
-          return (
-            frequentSymptoms.has(
-              definition.value,
-            ) ||
-            isSelected
+          return frequentSymptoms.has(
+            definition.value,
           );
         },
       );
+
+      return activeCategory ||
+        normalizedSearchQuery
+        ? definitions
+        : definitions.slice(0, 8);
     }, [
+      activeCategory,
       allDefinitions,
-      draftSymptoms,
-      searchQuery,
-      showAllSymptoms,
+      normalizedSearchQuery,
     ]);
 
 
@@ -799,6 +812,8 @@ export function PostdromeSelector() {
       setFeedback(
         'Actualización registrada.',
       );
+
+      onComplete?.();
     };
 
 
@@ -944,6 +959,8 @@ export function PostdromeSelector() {
     setFeedback(
       'Recuperación completa registrada.',
     );
+
+    onComplete?.();
   };
 
 
@@ -1018,6 +1035,49 @@ export function PostdromeSelector() {
           </p>
 
 
+          {draftSymptoms.length > 0 && (
+            <section
+              className={
+                styles.compactSelected
+              }
+              aria-labelledby="selected-postdrome-symptoms"
+            >
+              <h4 id="selected-postdrome-symptoms">
+                Seleccionados
+              </h4>
+
+              <div
+                className={
+                  styles.compactChips
+                }
+              >
+                {draftSymptoms.map(
+                  symptom => (
+                    <button
+                      key={symptom}
+                      type="button"
+                      onClick={() =>
+                        toggleDraftSymptom(
+                          symptom,
+                        )
+                      }
+                      aria-label={`Quitar ${getSymptomLabel(symptom)}`}
+                    >
+                      {getSymptomLabel(
+                        symptom,
+                      )}
+
+                      <span aria-hidden="true">
+                        ×
+                      </span>
+                    </button>
+                  ),
+                )}
+              </div>
+            </section>
+          )}
+
+
           <label>
             Buscar síntomas del
             postdromo
@@ -1033,49 +1093,95 @@ export function PostdromeSelector() {
                   event.target.value,
                 );
 
+                if (
+                  event.target.value
+                ) {
+                  setActiveCategory(
+                    null,
+                  );
+                }
+
                 setFeedback('');
               }}
             />
           </label>
 
 
-          <button
-            type="button"
-            onClick={() => {
-              setShowAllSymptoms(
-                current => !current,
-              );
+          {!normalizedSearchQuery && (
+            <div
+              className={
+                styles.compactCategories
+              }
+              aria-label="Categorías de síntomas del postdromo"
+            >
+              <button
+                type="button"
+                aria-pressed={
+                  activeCategory ===
+                  null
+                }
+                onClick={() =>
+                  setActiveCategory(
+                    null,
+                  )
+                }
+              >
+                Frecuentes
+              </button>
 
-              setFeedback('');
-            }}
+              {POSTDROME_CATEGORY_ORDER.map(
+                category => (
+                  <button
+                    key={category}
+                    type="button"
+                    aria-pressed={
+                      activeCategory ===
+                      category
+                    }
+                    onClick={() =>
+                      setActiveCategory(
+                        category,
+                      )
+                    }
+                  >
+                    {
+                      POSTDROME_CATEGORY_LABELS[
+                        category
+                      ]
+                    }
+                  </button>
+                ),
+              )}
+            </div>
+          )}
+
+
+          <section
+            className={
+              styles.compactResults
+            }
           >
-            {showAllSymptoms
-              ? 'Mostrar solo los más frecuentes'
-              : 'Mostrar todos los síntomas'}
-          </button>
+            <h4>
+              {normalizedSearchQuery
+                ? 'Resultados'
+                : activeCategory
+                  ? POSTDROME_CATEGORY_LABELS[
+                      activeCategory
+                    ]
+                  : 'Más frecuentes'}
+            </h4>
 
 
-          {visibleCategories.map(
-            group => (
-              <section
+            {visibleCategories.map(
+              group => (
+                <div
                 key={
                   group.category
                 }
-                className={
-                  styles.auraGroup
-                }
               >
-                <h4>
-                  {
-                    POSTDROME_CATEGORY_LABELS[
-                      group.category
-                    ]
-                  }
-                </h4>
-
                 <div
                   className={
-                    styles.symptomGrid
+                    styles.compactChoiceGrid
                   }
                   role="group"
                   aria-label={
@@ -1086,51 +1192,49 @@ export function PostdromeSelector() {
                 >
                   {group.symptoms.map(
                     definition => (
-                      <label
+                      <button
                         key={
                           definition.value
                         }
+                        type="button"
                         className={
-                          styles.symptomOption
+                          styles.compactChoice
+                        }
+                        aria-pressed={
+                          draftSymptoms.includes(
+                            definition.value,
+                          )
+                        }
+                        onClick={() =>
+                          toggleDraftSymptom(
+                            definition.value,
+                          )
                         }
                       >
-                        <input
-                          type="checkbox"
-                          checked={draftSymptoms.includes(
+                        {getSymptomLabel(
                             definition.value,
-                          )}
-                          onChange={() =>
-                            toggleDraftSymptom(
-                              definition.value,
-                            )
-                          }
-                        />
-
-                        <span>
-                          {getSymptomLabel(
-                            definition.value,
-                          )}
-                        </span>
-                      </label>
+                        )}
+                      </button>
                     ),
                   )}
                 </div>
-              </section>
-            ),
-          )}
+                </div>
+              ),
+            )}
 
 
-          {visibleDefinitions.length ===
-            0 && (
-            <p
-              className={
-                styles.helperText
-              }
-            >
-              No encontramos síntomas
-              con esa búsqueda.
-            </p>
-          )}
+            {visibleDefinitions.length ===
+              0 && (
+              <p
+                className={
+                  styles.helperText
+                }
+              >
+                No encontramos síntomas
+                con esa búsqueda.
+              </p>
+            )}
+          </section>
 
 
           <label>

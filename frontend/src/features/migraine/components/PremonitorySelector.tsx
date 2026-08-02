@@ -41,6 +41,8 @@ interface PremonitorySelectorProps {
     | 'tracking'
     | 'crisis'
     | 'recovery';
+
+  onComplete?: () => void;
 }
 
 
@@ -71,6 +73,23 @@ const CATEGORY_ORDER:
   'general',
   'other',
 ];
+
+type PremonitoryCategory =
+  (typeof CATEGORY_ORDER)[number];
+
+const FREQUENT_PREMONITORY_SYMPTOMS =
+  new Set<
+    ExtendedPremonitorySymptom
+  >([
+    'yawning',
+    'neckStiffness',
+    'fatigue',
+    'irritability',
+    'concentrationDifficulty',
+    'lightSensitivity',
+    'foodCraving',
+    'sleepiness',
+  ]);
 
 
 const LEGACY_PREMONITORY_SYMPTOMS:
@@ -539,6 +558,7 @@ const createClinicalSelections = (
 
 export function PremonitorySelector({
   context = 'tracking',
+  onComplete,
 }: PremonitorySelectorProps) {
   const [
     draftSymptoms,
@@ -553,9 +573,11 @@ export function PremonitorySelector({
   ] = useState('');
 
   const [
-    showUncommonSymptoms,
-    setShowUncommonSymptoms,
-  ] = useState(false);
+    activeCategory,
+    setActiveCategory,
+  ] = useState<
+    PremonitoryCategory | null
+  >(null);
 
   const [
     draftIntensity,
@@ -719,27 +741,33 @@ export function PremonitorySelector({
   ]);
 
 
+  const normalizedSymptomSearch =
+    normalizeText(
+      symptomSearch.trim(),
+    );
+
+
   const visibleDefinitions =
     useMemo(() => {
-      const normalizedSearch =
-        normalizeText(
-          symptomSearch.trim(),
-        );
-
-      return premonitoryCatalog.filter(
+      const definitions =
+        premonitoryCatalog.filter(
         definition => {
           if (
-            !showUncommonSymptoms &&
-            !normalizedSearch &&
-            definition.uncommon
+            activeCategory &&
+            !normalizedSymptomSearch
           ) {
-            return false;
+            return (
+              definition.category ===
+              activeCategory
+            );
           }
 
           if (
-            !normalizedSearch
+            !normalizedSymptomSearch
           ) {
-            return true;
+            return FREQUENT_PREMONITORY_SYMPTOMS.has(
+              definition.value,
+            );
           }
 
           const searchableText =
@@ -757,13 +785,18 @@ export function PremonitorySelector({
             );
 
           return searchableText.includes(
-            normalizedSearch,
+            normalizedSymptomSearch,
           );
         },
       );
+
+      return activeCategory ||
+        normalizedSymptomSearch
+        ? definitions
+        : definitions.slice(0, 8);
     }, [
-      symptomSearch,
-      showUncommonSymptoms,
+      activeCategory,
+      normalizedSymptomSearch,
     ]);
 
 
@@ -1097,6 +1130,8 @@ export function PremonitorySelector({
         ? 'Señales iniciadas y primera actualización registrada.'
         : 'Actualización premonitoria registrada.',
     );
+
+    onComplete?.();
   };
 
 
@@ -1178,6 +1213,8 @@ export function PremonitorySelector({
     });
 
     handleCancelResolution();
+
+    onComplete?.();
   };
 
 
@@ -1194,7 +1231,9 @@ export function PremonitorySelector({
           'retrospective',
       });
 
-      handleCancelResolution();
+    handleCancelResolution();
+
+    onComplete?.();
     };
 
 
@@ -1290,64 +1329,144 @@ export function PremonitorySelector({
               value={
                 symptomSearch
               }
-              onChange={event =>
+              onChange={event => {
                 setSymptomSearch(
                   event.target
                     .value,
-                )
-              }
+                );
+
+                if (
+                  event.target.value
+                ) {
+                  setActiveCategory(
+                    null,
+                  );
+                }
+              }}
               placeholder="Ej.: rigidez, mareo, hambre…"
             />
           </label>
 
 
-          <label
-            className={
-              styles.symptomOption
-            }
-          >
-            <input
-              type="checkbox"
-              checked={
-                showUncommonSymptoms
-              }
-              onChange={event =>
-                setShowUncommonSymptoms(
-                  event.target
-                    .checked,
-                )
-              }
-            />
-
-            <span>
-              Mostrar también señales
-              menos frecuentes
-            </span>
-          </label>
-
-
-          <p
-            className={
-              styles.helperText
-            }
-          >
-            Seleccionadas:{' '}
-            {draftSymptoms.length}
-          </p>
-
-
-          {visibleDefinitions.length ===
-          0 ? (
-            <p
+          {draftSymptoms.length > 0 && (
+            <section
               className={
-                styles.helperText
+                styles.compactSelected
               }
+              aria-labelledby="selected-premonitory-symptoms"
             >
-              No encontramos señales
-              con ese nombre.
-            </p>
-          ) : (
-            CATEGORY_ORDER.map(
+              <h4 id="selected-premonitory-symptoms">
+                Seleccionadas
+              </h4>
+
+              <div
+                className={
+                  styles.compactChips
+                }
+              >
+                {draftSymptoms.map(
+                  symptom => (
+                    <button
+                      key={symptom}
+                      type="button"
+                      onClick={() =>
+                        toggleDraftSymptom(
+                          symptom,
+                        )
+                      }
+                      aria-label={`Quitar ${getSymptomLabel(symptom)}`}
+                    >
+                      {getSymptomLabel(
+                        symptom,
+                      )}
+
+                      <span aria-hidden="true">
+                        ×
+                      </span>
+                    </button>
+                  ),
+                )}
+              </div>
+            </section>
+          )}
+
+
+          {!normalizedSymptomSearch && (
+            <div
+              className={
+                styles.compactCategories
+              }
+              aria-label="Categorías de señales premonitorias"
+            >
+              <button
+                type="button"
+                aria-pressed={
+                  activeCategory ===
+                  null
+                }
+                onClick={() =>
+                  setActiveCategory(
+                    null,
+                  )
+                }
+              >
+                Frecuentes
+              </button>
+
+              {CATEGORY_ORDER.map(
+                category => (
+                  <button
+                    key={category}
+                    type="button"
+                    aria-pressed={
+                      activeCategory ===
+                      category
+                    }
+                    onClick={() =>
+                      setActiveCategory(
+                        category,
+                      )
+                    }
+                  >
+                    {
+                      clinicalSymptomCategoryLabels[
+                        category
+                      ]
+                    }
+                  </button>
+                ),
+              )}
+            </div>
+          )}
+
+
+          <section
+            className={
+              styles.compactResults
+            }
+          >
+            <h4>
+              {normalizedSymptomSearch
+                ? 'Resultados'
+                : activeCategory
+                  ? clinicalSymptomCategoryLabels[
+                      activeCategory
+                    ]
+                  : 'Más frecuentes'}
+            </h4>
+
+            {visibleDefinitions.length ===
+            0 ? (
+              <p
+                className={
+                  styles.helperText
+                }
+              >
+                No encontramos señales
+                con ese nombre.
+              </p>
+            ) : (
+              CATEGORY_ORDER.map(
               category => {
                 const definitions =
                   groupedDefinitions[
@@ -1363,62 +1482,50 @@ export function PremonitorySelector({
                 }
 
                 return (
-                  <section
+                  <div
                     key={category}
                   >
-                    <h5>
-                      {
-                        clinicalSymptomCategoryLabels[
-                          category
-                        ]
-                      }
-                    </h5>
-
                     <div
                       className={
-                        styles.symptomGrid
+                        styles.compactChoiceGrid
                       }
                     >
                       {definitions.map(
                         definition => (
-                          <label
+                          <button
                             key={
                               definition.value
                             }
+                            type="button"
                             className={
-                              styles.symptomOption
+                              styles.compactChoice
+                            }
+                            aria-pressed={
+                              draftSymptoms.includes(
+                                definition.value,
+                              )
+                            }
+                            onClick={() =>
+                              toggleDraftSymptom(
+                                definition.value,
+                              )
                             }
                           >
-                            <input
-                              type="checkbox"
-                              checked={draftSymptoms.includes(
-                                definition.value,
-                              )}
-                              onChange={() =>
-                                toggleDraftSymptom(
-                                  definition.value,
-                                )
-                              }
-                            />
+                            {definition.label}
 
-                            <span>
-                              {
-                                definition.label
-                              }
-
-                              {definition.uncommon
-                                ? ' · Menos frecuente'
-                                : ''}
-                            </span>
-                          </label>
+                            {definition.uncommon
+                              ? ' · Menos frecuente'
+                              : ''}
+                          </button>
                         ),
                       )}
                     </div>
-                  </section>
+                  </div>
                 );
               },
-            )
-          )}
+              )
+            )}
+          </section>
 
 
           <label>

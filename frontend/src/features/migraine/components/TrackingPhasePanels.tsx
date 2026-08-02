@@ -1,3 +1,7 @@
+import {
+  useState,
+} from 'react';
+
 import type {
   MigraineEpisode,
 } from '../types/migraine.types';
@@ -14,6 +18,10 @@ import styles from './TrackingPhasePanels.module.css';
 interface Props {
   episode: MigraineEpisode;
 }
+
+type TrackingPanel =
+  | 'premonitory'
+  | 'aura';
 
 const getPremonitoryStatus = (
   episode: MigraineEpisode,
@@ -65,9 +73,20 @@ const getAuraStatus = (
   return 'En curso';
 };
 
-export function TrackingPhasePanels({
-  episode,
-}: Props) {
+const getInitialPanel = (
+  episode: MigraineEpisode,
+): TrackingPanel | null => {
+  const auraIsOpen =
+    episode.aura.present &&
+    episode.aura.status !==
+      'ended' &&
+    episode.aura.status !==
+      'uncertain';
+
+  if (auraIsOpen) {
+    return 'aura';
+  }
+
   const premonitoryIsOpen =
     episode.premonitory.present &&
     episode.premonitory.status !==
@@ -75,12 +94,44 @@ export function TrackingPhasePanels({
     episode.premonitory.status !==
       'uncertain';
 
-  const auraIsOpen =
-    episode.aura.present &&
-    episode.aura.status !==
-      'ended' &&
-    episode.aura.status !==
-      'uncertain';
+  return premonitoryIsOpen
+    ? 'premonitory'
+    : null;
+};
+
+export function TrackingPhasePanels({
+  episode,
+}: Props) {
+  const [
+    activePanel,
+    setActivePanel,
+  ] = useState<
+    TrackingPanel | null
+  >(() =>
+    getInitialPanel(episode),
+  );
+
+  const handlePanelChange = (
+    panel: TrackingPanel,
+    isOpen: boolean,
+  ) => {
+    setActivePanel(
+      currentPanel => {
+        if (isOpen) {
+          return panel;
+        }
+
+        return currentPanel ===
+          panel
+          ? null
+          : currentPanel;
+      },
+    );
+  };
+
+  const closeActivePanel = () => {
+    setActivePanel(null);
+  };
 
   return (
     <div
@@ -99,12 +150,22 @@ export function TrackingPhasePanels({
             episode,
           )
         }
-        defaultOpen={
-          premonitoryIsOpen
+        isOpen={
+          activePanel ===
+          'premonitory'
+        }
+        onOpenChange={isOpen =>
+          handlePanelChange(
+            'premonitory',
+            isOpen,
+          )
         }
       >
         <PremonitorySelector
           context="tracking"
+          onComplete={
+            closeActivePanel
+          }
         />
       </ClinicalPhasePanel>
 
@@ -119,11 +180,22 @@ export function TrackingPhasePanels({
             episode,
           )
         }
-        defaultOpen={
-          auraIsOpen
+        isOpen={
+          activePanel ===
+          'aura'
+        }
+        onOpenChange={isOpen =>
+          handlePanelChange(
+            'aura',
+            isOpen,
+          )
         }
       >
-        <AuraSelector />
+        <AuraSelector
+          onComplete={
+            closeActivePanel
+          }
+        />
       </ClinicalPhasePanel>
     </div>
   );
