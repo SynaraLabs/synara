@@ -2,6 +2,10 @@ import {
   useState,
 } from 'react';
 
+import {
+  useNavigate,
+} from 'react-router-dom';
+
 import styles from '../history.module.css';
 
 import timelineStyles from './EpisodeTimeline.module.css';
@@ -227,6 +231,9 @@ export function EpisodeCard({
   isOpen,
   onOpenChange,
 }: Props) {
+  const navigate =
+    useNavigate();
+
   const [
     showDeleteConfirmation,
     setShowDeleteConfirmation,
@@ -332,6 +339,21 @@ export function EpisodeCard({
         'No se pudo eliminar el episodio.',
       );
     }
+  };
+
+  const handleEdit = () => {
+    const episodeId =
+      episode.id?.trim();
+
+    if (!episodeId) {
+      return;
+    }
+
+    navigate(
+      `/history/${encodeURIComponent(
+        episodeId,
+      )}/edit`,
+    );
   };
 
   const handleToggle = () => {
@@ -582,6 +604,18 @@ export function EpisodeCard({
               styles.episodeActions
             }
           >
+            <button
+              type="button"
+              className={
+                styles.episodeToggle
+              }
+              disabled={!episode.id}
+              onClick={handleEdit}
+            >
+              Editar o completar
+              episodio
+            </button>
+
             {!showDeleteConfirmation ? (
               <button
                 type="button"
