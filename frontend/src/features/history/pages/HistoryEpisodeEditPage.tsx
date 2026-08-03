@@ -28,6 +28,10 @@ import {
 } from '../utils/retrospectiveEpisode';
 
 import {
+  reactivateHistoryEpisode,
+} from '../utils/reactivateHistoryEpisode';
+
+import {
   updateHistoryEpisode,
 } from '../utils/updateHistoryEpisode';
 
@@ -122,7 +126,12 @@ const phaseIsPresent = (
           ?.length ||
         episode.crisis
           .intensityHistory
-          ?.length,
+          ?.length ||
+        (
+          episode.crisis.status &&
+          episode.crisis.status !==
+            'notStarted'
+        ),
     );
   }
 
@@ -186,9 +195,9 @@ const validatePhaseDates = (
 
   if (
     phase === 'crisis' &&
-    (!start || !end)
+    !start
   ) {
-    return 'Para agregar una crisis a un episodio finalizado, registrá su inicio y su final.';
+    return 'Para agregar una crisis, registrá su fecha y hora de inicio.';
   }
 
   return null;
@@ -344,6 +353,65 @@ export function HistoryEpisodeEditPage() {
 
         return;
       }
+    }
+
+    const crisisIsPresent =
+      phaseIsPresent(
+        draft,
+        'crisis',
+      );
+
+    const crisisTime =
+      getRetrospectivePhaseTime(
+        draft,
+        'crisis',
+      );
+
+    const crisisStart =
+      crisisTime.start?.value;
+
+    const crisisEnd =
+      crisisTime.end?.value;
+
+    /*
+     * Una crisis con inicio pero sin
+     * final todavía está ocurriendo.
+     * Sale del historial y vuelve a ser
+     * el episodio activo.
+     */
+    if (
+      crisisIsPresent &&
+      crisisStart &&
+      !crisisEnd
+    ) {
+      const result =
+        reactivateHistoryEpisode(
+          episodeId,
+          draft,
+        );
+
+      if (!result.ok) {
+        if (
+          result.error ===
+          'anotherEpisodeIsActive'
+        ) {
+          setFeedback(
+            'Ya existe otro episodio activo. Finalizalo o descartalo antes de reabrir esta crisis.',
+          );
+        } else {
+          setFeedback(
+            'No se pudo reabrir esta crisis. Volvé a intentarlo.',
+          );
+        }
+
+        setIsSaved(false);
+
+        return;
+      }
+
+      navigate('/migraine');
+
+      return;
     }
 
     const normalizedEpisode =

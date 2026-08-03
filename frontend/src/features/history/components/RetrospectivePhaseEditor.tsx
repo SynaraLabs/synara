@@ -1,13 +1,7 @@
 import type {
-  AnatomicalPainMap,
   ClinicalPhase,
   MigraineEpisode,
-  PainIntensity,
 } from '../../migraine/types/migraine.types';
-
-import {
-  PainLocationSelector,
-} from '../../migraine/components/common/PainLocationSelector';
 
 import {
   getRetrospectivePhaseSymptoms,
@@ -18,12 +12,8 @@ import {
 } from '../utils/retrospectiveEpisode';
 
 import {
-  RetrospectiveMedicationEditor,
-} from './RetrospectiveMedicationEditor';
-
-import {
-  RetrospectiveNonPharmacologicalEditor,
-} from './RetrospectiveNonPharmacologicalEditor';
+  RetrospectiveCrisisPanels,
+} from './RetrospectiveCrisisPanels';
 
 import {
   RetrospectiveSymptomSelector,
@@ -91,21 +81,6 @@ const PHASE_CONTENT:
     icon: '◇',
   },
 };
-
-const PAIN_LEVELS:
-  readonly PainIntensity[] = [
-  0,
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-];
 
 const toLocalDateTimeValue = (
   value?: string,
@@ -409,57 +384,6 @@ export function RetrospectivePhaseEditor({
     );
   };
 
-  const handlePainChange = (
-    intensity:
-      PainIntensity,
-  ) => {
-    onChange({
-      ...episode,
-
-      crisis: {
-        ...episode.crisis,
-
-        intensity,
-      },
-    });
-  };
-
-  const handleLocationChange = (
-    location: AnatomicalPainMap,
-  ) => {
-    onChange({
-      ...episode,
-
-      crisis: {
-        ...episode.crisis,
-
-        anatomicalLocation:
-          location,
-
-        locationDetails: {
-          ...(episode.crisis
-            .locationDetails ?? {
-            additional: [],
-          }),
-
-          anatomicalMap:
-            location,
-        },
-      },
-    });
-  };
-
-  const anatomicalLocation:
-    AnatomicalPainMap =
-    episode.crisis
-      .anatomicalLocation ??
-    episode.crisis
-      .locationDetails
-      ?.anatomicalMap ?? {
-      additional: [],
-      radiation: [],
-    };
-
   return (
     <section
       className={
@@ -553,121 +477,54 @@ export function RetrospectivePhaseEditor({
         </label>
       </div>
 
-      {phase === 'crisis' && (
+      {phase === 'crisis' ? (
+        <RetrospectiveCrisisPanels
+          episode={episode}
+          onChange={onChange}
+        />
+      ) : (
         <>
-          <section
-            className={
-              styles.pain
-            }
-            aria-labelledby="retrospective-pain-title"
-          >
-            <div>
-              <h4
-                id="retrospective-pain-title"
-              >
-                Intensidad máxima
-              </h4>
-
-              <strong>
-                {
-                  episode.crisis
-                    .intensity
-                }
-                /10
-              </strong>
-            </div>
-
-            <div
-              className={
-                styles.painLevels
-              }
-              role="group"
-              aria-label="Intensidad máxima del dolor"
-            >
-              {PAIN_LEVELS.map(
-                intensity => (
-                  <button
-                    key={intensity}
-                    type="button"
-                    aria-pressed={
-                      episode.crisis
-                        .intensity ===
-                      intensity
-                    }
-                    onClick={() =>
-                      handlePainChange(
-                        intensity,
-                      )
-                    }
-                  >
-                    {intensity}
-                  </button>
-                ),
-              )}
-            </div>
-          </section>
-
-          <PainLocationSelector
-            value={
-              anatomicalLocation
-            }
+          <RetrospectiveSymptomSelector
+            phase={phase}
+            value={selections}
             onChange={
-              handleLocationChange
+              updatedSelections =>
+                onChange(
+                  setRetrospectivePhaseSymptoms(
+                    episode,
+                    phase,
+                    updatedSelections,
+                  ),
+                )
             }
-            title="¿Dónde sentiste el dolor?"
           />
 
-          <RetrospectiveMedicationEditor
-            episode={episode}
-            onChange={onChange}
-          />
+          <label
+            className={
+              styles.notes
+            }
+          >
+            <span>
+              Notas de esta fase
+            </span>
 
-          <RetrospectiveNonPharmacologicalEditor
-            episode={episode}
-            onChange={onChange}
-          />
+            <textarea
+              value={notes}
+              rows={4}
+              placeholder="Agregá algo que recordaste después..."
+              onChange={event =>
+                onChange(
+                  setRetrospectivePhaseNotes(
+                    episode,
+                    phase,
+                    event.target.value,
+                  ),
+                )
+              }
+            />
+          </label>
         </>
       )}
-
-      <RetrospectiveSymptomSelector
-        phase={phase}
-        value={selections}
-        onChange={
-          updatedSelections =>
-            onChange(
-              setRetrospectivePhaseSymptoms(
-                episode,
-                phase,
-                updatedSelections,
-              ),
-            )
-        }
-      />
-
-      <label
-        className={
-          styles.notes
-        }
-      >
-        <span>
-          Notas de esta fase
-        </span>
-
-        <textarea
-          value={notes}
-          rows={4}
-          placeholder="Agregá algo que recordaste después..."
-          onChange={event =>
-            onChange(
-              setRetrospectivePhaseNotes(
-                episode,
-                phase,
-                event.target.value,
-              ),
-            )
-          }
-        />
-      </label>
     </section>
   );
 }

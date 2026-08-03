@@ -9,6 +9,46 @@
   margin: 0 auto;
 }
 
+/*
+ * Cuando Crisis está activa, estas
+ * variables se heredan también en el
+ * editor, localización, medicación y
+ * medidas no farmacológicas.
+ */
+.container:has(
+    .phaseNavigation
+      button:nth-child(3)[aria-current='step']
+  ) {
+  --color-primary: #78b9b3;
+  --color-primary-hover: #8fc9c3;
+  --color-primary-soft: #173c40;
+  --color-primary-border: #35666a;
+  --color-surface: #132a2e;
+  --color-surface-soft: #183338;
+  --color-border: #29484c;
+  --color-border-strong: #3b5e62;
+  --color-text: #d2dfdd;
+  --color-text-strong: #f0f5f3;
+  --color-text-soft: #a7bcba;
+  --color-focus:
+    rgb(120 185 179 / 28%);
+  --shadow-small: none;
+  --shadow-medium: none;
+  --crisis-accent: #dda86b;
+  --crisis-accent-soft:
+    rgb(221 168 107 / 14%);
+
+  padding: var(--space-5);
+
+  border: 1px solid #24474b;
+  border-radius:
+    var(--radius-large);
+
+  color:
+    var(--color-text);
+  background: #0a1f23;
+}
+
 .pageHeader {
   display: flex;
   align-items: flex-start;
@@ -34,6 +74,17 @@
     var(--shadow-small);
 }
 
+.container:has(
+    .phaseNavigation
+      button:nth-child(3)[aria-current='step']
+  )
+  .pageHeader {
+  background:
+    var(--color-surface);
+
+  box-shadow: none;
+}
+
 .pageHeader > div {
   min-width: 0;
 }
@@ -49,6 +100,16 @@
   font-weight: 850;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.container:has(
+    .phaseNavigation
+      button:nth-child(3)[aria-current='step']
+  )
+  .pageHeader
+  p {
+  color:
+    var(--crisis-accent);
 }
 
 .pageHeader h1 {
@@ -152,6 +213,14 @@
     var(--shadow-small);
 }
 
+.container:has(
+    .phaseNavigation
+      button:nth-child(3)[aria-current='step']
+  )
+  .phaseNavigation {
+  box-shadow: none;
+}
+
 .phaseNavigation button {
   min-width: 0;
   min-height: 70px;
@@ -252,6 +321,19 @@
     var(--color-primary-soft);
 }
 
+.container:has(
+    .phaseNavigation
+      button:nth-child(3)[aria-current='step']
+  )
+  .phaseNavigation
+  button:nth-child(3).activePhase {
+  border-color:
+    var(--crisis-accent);
+
+  background:
+    var(--crisis-accent-soft);
+}
+
 .phaseNavigation button.activePhase
   > span {
   color: #ffffff;
@@ -259,9 +341,22 @@
     var(--color-primary);
 }
 
+.container:has(
+    .phaseNavigation
+      button:nth-child(3)[aria-current='step']
+  )
+  .phaseNavigation
+  button:nth-child(3).activePhase
+  > span {
+  color: #152629;
+  background:
+    var(--crisis-accent);
+}
+
 .success,
 .error {
   margin: 0;
+
   padding:
     var(--space-3)
     var(--space-4);
@@ -308,6 +403,22 @@
     );
 }
 
+.container:has(
+    .phaseNavigation
+      button:nth-child(3)[aria-current='step']
+  )
+  .success {
+  color: #a9d3c3;
+}
+
+.container:has(
+    .phaseNavigation
+      button:nth-child(3)[aria-current='step']
+  )
+  .error {
+  color: #e3aaa3;
+}
+
 .actions {
   position: sticky;
   bottom:
@@ -344,6 +455,20 @@
     blur(14px);
   -webkit-backdrop-filter:
     blur(14px);
+}
+
+.container:has(
+    .phaseNavigation
+      button:nth-child(3)[aria-current='step']
+  )
+  .actions {
+  background:
+    var(--color-surface);
+
+  box-shadow: none;
+
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .actions button {
@@ -414,6 +539,7 @@
   gap: var(--space-3);
 
   margin: 0 auto;
+
   padding:
     var(--space-8)
     var(--space-5);
@@ -498,6 +624,17 @@
 @media (max-width: 600px) {
   .container {
     gap: var(--space-4);
+  }
+
+  .container:has(
+      .phaseNavigation
+        button:nth-child(3)[aria-current='step']
+    ) {
+    padding:
+      var(--space-3);
+
+    border-radius:
+      var(--radius-medium);
   }
 
   .pageHeader {
