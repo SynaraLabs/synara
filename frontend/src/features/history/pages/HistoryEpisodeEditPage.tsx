@@ -23,6 +23,10 @@ import {
 } from '../components/RetrospectivePhaseEditor';
 
 import {
+  RetrospectiveTriggerPanel,
+} from '../components/RetrospectiveTriggerPanel';
+
+import {
   getRetrospectivePhaseTime,
   normalizeRetrospectiveEpisode,
 } from '../utils/retrospectiveEpisode';
@@ -373,12 +377,6 @@ export function HistoryEpisodeEditPage() {
     const crisisEnd =
       crisisTime.end?.value;
 
-    /*
-     * Una crisis con inicio pero sin
-     * final todavía está ocurriendo.
-     * Sale del historial y vuelve a ser
-     * el episodio activo.
-     */
     if (
       crisisIsPresent &&
       crisisStart &&
@@ -565,6 +563,20 @@ export function HistoryEpisodeEditPage() {
           },
         )}
       </nav>
+
+      <RetrospectiveTriggerPanel
+        episode={draft}
+        onChange={
+          updatedEpisode => {
+            setDraft(
+              updatedEpisode,
+            );
+
+            setFeedback('');
+            setIsSaved(false);
+          }
+        }
+      />
 
       <RetrospectivePhaseEditor
         phase={activePhase}

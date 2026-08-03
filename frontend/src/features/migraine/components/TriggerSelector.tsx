@@ -24,6 +24,12 @@ import {
 import styles from '../migraine.module.css';
 
 interface Props {
+  value?: MigraineTrigger[];
+
+  onChange?: (
+    triggers: MigraineTrigger[],
+  ) => void;
+
   onComplete?: () => void;
 }
 
@@ -42,32 +48,53 @@ const getTriggerLabel = (
 };
 
 export function TriggerSelector({
+  value,
+  onChange,
   onComplete,
 }: Props) {
-  const [searchTerm, setSearchTerm] =
-    useState('');
+  const [
+    searchTerm,
+    setSearchTerm,
+  ] = useState('');
 
-  const [activeCategory, setActiveCategory] =
-    useState<TriggerCategory | null>(null);
+  const [
+    activeCategory,
+    setActiveCategory,
+  ] = useState<
+    TriggerCategory | null
+  >(null);
 
-  const selectedTriggers =
+  const storeTriggers =
     useMigraineStore(
-      state => state.episode.triggers,
+      state =>
+        state.episode.triggers,
     ) ?? [];
 
-  const updateTriggers =
+  const updateStoreTriggers =
     useMigraineStore(
-      state => state.updateTriggers,
+      state =>
+        state.updateTriggers,
     );
 
-  const [draftTriggers, setDraftTriggers] =
-    useState<MigraineTrigger[]>(
-      selectedTriggers,
-    );
+  const selectedTriggers =
+    value ?? storeTriggers;
+
+  const [
+    draftTriggers,
+    setDraftTriggers,
+  ] = useState<
+    MigraineTrigger[]
+  >(
+    selectedTriggers,
+  );
 
   useEffect(() => {
-    setDraftTriggers(selectedTriggers);
-  }, [selectedTriggers]);
+    setDraftTriggers(
+      selectedTriggers,
+    );
+  }, [
+    selectedTriggers,
+  ]);
 
   const normalizedSearch =
     normalizeTriggerSearch(
@@ -96,7 +123,10 @@ export function TriggerSelector({
             normalizeTriggerSearch(
               [
                 definition.label,
-                ...(definition.searchTerms ?? []),
+                ...(
+                  definition
+                    .searchTerms ?? []
+                ),
               ].join(' '),
             );
 
@@ -105,7 +135,9 @@ export function TriggerSelector({
           );
         },
       );
-    }, [normalizedSearch]);
+    }, [
+      normalizedSearch,
+    ]);
 
   const categoryTriggers =
     useMemo(() => {
@@ -118,14 +150,18 @@ export function TriggerSelector({
           definition.category ===
           activeCategory,
       );
-    }, [activeCategory]);
+    }, [
+      activeCategory,
+    ]);
 
   const hasChanges =
     draftTriggers.length !==
       selectedTriggers.length ||
     draftTriggers.some(
       trigger =>
-        !selectedTriggers.includes(trigger),
+        !selectedTriggers.includes(
+          trigger,
+        ),
     );
 
   const toggleTrigger = (
@@ -134,9 +170,13 @@ export function TriggerSelector({
     setDraftTriggers(current =>
       current.includes(trigger)
         ? current.filter(
-            value => value !== trigger,
+            value =>
+              value !== trigger,
           )
-        : [...current, trigger],
+        : [
+            ...current,
+            trigger,
+          ],
     );
   };
 
@@ -145,9 +185,23 @@ export function TriggerSelector({
       return;
     }
 
-    updateTriggers([...draftTriggers]);
+    const updatedTriggers = [
+      ...draftTriggers,
+    ];
+
+    if (onChange) {
+      onChange(
+        updatedTriggers,
+      );
+    } else {
+      updateStoreTriggers(
+        updatedTriggers,
+      );
+    }
+
     setSearchTerm('');
     setActiveCategory(null);
+
     onComplete?.();
   };
 
@@ -168,7 +222,9 @@ export function TriggerSelector({
         }
         aria-pressed={isSelected}
         onClick={() =>
-          toggleTrigger(trigger.value)
+          toggleTrigger(
+            trigger.value,
+          )
         }
       >
         {trigger.label}
@@ -185,7 +241,9 @@ export function TriggerSelector({
 
   return (
     <section
-      className={styles.triggerSelector}
+      className={
+        styles.triggerSelector
+      }
       aria-labelledby="trigger-title"
     >
       <div>
@@ -200,31 +258,51 @@ export function TriggerSelector({
         </p>
       </div>
 
-      {draftTriggers.length > 0 && (
+      {draftTriggers.length >
+        0 && (
         <section
-          className={styles.compactSelected}
+          className={
+            styles.compactSelected
+          }
           aria-labelledby="selected-triggers-title"
         >
           <h4 id="selected-triggers-title">
             Seleccionados
           </h4>
 
-          <div className={styles.compactChips}>
-            {draftTriggers.map(trigger => (
-              <button
-                key={trigger}
-                type="button"
-                onClick={() =>
-                  toggleTrigger(trigger)
-                }
-                aria-label={`Quitar ${getTriggerLabel(trigger)}`}
-              >
-                {getTriggerLabel(trigger)}
-                <span aria-hidden="true">
-                  ×
-                </span>
-              </button>
-            ))}
+          <div
+            className={
+              styles.compactChips
+            }
+          >
+            {draftTriggers.map(
+              trigger => (
+                <button
+                  key={trigger}
+                  type="button"
+                  onClick={() =>
+                    toggleTrigger(
+                      trigger,
+                    )
+                  }
+                  aria-label={`Quitar ${getTriggerLabel(
+                    trigger,
+                  )}`}
+                >
+                  {
+                    getTriggerLabel(
+                      trigger,
+                    )
+                  }
+
+                  <span
+                    aria-hidden="true"
+                  >
+                    ×
+                  </span>
+                </button>
+              ),
+            )}
           </div>
         </section>
       )}
@@ -238,10 +316,16 @@ export function TriggerSelector({
           placeholder="Ej.: ovulación, cuello, perfume"
           autoComplete="off"
           onChange={event => {
-            setSearchTerm(event.target.value);
+            setSearchTerm(
+              event.target.value,
+            );
 
-            if (event.target.value) {
-              setActiveCategory(null);
+            if (
+              event.target.value
+            ) {
+              setActiveCategory(
+                null,
+              );
             }
           }}
         />
@@ -249,16 +333,21 @@ export function TriggerSelector({
 
       {!normalizedSearch && (
         <div
-          className={styles.compactCategories}
+          className={
+            styles.compactCategories
+          }
           aria-label="Categorías de desencadenantes"
         >
           <button
             type="button"
             aria-pressed={
-              activeCategory === null
+              activeCategory ===
+              null
             }
             onClick={() =>
-              setActiveCategory(null)
+              setActiveCategory(
+                null,
+              )
             }
           >
             Frecuentes
@@ -270,10 +359,13 @@ export function TriggerSelector({
                 key={category}
                 type="button"
                 aria-pressed={
-                  activeCategory === category
+                  activeCategory ===
+                  category
                 }
                 onClick={() =>
-                  setActiveCategory(category)
+                  setActiveCategory(
+                    category,
+                  )
                 }
               >
                 {
@@ -287,7 +379,11 @@ export function TriggerSelector({
         </div>
       )}
 
-      <section className={styles.compactResults}>
+      <section
+        className={
+          styles.compactResults
+        }
+      >
         <h4>
           {normalizedSearch
             ? 'Resultados'
@@ -298,14 +394,23 @@ export function TriggerSelector({
               : 'Más frecuentes'}
         </h4>
 
-        {visibleTriggers.length > 0 ? (
-          <div className={styles.compactChoiceGrid}>
+        {visibleTriggers.length >
+        0 ? (
+          <div
+            className={
+              styles.compactChoiceGrid
+            }
+          >
             {visibleTriggers.map(
               renderTrigger,
             )}
           </div>
         ) : (
-          <p className={styles.helperText}>
+          <p
+            className={
+              styles.helperText
+            }
+          >
             No se encontraron
             desencadenantes.
           </p>
@@ -313,17 +418,24 @@ export function TriggerSelector({
       </section>
 
       <div
-        className={styles.selectionSummary}
+        className={
+          styles.selectionSummary
+        }
         role="status"
       >
-        {draftTriggers.length > 0 && (
-          <span aria-hidden="true">✓</span>
+        {draftTriggers.length >
+          0 && (
+          <span aria-hidden="true">
+            ✓
+          </span>
         )}
 
         <p>
-          {draftTriggers.length === 0
+          {draftTriggers.length ===
+          0
             ? 'Ningún desencadenante seleccionado'
-            : draftTriggers.length === 1
+            : draftTriggers.length ===
+                1
               ? '1 desencadenante seleccionado'
               : `${draftTriggers.length} desencadenantes seleccionados`}
         </p>
