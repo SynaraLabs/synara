@@ -23,6 +23,10 @@ import {
 } from '../components/RetrospectivePhaseEditor';
 
 import {
+  RetrospectiveTreatmentPanel,
+} from '../components/RetrospectiveTreatmentPanel';
+
+import {
   RetrospectiveTriggerPanel,
 } from '../components/RetrospectiveTriggerPanel';
 
@@ -565,6 +569,20 @@ export function HistoryEpisodeEditPage() {
       </nav>
 
       <RetrospectiveTriggerPanel
+        episode={draft}
+        onChange={
+          updatedEpisode => {
+            setDraft(
+              updatedEpisode,
+            );
+
+            setFeedback('');
+            setIsSaved(false);
+          }
+        }
+      />
+
+      <RetrospectiveTreatmentPanel
         episode={draft}
         onChange={
           updatedEpisode => {

@@ -1,4 +1,5 @@
 import type {
+  MigraineEpisode,
   TreatmentEffectiveness,
   TreatmentType,
 } from '../types/migraine.types';
@@ -14,6 +15,14 @@ import {
 } from '../store/migraine.store';
 
 import styles from '../migraine.module.css';
+
+interface Props {
+  value?: MigraineEpisode['treatment'];
+
+  onChange?: (
+    treatment: MigraineEpisode['treatment'],
+  ) => void;
+}
 
 const isTreatmentType = (
   value: string,
@@ -33,18 +42,38 @@ const isTreatmentEffectiveness = (
   );
 };
 
-export function TreatmentSelector() {
-  const treatment =
+export function TreatmentSelector({
+  value,
+  onChange,
+}: Props) {
+  const storeTreatment =
     useMigraineStore(
       state =>
         state.episode.treatment,
     );
 
-  const updateTreatment =
+  const updateStoreTreatment =
     useMigraineStore(
       state =>
         state.updateTreatment,
     );
+
+  const treatment =
+    value ?? storeTreatment;
+
+  const updateTreatment = (
+    updatedTreatment:
+      MigraineEpisode['treatment'],
+  ) => {
+    if (onChange) {
+      onChange(updatedTreatment);
+      return;
+    }
+
+    updateStoreTreatment(
+      updatedTreatment,
+    );
+  };
 
   const selectedType =
     treatment.type ??
@@ -75,68 +104,71 @@ export function TreatmentSelector() {
     );
 
   const handleTypeChange = (
-    value: string,
+    selectedValue: string,
   ) => {
     if (
-      !isTreatmentType(value)
+      !isTreatmentType(
+        selectedValue,
+      )
     ) {
       return;
     }
 
     updateTreatment({
       ...treatment,
-      type: value,
+      type: selectedValue,
     });
   };
 
   const handleMedicationChange = (
-    value: string,
+    medication: string,
   ) => {
     updateTreatment({
       ...treatment,
-      medication: value,
+      medication,
     });
   };
 
   const handleDoseChange = (
-    value: string,
+    dose: string,
   ) => {
     updateTreatment({
       ...treatment,
-      dose: value,
+      dose,
     });
   };
 
   const handleTakenAtChange = (
-    value: string,
+    takenAt: string,
   ) => {
     updateTreatment({
       ...treatment,
-      takenAt: value,
+      takenAt,
     });
   };
 
   const handleEffectivenessChange = (
-    value: string,
+    effectiveness: string,
   ) => {
     updateTreatment({
       ...treatment,
 
       effectiveness:
         isTreatmentEffectiveness(
-          value,
+          effectiveness,
         )
-          ? value
+          ? effectiveness
           : undefined,
     });
   };
 
   const handleResponseTimeChange = (
-    value: string,
+    responseTime: string,
   ) => {
-    if (value === '') {
+    if (responseTime === '') {
       updateTreatment({
         ...treatment,
+
         responseTimeMinutes:
           undefined,
       });
@@ -145,7 +177,7 @@ export function TreatmentSelector() {
     }
 
     const parsedValue =
-      Number(value);
+      Number(responseTime);
 
     if (
       !Number.isFinite(
@@ -167,10 +199,10 @@ export function TreatmentSelector() {
   };
 
   const handleSideEffectsChange = (
-    value: string,
+    sideEffectsText: string,
   ) => {
     const sideEffects =
-      value
+      sideEffectsText
         .split(',')
         .map(
           sideEffect =>
@@ -185,11 +217,11 @@ export function TreatmentSelector() {
   };
 
   const handleNotesChange = (
-    value: string,
+    notes: string,
   ) => {
     updateTreatment({
       ...treatment,
-      notes: value,
+      notes,
     });
   };
 
