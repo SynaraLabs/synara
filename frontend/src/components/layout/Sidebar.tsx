@@ -22,6 +22,11 @@ const navigationItems = [
     icon: '◷',
   },
   {
+    to: '/triggers',
+    label: 'Desencadenantes',
+    icon: '⌁',
+  },
+  {
     to: '/profile',
     label: 'Perfil',
     icon: '♙',

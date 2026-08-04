@@ -19,6 +19,10 @@ import {
 } from '../features/history/pages/HistoryEpisodeEditPage';
 
 import {
+  TriggerExplorerPage,
+} from '../features/triggers/pages/TriggerExplorerPage';
+
+import {
   ProfilePage,
 } from '../features/profile/pages/ProfilePage';
 
@@ -63,6 +67,12 @@ export const routes = [
           '/history/:episodeId/edit',
         element:
           <HistoryEpisodeEditPage />,
+      },
+
+      {
+        path: '/triggers',
+        element:
+          <TriggerExplorerPage />,
       },
 
       {
