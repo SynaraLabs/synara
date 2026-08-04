@@ -2,14 +2,12 @@ import type {
   AnatomicalPainMap,
   MigraineEpisode,
   PainLocationRecord,
-  Treatment,
 } from '../../migraine/types/migraine.types';
 
-import {
-  formatDuration,
-  getCrisisDuration,
-  getMaxPainIntensity,
-} from '../../migraine/utils/episodeCalculations';
+import type {
+  AffectedActivity,
+  FunctionalCapacityLevel,
+} from '../../migraine/components/crisis-mode/FunctionalCapacityCard';
 
 import {
   convertLegacyLocationRecord,
@@ -18,21 +16,18 @@ import {
 } from '../../migraine/data/painLocationCatalog';
 
 import {
-  CRISIS_SYMPTOM_LABELS,
-} from '../../migraine/data/crisisSymptomCatalog';
+  getSymptomDefinition,
+} from '../../migraine/data/clinicalSymptomCatalog';
 
 import {
   NON_PHARMACOLOGICAL_MEASURE_LABELS,
 } from '../../migraine/data/nonPharmacologicalMeasureCatalog';
 
 import {
-  TRIGGER_LABELS,
-} from '../../migraine/data/triggerCatalog';
-
-import {
-  TREATMENT_EFFECTIVENESS_LABELS,
-  TREATMENT_TYPE_LABELS,
-} from '../../migraine/data/treatmentCatalog';
+  formatDuration,
+  getCrisisDuration,
+  getMaxPainIntensity,
+} from '../../migraine/utils/episodeCalculations';
 
 import {
   getFunctionalCapacityRecords,
@@ -44,10 +39,9 @@ import {
   getCrisisEvolution,
 } from '../../migraine/utils/crisisEvolution';
 
-import type {
-  AffectedActivity,
-  FunctionalCapacityLevel,
-} from '../../migraine/components/crisis-mode/FunctionalCapacityCard';
+import {
+  getRetrospectivePhaseSymptoms,
+} from '../utils/retrospectiveEpisode';
 
 interface Props {
   episode: MigraineEpisode;
@@ -108,7 +102,8 @@ const parseValidDate = (
     return undefined;
   }
 
-  const date = new Date(value);
+  const date =
+    new Date(value);
 
   return Number.isNaN(
     date.getTime(),
@@ -133,37 +128,6 @@ const formatDateTime = (
       day: 'numeric',
       month: 'short',
       year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    },
-  );
-};
-
-const formatTimeValue = (
-  value?: string,
-): string => {
-  if (!value) {
-    return 'Sin registrar';
-  }
-
-  if (
-    /^\d{2}:\d{2}$/.test(
-      value,
-    )
-  ) {
-    return value;
-  }
-
-  const date =
-    parseValidDate(value);
-
-  if (!date) {
-    return value;
-  }
-
-  return date.toLocaleTimeString(
-    'es-AR',
-    {
       hour: '2-digit',
       minute: '2-digit',
     },
@@ -331,26 +295,6 @@ const getPainLocationLines = (
   return lines;
 };
 
-const hasTreatmentData = (
-  treatment?: Treatment,
-): boolean => {
-  if (!treatment) {
-    return false;
-  }
-
-  return Boolean(
-    treatment.type ||
-      treatment.medication?.trim() ||
-      treatment.dose?.trim() ||
-      treatment.takenAt ||
-      treatment.effectiveness ||
-      treatment.responseTimeMinutes !==
-        undefined ||
-      treatment.sideEffects?.length ||
-      treatment.notes?.trim(),
-  );
-};
-
 export function CrisisHistorySection({
   episode,
 }: Props) {
@@ -407,23 +351,35 @@ export function CrisisHistorySection({
       crisis,
     );
 
-  const crisisSymptoms =
-    crisis.symptoms ?? [];
+  const symptomSelections =
+    getRetrospectivePhaseSymptoms(
+      episode,
+      'crisis',
+    );
 
-  const triggers =
-    episode.triggers ?? [];
+  const symptomLabels =
+    symptomSelections.map(
+      selection =>
+        getSymptomDefinition(
+          selection.symptom,
+        )?.label ??
+        selection.symptom,
+    );
 
-  const treatment =
-    episode.treatment;
+  const notes =
+    crisis.notes?.trim();
 
   return (
     <section>
-      <h4>Crisis</h4>
+      <h4>
+        Crisis
+      </h4>
 
       <p>
         <b>
           Inicio de la crisis:
         </b>{' '}
+
         {formatDateTime(
           crisisStart,
         )}
@@ -434,6 +390,7 @@ export function CrisisHistorySection({
           <b>
             Final de la crisis:
           </b>{' '}
+
           {formatDateTime(
             crisisEnd,
           )}
@@ -441,14 +398,20 @@ export function CrisisHistorySection({
       )}
 
       <p>
-        <b>Duración:</b>{' '}
+        <b>
+          Duración:
+        </b>{' '}
+
         {formatDuration(
           crisisDuration,
         )}
       </p>
 
       <p>
-        <b>Dolor máximo:</b>{' '}
+        <b>
+          Dolor máximo:
+        </b>{' '}
+
         {maxIntensity}/10
       </p>
 
@@ -478,11 +441,36 @@ export function CrisisHistorySection({
         </div>
       )}
 
+      <div>
+        <p>
+          <b>
+            Síntomas registrados:
+          </b>
+        </p>
+
+        {symptomLabels.length > 0 ? (
+          <ul>
+            {symptomLabels.map(
+              symptom => (
+                <li key={symptom}>
+                  {symptom}
+                </li>
+              ),
+            )}
+          </ul>
+        ) : (
+          <p>
+            Sin síntomas registrados.
+          </p>
+        )}
+      </div>
+
       {evolution.length > 0 && (
         <div>
           <p>
             <b>
-              Evolución conjunta:
+              Evolución del dolor y los
+              síntomas:
             </b>
           </p>
 
@@ -534,22 +522,6 @@ export function CrisisHistorySection({
           </ul>
         </div>
       )}
-
-      <p>
-        <b>
-          Síntomas al último registro:
-        </b>{' '}
-        {crisisSymptoms.length > 0
-          ? crisisSymptoms
-              .map(
-                symptom =>
-                  CRISIS_SYMPTOM_LABELS[
-                    symptom
-                  ],
-              )
-              .join(', ')
-          : 'Sin síntomas registrados'}
-      </p>
 
       {medications.length > 0 && (
         <div>
@@ -684,108 +656,17 @@ export function CrisisHistorySection({
         </div>
       )}
 
-      <p>
-        <b>
-          Posibles desencadenantes:
-        </b>{' '}
-        {triggers.length > 0
-          ? triggers
-              .map(
-                trigger =>
-                  TRIGGER_LABELS[
-                    trigger
-                  ],
-              )
-              .join(', ')
-          : 'Sin desencadenantes registrados'}
-      </p>
-
-      {hasTreatmentData(
-        treatment,
-      ) && (
+      {notes && (
         <div>
           <p>
             <b>
-              Tratamiento general del
-              episodio:
+              Notas de la crisis:
             </b>
           </p>
 
-          <ul>
-            {treatment.type && (
-              <li>
-                Tipo:{' '}
-                {
-                  TREATMENT_TYPE_LABELS[
-                    treatment.type
-                  ]
-                }
-              </li>
-            )}
-
-            {treatment.medication && (
-              <li>
-                {treatment.medication}
-
-                {treatment.dose
-                  ? ` (${treatment.dose})`
-                  : ''}
-              </li>
-            )}
-
-            {treatment.takenAt && (
-              <li>
-                Hora:{' '}
-                {formatTimeValue(
-                  treatment.takenAt,
-                )}
-              </li>
-            )}
-
-            {treatment.effectiveness && (
-              <li>
-                Resultado:{' '}
-                {
-                  TREATMENT_EFFECTIVENESS_LABELS[
-                    treatment
-                      .effectiveness
-                  ]
-                }
-              </li>
-            )}
-
-            {treatment
-              .responseTimeMinutes !==
-              undefined && (
-              <li>
-                Tiempo hasta la
-                mejoría:{' '}
-                {
-                  treatment
-                    .responseTimeMinutes
-                }{' '}
-                minutos
-              </li>
-            )}
-
-            {treatment.sideEffects &&
-              treatment.sideEffects
-                .length > 0 && (
-                <li>
-                  Efectos secundarios:{' '}
-                  {treatment.sideEffects.join(
-                    ', ',
-                  )}
-                </li>
-              )}
-
-            {treatment.notes?.trim() && (
-              <li>
-                Nota:{' '}
-                {treatment.notes.trim()}
-              </li>
-            )}
-          </ul>
+          <p>
+            {notes}
+          </p>
         </div>
       )}
     </section>
