@@ -21,6 +21,11 @@ const navigationItems = [
     label: 'Historial',
     icon: '◷',
   },
+  {
+    to: '/profile',
+    label: 'Perfil',
+    icon: '♙',
+  },
 ];
 
 export function Sidebar() {
