@@ -11,6 +11,10 @@ import {
 } from './MenstrualContextSection';
 
 import {
+  MigraineCareSection,
+} from './MigraineCareSection';
+
+import {
   MigraineHistorySection,
 } from './MigraineHistorySection';
 
@@ -139,6 +143,8 @@ export function ProfileForm() {
       <MigraineTerminologyNote />
 
       <MigraineHistorySection />
+
+      <MigraineCareSection />
 
       <MenstrualContextSection />
     </>
