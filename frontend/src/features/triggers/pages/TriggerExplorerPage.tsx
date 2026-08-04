@@ -1,5 +1,6 @@
 import {
   useMemo,
+  useState,
 } from 'react';
 
 import {
@@ -12,8 +13,16 @@ import {
 } from '../store/triggerExploration.store';
 
 import {
+  TriggerExplorationSummary,
+} from '../components/TriggerExplorationSummary';
+
+import {
   TriggerQuestionCard,
 } from '../components/TriggerQuestionCard';
+
+import {
+  createTriggerExplorationSummary,
+} from '../utils/triggerExplorationSummary';
 
 import styles from '../../migraine/migraine.module.css';
 
@@ -48,26 +57,31 @@ export function TriggerExplorerPage() {
         state.completeExploration,
     );
 
-  const allQuestions =
+  const [
+    showSummary,
+    setShowSummary,
+  ] = useState(
+    Boolean(
+      exploration.completedAt,
+    ),
+  );
+
+  const summary =
     useMemo(
       () =>
-        TRIGGER_EDUCATION_SECTIONS.flatMap(
-          section =>
-            section.questions,
+        createTriggerExplorationSummary(
+          exploration.responses,
         ),
-      [],
+      [
+        exploration.responses,
+      ],
     );
 
   const answeredCount =
-    allQuestions.filter(
-      question =>
-        exploration.responses[
-          question.id
-        ],
-    ).length;
+    summary.answeredCount;
 
   const totalQuestions =
-    allQuestions.length;
+    summary.totalCount;
 
   const isComplete =
     answeredCount ===
@@ -98,6 +112,23 @@ export function TriggerExplorerPage() {
       activeSectionIndex + 1
     ];
 
+  if (
+    showSummary &&
+    exploration.completedAt
+  ) {
+    return (
+      <TriggerExplorationSummary
+        summary={summary}
+        completedAt={
+          exploration.completedAt
+        }
+        onReturnToQuestions={() =>
+          setShowSummary(false)
+        }
+      />
+    );
+  }
+
   if (!activeSection) {
     return null;
   }
@@ -109,6 +140,16 @@ export function TriggerExplorerPage() {
           question.id
         ],
     ).length;
+
+  const handleComplete = () => {
+    if (!isComplete) {
+      return;
+    }
+
+    completeExploration();
+
+    setShowSummary(true);
+  };
 
   return (
     <section
@@ -348,12 +389,10 @@ export function TriggerExplorerPage() {
             type="button"
             disabled={!isComplete}
             onClick={
-              completeExploration
+              handleComplete
             }
           >
-            {exploration.completedAt
-              ? 'Exploración completada'
-              : 'Finalizar exploración'}
+            Ver mi resumen
           </button>
         )}
       </footer>
@@ -361,10 +400,10 @@ export function TriggerExplorerPage() {
       {!isComplete &&
         !nextSection && (
           <p>
-            Para finalizar, respondé
-            todas las preguntas. Siempre
-            podés elegir “Todavía no lo
-            sé”.
+            Para ver el resumen,
+            respondé todas las
+            preguntas. Siempre podés
+            elegir “Todavía no lo sé”.
           </p>
         )}
     </section>
