@@ -6,11 +6,8 @@ import {
   useNavigate,
 } from 'react-router-dom';
 
-import styles from '../history.module.css';
-
-import timelineStyles from './EpisodeTimeline.module.css';
-
 import type {
+  ClinicalPhase,
   MigraineEpisode,
 } from '../../migraine/types/migraine.types';
 
@@ -19,10 +16,6 @@ import {
   getEpisodeDuration,
   getMaxPainIntensity,
 } from '../../migraine/utils/episodeCalculations';
-
-import {
-  TRIGGER_LABELS,
-} from '../../migraine/data/triggerCatalog';
 
 import {
   deleteHistoryEpisode,
@@ -43,12 +36,22 @@ import {
 } from './CrisisHistorySection';
 
 import {
+  EpisodeGeneralSummary,
+} from './EpisodeGeneralSummary';
+
+import {
   PostdromeHistorySection,
 } from './PostdromeHistorySection';
 
 import {
   PremonitoryHistorySection,
 } from './PremonitoryHistorySection';
+
+import styles from '../history.module.css';
+
+import timelineStyles from './EpisodeTimeline.module.css';
+
+import navigationStyles from './EpisodeDetailNavigation.module.css';
 
 interface Props {
   episode: MigraineEpisode;
@@ -60,11 +63,53 @@ interface Props {
   ) => void;
 }
 
+type DetailView =
+  | 'summary'
+  | ClinicalPhase;
+
+interface DetailNavigationItem {
+  id: DetailView;
+  label: string;
+  icon: string;
+  available: boolean;
+}
+
+const hasPremonitoryData = (
+  episode: MigraineEpisode,
+): boolean => {
+  const premonitory =
+    episode.premonitory;
+
+  const timeline =
+    episode.timeline;
+
+  const start =
+    timeline?.premonitoryStart ??
+    premonitory.time?.start?.value;
+
+  const end =
+    timeline?.premonitoryEnd ??
+    premonitory.time?.end?.value;
+
+  return Boolean(
+    premonitory.present === true ||
+      premonitory.symptoms.length > 0 ||
+      premonitory
+        .clinicalSymptoms?.length ||
+      premonitory.updates?.length ||
+      isValidDate(start) ||
+      isValidDate(end),
+  );
+};
+
 const hasAuraData = (
   episode: MigraineEpisode,
 ): boolean => {
-  const aura = episode.aura;
-  const timeline = episode.timeline;
+  const aura =
+    episode.aura;
+
+  const timeline =
+    episode.timeline;
 
   const start =
     timeline?.auraStart ??
@@ -92,8 +137,11 @@ const hasAuraData = (
 const hasCrisisData = (
   episode: MigraineEpisode,
 ): boolean => {
-  const crisis = episode.crisis;
-  const timeline = episode.timeline;
+  const crisis =
+    episode.crisis;
+
+  const timeline =
+    episode.timeline;
 
   const start =
     timeline?.crisisStart ??
@@ -137,7 +185,8 @@ const hasPostdromeData = (
   return Boolean(
     postdrome.present === true ||
       postdrome.symptoms.length > 0 ||
-      postdrome.clinicalSymptoms?.length ||
+      postdrome
+        .clinicalSymptoms?.length ||
       postdrome.updates?.length ||
       isValidDate(start) ||
       isValidDate(end),
@@ -182,17 +231,17 @@ const getRecordTitle = (
 };
 
 const getPhaseSummary = (
-  episode: MigraineEpisode,
+  hasPremonitory: boolean,
   hasAura: boolean,
   hasCrisis: boolean,
   hasPostdrome: boolean,
 ): string[] => {
   const phases: string[] = [];
 
-  if (
-    episode.premonitory.present
-  ) {
-    phases.push('Premonitorio');
+  if (hasPremonitory) {
+    phases.push(
+      'Premonitorio',
+    );
   }
 
   if (hasAura) {
@@ -204,7 +253,9 @@ const getPhaseSummary = (
   }
 
   if (hasPostdrome) {
-    phases.push('Postdromo');
+    phases.push(
+      'Postdromo',
+    );
   }
 
   return phases;
@@ -235,6 +286,13 @@ export function EpisodeCard({
     useNavigate();
 
   const [
+    activeView,
+    setActiveView,
+  ] = useState<DetailView>(
+    'summary',
+  );
+
+  const [
     showDeleteConfirmation,
     setShowDeleteConfirmation,
   ] = useState(false);
@@ -250,14 +308,25 @@ export function EpisodeCard({
   const premonitory =
     episode.premonitory;
 
+  const hasPremonitory =
+    hasPremonitoryData(
+      episode,
+    );
+
   const hasAura =
-    hasAuraData(episode);
+    hasAuraData(
+      episode,
+    );
 
   const hasCrisis =
-    hasCrisisData(episode);
+    hasCrisisData(
+      episode,
+    );
 
   const hasPostdrome =
-    hasPostdromeData(episode);
+    hasPostdromeData(
+      episode,
+    );
 
   const isUncertain =
     episode.status ===
@@ -297,25 +366,54 @@ export function EpisodeCard({
       episode,
     );
 
-  const triggers =
-    episode.triggers ?? [];
-
   const phases =
     getPhaseSummary(
-      episode,
+      hasPremonitory,
       hasAura,
       hasCrisis,
       hasPostdrome,
     );
 
   const detailId =
-    createDetailId(episode);
-
-  const hasContext =
-    triggers.length > 0 ||
-    Boolean(
-      episode.notes?.trim(),
+    createDetailId(
+      episode,
     );
+
+  const navigationItems:
+    DetailNavigationItem[] = [
+    {
+      id: 'summary',
+      label: 'Resumen',
+      icon: '◫',
+      available: true,
+    },
+    {
+      id: 'premonitory',
+      label: 'Señales',
+      icon: '◌',
+      available:
+        hasPremonitory,
+    },
+    {
+      id: 'aura',
+      label: 'Aura',
+      icon: '◉',
+      available: hasAura,
+    },
+    {
+      id: 'crisis',
+      label: 'Crisis',
+      icon: '◆',
+      available: hasCrisis,
+    },
+    {
+      id: 'postdrome',
+      label: 'Post',
+      icon: '◇',
+      available:
+        hasPostdrome,
+    },
+  ];
 
   const handleDelete = () => {
     const episodeId =
@@ -357,9 +455,18 @@ export function EpisodeCard({
   };
 
   const handleToggle = () => {
-    onOpenChange(!isOpen);
+    const nextIsOpen =
+      !isOpen;
 
-    if (isOpen) {
+    onOpenChange(
+      nextIsOpen,
+    );
+
+    if (!nextIsOpen) {
+      setActiveView(
+        'summary',
+      );
+
       setShowDeleteConfirmation(
         false,
       );
@@ -481,7 +588,9 @@ export function EpisodeCard({
           <span
             aria-hidden="true"
           >
-            {isOpen ? '⌃' : '⌄'}
+            {isOpen
+              ? '⌃'
+              : '⌄'}
           </span>
         </button>
       </div>
@@ -493,111 +602,127 @@ export function EpisodeCard({
             styles.episodeDetail
           }
         >
+          <nav
+            className={
+              navigationStyles.navigation
+            }
+            aria-label="Información del episodio"
+          >
+            {navigationItems.map(
+              item => (
+                <button
+                  key={item.id}
+                  type="button"
+                  disabled={
+                    !item.available
+                  }
+                  aria-current={
+                    activeView ===
+                    item.id
+                      ? 'page'
+                      : undefined
+                  }
+                  onClick={() =>
+                    setActiveView(
+                      item.id,
+                    )
+                  }
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    {item.icon}
+                  </span>
+
+                  <b>
+                    {item.label}
+                  </b>
+                </button>
+              ),
+            )}
+          </nav>
+
           <div
             className={
-              timelineStyles.timeline
+              navigationStyles.content
             }
-            aria-label="Evolución del episodio"
           >
-            {premonitory.present && (
-              <PremonitoryHistorySection
+            {activeView ===
+              'summary' && (
+              <EpisodeGeneralSummary
                 episode={episode}
-                hasCrisis={hasCrisis}
-                hasAura={hasAura}
-              />
-            )}
-
-            {hasAura && (
-              <AuraHistorySection
-                episode={episode}
-              />
-            )}
-
-            {hasCrisis && (
-              <CrisisHistorySection
-                episode={episode}
-              />
-            )}
-
-            {hasPostdrome && (
-              <PostdromeHistorySection
-                episode={episode}
-              />
-            )}
-          </div>
-
-          {hasContext && (
-            <section
-              className={
-                timelineStyles.context
-              }
-              aria-labelledby={`${detailId}-context-title`}
-            >
-              <div
-                className={
-                  timelineStyles.contextHeader
+                episodeStart={
+                  episodeStart
                 }
-              >
-                <span
+                phases={phases}
+                hasCrisis={
+                  hasCrisis
+                }
+              />
+            )}
+
+            {activeView ===
+              'premonitory' &&
+              hasPremonitory && (
+                <div
                   className={
-                    timelineStyles.contextIcon
+                    timelineStyles.timeline
                   }
-                  aria-hidden="true"
                 >
-                  ◇
-                </span>
-
-                <div>
-                  <small>
-                    Contexto
-                  </small>
-
-                  <strong
-                    id={`${detailId}-context-title`}
-                  >
-                    Lo que acompañó
-                    este episodio
-                  </strong>
-                </div>
-              </div>
-
-              <div
-                className={
-                  timelineStyles.contextItems
-                }
-              >
-                {triggers.length > 0 && (
-                  <p>
-                    <b>
-                      Posibles
-                      desencadenantes
-                    </b>
-
-                    {triggers
-                      .map(
-                        trigger =>
-                          TRIGGER_LABELS[
-                            trigger
-                          ],
-                      )
-                      .join(', ')}
-                  </p>
-                )}
-
-                {episode.notes?.trim() && (
-                  <p>
-                    <b>
-                      Notas personales
-                    </b>
-
-                    {
-                      episode.notes.trim()
+                  <PremonitoryHistorySection
+                    episode={episode}
+                    hasCrisis={
+                      hasCrisis
                     }
-                  </p>
-                )}
-              </div>
-            </section>
-          )}
+                    hasAura={
+                      hasAura
+                    }
+                  />
+                </div>
+              )}
+
+            {activeView ===
+              'aura' &&
+              hasAura && (
+                <div
+                  className={
+                    timelineStyles.timeline
+                  }
+                >
+                  <AuraHistorySection
+                    episode={episode}
+                  />
+                </div>
+              )}
+
+            {activeView ===
+              'crisis' &&
+              hasCrisis && (
+                <div
+                  className={
+                    timelineStyles.timeline
+                  }
+                >
+                  <CrisisHistorySection
+                    episode={episode}
+                  />
+                </div>
+              )}
+
+            {activeView ===
+              'postdrome' &&
+              hasPostdrome && (
+                <div
+                  className={
+                    timelineStyles.timeline
+                  }
+                >
+                  <PostdromeHistorySection
+                    episode={episode}
+                  />
+                </div>
+              )}
+          </div>
 
           <div
             className={
