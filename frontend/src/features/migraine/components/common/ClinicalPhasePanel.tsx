@@ -7,7 +7,7 @@ import styles from './ClinicalPhasePanel.module.css';
 
 interface Props {
   id: string;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description: string;
   icon: string;
@@ -80,13 +80,15 @@ export function ClinicalPhasePanel({
           </span>
 
           <span>
-            <span
-              className={
-                styles.eyebrow
-              }
-            >
-              {eyebrow}
-            </span>
+            {eyebrow && (
+              <span
+                className={
+                  styles.eyebrow
+                }
+              >
+                {eyebrow}
+              </span>
+            )}
 
             <span
               id={id}

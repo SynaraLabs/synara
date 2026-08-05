@@ -6,6 +6,8 @@ import {
 
 import styles from '../migraine.module.css';
 
+import premonitoryStyles from './premonitory-selector.module.css';
+
 import type {
   ClinicalSymptomCategory,
   ExtendedPremonitorySymptom,
@@ -800,43 +802,6 @@ export function PremonitorySelector({
     ]);
 
 
-  const groupedDefinitions =
-    useMemo(() => {
-      return visibleDefinitions.reduce<
-        Partial<
-          Record<
-            ClinicalSymptomCategory,
-            SymptomDefinition<
-              ExtendedPremonitorySymptom
-            >[]
-          >
-        >
-      >(
-        (
-          groups,
-          definition,
-        ) => {
-          const group =
-            groups[
-              definition.category
-            ] ?? [];
-
-          groups[
-            definition.category
-          ] = [
-            ...group,
-            definition,
-          ];
-
-          return groups;
-        },
-        {},
-      );
-    }, [
-      visibleDefinitions,
-    ]);
-
-
   const visibleUpdates =
     [...updates].sort(
       (
@@ -1239,33 +1204,41 @@ export function PremonitorySelector({
 
   return (
     <section
-      className={
-        styles.symptomSelector
-      }
+      className={`${styles.symptomSelector} ${premonitoryStyles.root}`}
     >
-      <h3>
-        Posibles señales previas
-      </h3>
+      <header
+        className={
+          premonitoryStyles.premonitoryIntro
+        }
+      >
+        <h3>
+          {isFirstUpdate
+            ? '¿Qué estás sintiendo ahora?'
+            : '¿Qué cambió desde la última vez?'}
+        </h3>
 
-      <p>
-        Las señales pueden cambiar
-        durante varias horas o días.
-        Registrá una actualización cada
-        vez que notes una evolución.
-      </p>
+        <p
+          className={
+            premonitoryStyles.phaseLead
+          }
+        >
+          {isFirstUpdate
+            ? 'Elegí todas las señales que reconozcas. Podrás actualizarlas después.'
+            : 'Marcá cómo están tus señales ahora. Guardaremos una nueva actualización sin borrar las anteriores.'}
+        </p>
+      </header>
 
 
       {context === 'crisis' &&
         !isEnded && (
           <p
             className={
-              styles.helperText
+              premonitoryStyles.contextNotice
             }
           >
-            Estas señales continúan
-            durante la crisis. Podés
-            seguir registrando cambios
-            sin cerrar la fase.
+            Las señales siguen abiertas
+            durante la crisis. Registrá
+            solamente si algo cambió.
           </p>
         )}
 
@@ -1274,14 +1247,13 @@ export function PremonitorySelector({
         !isEnded && (
           <p
             className={
-              styles.helperText
+              premonitoryStyles.contextNotice
             }
           >
-            La crisis terminó, pero las
-            señales previas todavía
-            están abiertas. Podés
-            registrar cambios hasta
-            indicar cuándo terminaron.
+            La crisis terminó y estas
+            señales todavía están
+            abiertas. Podés actualizarlas
+            o indicar cuándo terminaron.
           </p>
         )}
 
@@ -1289,10 +1261,13 @@ export function PremonitorySelector({
       {premonitory.present && (
         <p
           className={
-            styles.helperText
+            premonitoryStyles.phaseStatus
           }
         >
-          Inicio de las señales:{' '}
+          <span>
+            Señales iniciadas
+          </span>{' '}
+
           {formatDateTime(
             premonitoryStart,
             premonitory.time
@@ -1304,25 +1279,14 @@ export function PremonitorySelector({
 
       {!isEnded && (
         <>
-          <h4>
-            ¿Qué señales tenés en este
-            momento?
-          </h4>
-
-          <p
+          <label
             className={
-              styles.helperText
+              premonitoryStyles.searchField
             }
           >
-            Podés cambiar la selección
-            libremente. No se guardará
-            hasta que registres la
-            actualización.
-          </p>
-
-
-          <label>
-            Buscar una señal
+            <span>
+              Buscar una señal
+            </span>
 
             <input
               type="search"
@@ -1351,7 +1315,7 @@ export function PremonitorySelector({
           {draftSymptoms.length > 0 && (
             <section
               className={
-                styles.compactSelected
+                `${styles.compactSelected} ${premonitoryStyles.selectedArea}`
               }
               aria-labelledby="selected-premonitory-symptoms"
             >
@@ -1361,7 +1325,7 @@ export function PremonitorySelector({
 
               <div
                 className={
-                  styles.compactChips
+                  `${styles.compactChips} ${premonitoryStyles.selectedChips}`
                 }
               >
                 {draftSymptoms.map(
@@ -1394,7 +1358,7 @@ export function PremonitorySelector({
           {!normalizedSymptomSearch && (
             <div
               className={
-                styles.compactCategories
+                `${styles.compactCategories} ${premonitoryStyles.categoryRail}`
               }
               aria-label="Categorías de señales premonitorias"
             >
@@ -1442,7 +1406,7 @@ export function PremonitorySelector({
 
           <section
             className={
-              styles.compactResults
+              `${styles.compactResults} ${premonitoryStyles.resultsArea}`
             }
           >
             <h4>
@@ -1466,66 +1430,60 @@ export function PremonitorySelector({
                 con ese nombre.
               </p>
             ) : (
-              CATEGORY_ORDER.map(
-              category => {
-                const definitions =
-                  groupedDefinitions[
-                    category
-                  ];
-
-                if (
-                  !definitions ||
-                  definitions.length ===
-                    0
-                ) {
-                  return null;
+              <div
+                className={
+                  styles.compactChoiceGrid
                 }
-
-                return (
-                  <div
-                    key={category}
-                  >
-                    <div
+              >
+                {visibleDefinitions.map(
+                  definition => (
+                    <button
+                      key={
+                        definition.value
+                      }
+                      type="button"
                       className={
-                        styles.compactChoiceGrid
+                        `${styles.compactChoice} ${premonitoryStyles.choiceButton}`
+                      }
+                      aria-pressed={
+                        draftSymptoms.includes(
+                          definition.value,
+                        )
+                      }
+                      onClick={() =>
+                        toggleDraftSymptom(
+                          definition.value,
+                        )
                       }
                     >
-                      {definitions.map(
-                        definition => (
-                          <button
-                            key={
-                              definition.value
-                            }
-                            type="button"
-                            className={
-                              styles.compactChoice
-                            }
-                            aria-pressed={
-                              draftSymptoms.includes(
-                                definition.value,
-                              )
-                            }
-                            onClick={() =>
-                              toggleDraftSymptom(
-                                definition.value,
-                              )
-                            }
-                          >
-                            {definition.label}
+                      {definition.label}
 
-                            {definition.uncommon
-                              ? ' · Menos frecuente'
-                              : ''}
-                          </button>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                );
-              },
-              )
+                      {definition.uncommon
+                        ? ' · Menos frecuente'
+                        : ''}
+                    </button>
+                  ),
+                )}
+              </div>
             )}
           </section>
+
+
+          <div
+            className={
+              premonitoryStyles.updateDetailsIntro
+            }
+          >
+            <h4>
+              Completá la actualización
+            </h4>
+
+            <p>
+              La fecha es necesaria. La
+              intensidad y la nota son
+              opcionales.
+            </p>
+          </div>
 
 
           <label>
@@ -1614,6 +1572,9 @@ export function PremonitorySelector({
 
           <button
             type="button"
+            className={
+              premonitoryStyles.primaryPhaseAction
+            }
             onClick={
               handleRegisterUpdate
             }

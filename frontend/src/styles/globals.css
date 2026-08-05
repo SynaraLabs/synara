@@ -21,6 +21,8 @@
   background:
     var(--color-background);
 
+  color-scheme: light;
+
   font-synthesis: none;
   text-rendering:
     optimizeLegibility;
@@ -80,18 +82,23 @@ button {
   padding: 10px 16px;
 
   border: 1px solid
-    transparent;
+    var(--color-primary);
   border-radius:
     var(--radius-medium);
 
-  color: #ffffff;
+  color:
+    var(--color-surface);
   background:
     var(--color-primary);
 
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1.2;
 
   cursor: pointer;
+
+  box-shadow:
+    0 4px 12px
+      rgba(31, 81, 60, 0.1);
 
   transition:
     background-color
@@ -107,22 +114,38 @@ button {
 }
 
 button:hover {
+  border-color:
+    var(--color-primary-hover);
+
   background:
     var(--color-primary-hover);
+
+  box-shadow:
+    0 6px 16px
+      rgba(31, 81, 60, 0.14);
 }
 
 button:active {
+  box-shadow:
+    0 2px 8px
+      rgba(31, 81, 60, 0.1);
+
   transform:
     translateY(1px);
 }
 
 button:disabled {
+  border-color:
+    var(--color-surface-muted);
+
   color:
     var(--color-text-disabled);
   background:
     var(--color-surface-muted);
 
   cursor: not-allowed;
+
+  box-shadow: none;
   transform: none;
 }
 
@@ -144,7 +167,14 @@ textarea {
   background:
     var(--color-surface);
 
+  caret-color:
+    var(--color-primary);
+
   outline: none;
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(23, 37, 61, 0.025);
 
   transition:
     border-color
@@ -176,17 +206,23 @@ textarea:hover {
 
 input:focus,
 select:focus,
-textarea:focus,
-button:focus-visible,
-a:focus-visible {
-  outline: none;
-
+textarea:focus {
   border-color:
     var(--color-primary);
+
+  background:
+    var(--color-surface);
 
   box-shadow:
     0 0 0 4px
       var(--color-focus);
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid
+    var(--color-primary-border);
+  outline-offset: 3px;
 }
 
 input[type='checkbox'],
@@ -200,6 +236,8 @@ input[type='radio'] {
 
   accent-color:
     var(--color-primary);
+
+  box-shadow: none;
 }
 
 label {
@@ -210,7 +248,7 @@ label {
     var(--color-text-strong);
 
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 a {
@@ -218,6 +256,7 @@ a {
     var(--color-primary);
 
   text-decoration: none;
+  text-underline-offset: 3px;
 }
 
 a:hover {
@@ -233,8 +272,8 @@ h4 {
   color:
     var(--color-text-strong);
 
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: 750;
+  line-height: 1.16;
 
   text-wrap: balance;
 }
@@ -277,6 +316,9 @@ h3 {
 
 h4 {
   font-size: 1rem;
+
+  letter-spacing:
+    -0.005em;
 }
 
 p {
@@ -306,6 +348,8 @@ b {
 small {
   color:
     var(--color-text-soft);
+
+  line-height: 1.5;
 }
 
 hr {
@@ -331,7 +375,7 @@ hr {
     var(--color-text-strong);
 
   background:
-    var(--color-primary-soft);
+    var(--color-secondary-soft);
 }
 
 @media (max-width: 640px) {

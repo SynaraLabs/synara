@@ -436,17 +436,6 @@ export function MigrainePage() {
         styles.container
       }
     >
-      <h1>
-        Seguimiento de migraña
-      </h1>
-
-      <p>
-        Registrá cada fase a tu ritmo.
-        Podés volver y actualizar la
-        información cuando lo
-        necesites.
-      </p>
-
       {!episode && (
         <section>
           <p

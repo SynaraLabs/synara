@@ -141,7 +141,6 @@ export function TrackingPhasePanels({
     >
       <ClinicalPhasePanel
         id="premonitory-panel-title"
-        eyebrow="Fase posible"
         title="Señales premonitorias"
         description="Cambios que pueden aparecer horas o días antes del dolor."
         icon="◌"
@@ -171,7 +170,6 @@ export function TrackingPhasePanels({
 
       <ClinicalPhasePanel
         id="aura-panel-title"
-        eyebrow="Fase posible"
         title="Aura"
         description="Síntomas visuales, sensitivos, del lenguaje, motores o vestibulares."
         icon="◉"

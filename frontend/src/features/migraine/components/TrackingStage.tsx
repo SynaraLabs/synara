@@ -90,27 +90,8 @@ export function TrackingStage({
 
   return (
     <>
-      <section>
-        <p
-          className={
-            styles.cardEyebrow
-          }
-        >
-          Episodio en seguimiento
-        </p>
-
-        <h2>
-          ¿En qué momento estás?
-        </h2>
-
-        <p>
-          Registrá solamente lo que
-          puedas reconocer ahora. Podés
-          volver y completar otras fases
-          más adelante.
-        </p>
-
-        {!crisisFlowIsOpen && (
+      {!crisisFlowIsOpen && (
+        <div>
           <button
             type="button"
             onClick={
@@ -119,177 +100,181 @@ export function TrackingStage({
           >
             Estoy entrando en crisis
           </button>
-        )}
+        </div>
+      )}
 
-        {showPremonitoryCrisisQuestion && (
-          <section>
-            <h3>
-              ¿Qué pasó con las señales
-              previas?
-            </h3>
+      {crisisFlowIsOpen && (
+        <section>
+          {showPremonitoryCrisisQuestion && (
+            <section>
+              <h3>
+                ¿Qué pasó con las señales
+                previas?
+              </h3>
 
-            <p>
-              Elegí la opción que mejor
-              describa lo que recordás.
-            </p>
+              <p>
+                Elegí la opción que mejor
+                describa lo que recordás.
+              </p>
 
-            <button
-              type="button"
-              onClick={
-                onEndsWithCrisis
-              }
-            >
-              Terminaron cuando empezó
-              la crisis
-            </button>
+              <button
+                type="button"
+                onClick={
+                  onEndsWithCrisis
+                }
+              >
+                Terminaron cuando empezó
+                la crisis
+              </button>
 
-            <button
-              type="button"
-              onClick={
-                onEndedAtAnotherTime
-              }
-            >
-              Terminaron en otro momento
-            </button>
+              <button
+                type="button"
+                onClick={
+                  onEndedAtAnotherTime
+                }
+              >
+                Terminaron en otro momento
+              </button>
 
-            <button
-              type="button"
-              onClick={
-                onContinuesWithCrisis
-              }
-            >
-              Continúan durante la crisis
-            </button>
+              <button
+                type="button"
+                onClick={
+                  onContinuesWithCrisis
+                }
+              >
+                Continúan durante la crisis
+              </button>
 
-            <button
-              type="button"
-              onClick={
-                onUnknownEnd
-              }
-            >
-              No recuerdo cuándo
-              terminaron
-            </button>
+              <button
+                type="button"
+                onClick={
+                  onUnknownEnd
+                }
+              >
+                No recuerdo cuándo
+                terminaron
+              </button>
 
-            <button
-              type="button"
-              onClick={
-                onCancelCrisisStart
-              }
-            >
-              Cancelar
-            </button>
-          </section>
-        )}
+              <button
+                type="button"
+                onClick={
+                  onCancelCrisisStart
+                }
+              >
+                Cancelar
+              </button>
+            </section>
+          )}
 
-        {showPremonitoryEndSelector && (
-          <section>
-            <PhaseEndSelector
-              title="¿Cuándo terminaron las señales previas?"
-              startTime={
-                premonitoryStart
-              }
-              onConfirm={
-                onPremonitoryEnd
-              }
-              onContinue={
-                onContinuesWithCrisis
-              }
-            />
+          {showPremonitoryEndSelector && (
+            <section>
+              <PhaseEndSelector
+                title="¿Cuándo terminaron las señales previas?"
+                startTime={
+                  premonitoryStart
+                }
+                onConfirm={
+                  onPremonitoryEnd
+                }
+                onContinue={
+                  onContinuesWithCrisis
+                }
+              />
 
-            <button
-              type="button"
-              onClick={
-                onCancelCrisisStart
-              }
-            >
-              Cancelar inicio de crisis
-            </button>
-          </section>
-        )}
+              <button
+                type="button"
+                onClick={
+                  onCancelCrisisStart
+                }
+              >
+                Cancelar inicio de crisis
+              </button>
+            </section>
+          )}
 
-        {showCrisisDate && (
-          <section>
-            <PhaseDateSelector
-              title="¿Cuándo empezó el dolor?"
-              value={
-                episode.crisis
-                  .startTime
-              }
-              onChange={
-                onCrisisDate
-              }
-            />
+          {showCrisisDate && (
+            <section>
+              <PhaseDateSelector
+                title="¿Cuándo empezó el dolor?"
+                value={
+                  episode.crisis
+                    .startTime
+                }
+                onChange={
+                  onCrisisDate
+                }
+              />
 
-            {hasOpenPremonitory &&
-              premonitoryCrisisOutcome ===
-                'endsWithCrisis' && (
-                <p
-                  className={
-                    styles.helperText
-                  }
-                >
-                  Las señales se cerrarán
-                  cuando comience la
-                  crisis.
-                </p>
-              )}
+              {hasOpenPremonitory &&
+                premonitoryCrisisOutcome ===
+                  'endsWithCrisis' && (
+                  <p
+                    className={
+                      styles.helperText
+                    }
+                  >
+                    Las señales se cerrarán
+                    cuando comience la
+                    crisis.
+                  </p>
+                )}
 
-            {hasOpenPremonitory &&
-              premonitoryCrisisOutcome ===
-                'endedAtAnotherTime' &&
-              premonitoryEndSelection && (
-                <p
-                  className={
-                    styles.helperText
-                  }
-                >
-                  Se conservará la hora
-                  de finalización que
-                  acabás de registrar.
-                </p>
-              )}
+              {hasOpenPremonitory &&
+                premonitoryCrisisOutcome ===
+                  'endedAtAnotherTime' &&
+                premonitoryEndSelection && (
+                  <p
+                    className={
+                      styles.helperText
+                    }
+                  >
+                    Se conservará la hora
+                    de finalización que
+                    acabás de registrar.
+                  </p>
+                )}
 
-            {hasOpenPremonitory &&
-              premonitoryCrisisOutcome ===
-                'continuesWithCrisis' && (
-                <p
-                  className={
-                    styles.helperText
-                  }
-                >
-                  Las señales
-                  permanecerán abiertas
-                  durante la crisis.
-                </p>
-              )}
+              {hasOpenPremonitory &&
+                premonitoryCrisisOutcome ===
+                  'continuesWithCrisis' && (
+                  <p
+                    className={
+                      styles.helperText
+                    }
+                  >
+                    Las señales
+                    permanecerán abiertas
+                    durante la crisis.
+                  </p>
+                )}
 
-            {hasOpenPremonitory &&
-              premonitoryCrisisOutcome ===
-                'unknownEnd' && (
-                <p
-                  className={
-                    styles.helperText
-                  }
-                >
-                  Las señales quedarán
-                  con hora de
-                  finalización
-                  desconocida.
-                </p>
-              )}
+              {hasOpenPremonitory &&
+                premonitoryCrisisOutcome ===
+                  'unknownEnd' && (
+                  <p
+                    className={
+                      styles.helperText
+                    }
+                  >
+                    Las señales quedarán
+                    con hora de
+                    finalización
+                    desconocida.
+                  </p>
+                )}
 
-            <button
-              type="button"
-              onClick={
-                onCancelCrisisStart
-              }
-            >
-              Cancelar
-            </button>
-          </section>
-        )}
-      </section>
+              <button
+                type="button"
+                onClick={
+                  onCancelCrisisStart
+                }
+              >
+                Cancelar
+              </button>
+            </section>
+          )}
+        </section>
+      )}
 
       <TrackingPhasePanels
         episode={episode}

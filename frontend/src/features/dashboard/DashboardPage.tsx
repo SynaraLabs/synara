@@ -31,17 +31,29 @@ export function DashboardPage() {
         styles.dashboard
       }
     >
-      <HealthSummary />
+      <div
+        className={
+          styles.introduction
+        }
+      >
+        <HealthSummary />
 
-      <WelcomeCard />
+        <WelcomeCard />
 
-      <QuickActions />
+        <QuickActions />
+      </div>
 
-      <InsightsSummary />
+      <div
+        className={
+          styles.dashboardContent
+        }
+      >
+        <InsightsSummary />
 
-      <MigrainePatternsSummary />
+        <MigrainePatternsSummary />
 
-      <RealRecentEpisodes />
+        <RealRecentEpisodes />
+      </div>
     </section>
   );
 }

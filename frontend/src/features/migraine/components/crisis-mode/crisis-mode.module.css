@@ -1,23 +1,43 @@
 .container {
-  --color-primary: #78b9b3;
-  --color-primary-hover: #8fc9c3;
-  --color-primary-soft: #173c40;
-  --color-primary-border: #35666a;
-  --color-surface: #132a2e;
-  --color-surface-soft: #183338;
-  --color-border: #29484c;
-  --color-border-strong: #3b5e62;
-  --color-text: #d2dfdd;
-  --color-text-strong: #f0f5f3;
-  --color-text-soft: #a7bcba;
-  --color-focus: rgb(120 185 179 / 28%);
+  --color-primary:
+    var(--color-crisis-text);
+
+  --color-primary-hover:
+    #ffffff;
+
+  --color-primary-soft:
+    var(--color-crisis-surface-soft);
+
+  --color-primary-border:
+    var(--color-crisis-border-strong);
+
+  --color-surface:
+    var(--color-crisis-surface);
+
+  --color-surface-soft:
+    var(--color-crisis-surface-soft);
+
+  --color-border:
+    var(--color-crisis-border);
+
+  --color-border-strong:
+    var(--color-crisis-border-strong);
+
+  --color-text:
+    var(--color-crisis-text-soft);
+
+  --color-text-strong:
+    var(--color-crisis-text);
+
+  --color-text-soft:
+    var(--color-crisis-text-soft);
+
+  --color-focus:
+    rgba(246, 240, 230, 0.18);
+
   --shadow-small:
     0 10px 30px
-      rgb(2 14 17 / 18%);
-  --crisis-accent: #dda86b;
-  --crisis-accent-soft:
-    rgb(221 168 107 / 14%);
-  --crisis-danger: #d49a91;
+      rgba(1, 12, 11, 0.2);
 
   width: 100%;
   max-width: 940px;
@@ -38,21 +58,20 @@
 
   overflow-x: clip;
 
-  border: 1px solid #24474b;
+  border: 1px solid
+    var(--color-crisis-border);
   border-radius:
     var(--radius-large);
 
-  color: var(--color-text);
+  color:
+    var(--color-text);
+
   background:
-    linear-gradient(
-      155deg,
-      #0d292d,
-      #0a1f23
-    );
+    var(--color-crisis-background);
 
   box-shadow:
     0 18px 50px
-      rgb(7 31 35 / 16%);
+      rgba(1, 12, 11, 0.2);
 }
 
 .container > * {
@@ -60,58 +79,36 @@
   max-width: 100%;
 }
 
+/* ==========================
+   CRISIS HEADER
+========================== */
+
 .container > header {
   padding: var(--space-5);
 
   border: 1px solid
-    var(--color-primary-border);
+    var(--color-crisis-border);
   border-radius:
     var(--radius-large);
 
   background:
-    linear-gradient(
-      135deg,
-      #173b3f,
-      #10292d
-    );
+    var(--color-crisis-surface);
 
   box-shadow:
     var(--shadow-small);
 }
 
 .container > header h1 {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-
   margin-bottom:
     var(--space-2);
 
   color:
-    var(--color-text-strong);
-}
-
-.container > header h1::before {
-  content: '';
-
-  width: 10px;
-  height: 10px;
-
-  flex: 0 0 auto;
-
-  border-radius: 50%;
-
-  background:
-    var(--crisis-accent);
-
-  box-shadow:
-    0 0 0 5px
-      var(--crisis-accent-soft);
+    var(--color-crisis-text);
 }
 
 .container > header p {
   color:
-    var(--color-text-soft);
+    var(--color-crisis-text-soft);
 
   font-size: 0.9rem;
   line-height: 1.5;
@@ -127,30 +124,37 @@
 
   margin-top:
     var(--space-4);
+
   padding:
     var(--space-2)
     var(--space-3);
 
   border: 1px solid
-    rgb(212 154 145 / 48%);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-medium);
 
-  color: #e2b3ac;
+  color:
+    var(--color-crisis-text);
   background:
-    rgb(212 154 145 / 8%);
+    transparent;
 
   box-shadow: none;
 }
 
 .container > header > button:hover {
   border-color:
-    var(--crisis-danger);
+    var(--color-crisis-text-soft);
 
-  color: #f3ceca;
+  color:
+    var(--color-crisis-text);
   background:
-    rgb(212 154 145 / 14%);
+    var(--color-crisis-surface-soft);
 }
+
+/* ==========================
+   DISCARD CONFIRMATION
+========================== */
 
 .discardConfirmation {
   display: grid;
@@ -165,12 +169,12 @@
   padding: var(--space-4);
 
   border: 1px solid
-    rgb(212 154 145 / 38%);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-medium);
 
   background:
-    rgb(212 154 145 / 9%);
+    var(--color-crisis-surface-soft);
 }
 
 .discardConfirmation h2 {
@@ -178,7 +182,7 @@
     var(--space-1);
 
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
 
   font-size: 1rem;
 }
@@ -193,6 +197,7 @@
   min-height: 42px;
 
   margin: 0;
+
   padding:
     var(--space-2)
     var(--space-3);
@@ -205,35 +210,45 @@
 
 .keepEpisode {
   border: 1px solid
-    var(--color-border-strong);
+    var(--color-crisis-border-strong);
 
   color:
-    var(--color-text);
+    var(--color-crisis-text);
   background:
-    var(--color-surface);
+    var(--color-crisis-surface);
 }
 
 .keepEpisode:hover {
   border-color:
-    var(--color-primary);
+    var(--color-crisis-text-soft);
 
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
+  background:
+    var(--color-crisis-surface-soft);
 }
 
 .confirmDiscard {
   border: 1px solid
-    var(--crisis-danger);
+    var(--color-crisis-text);
 
-  color: #241616;
+  color:
+    var(--color-crisis-background);
   background:
-    var(--crisis-danger);
+    var(--color-crisis-text);
 }
 
 .confirmDiscard:hover {
-  color: #241616;
-  background: #e3afa7;
+  border-color: #ffffff;
+
+  color:
+    var(--color-crisis-background);
+  background: #ffffff;
 }
+
+/* ==========================
+   SHARED CARDS
+========================== */
 
 .card {
   min-width: 0;
@@ -244,17 +259,15 @@
   padding: var(--space-5);
 
   border: 1px solid
-    var(--color-border);
+    var(--color-crisis-border);
   border-radius:
     var(--radius-large);
 
-  color: var(--color-text);
+  color:
+    var(--color-crisis-text-soft);
+
   background:
-    linear-gradient(
-      145deg,
-      #142d31,
-      var(--color-surface)
-    );
+    var(--color-crisis-surface);
 
   box-shadow:
     var(--shadow-small);
@@ -267,7 +280,7 @@
 
 .card h2 {
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
 
   font-size:
     clamp(
@@ -279,18 +292,21 @@
 
 .card p {
   color:
-    var(--color-text-soft);
+    var(--color-crisis-text-soft);
 }
 
 .card strong {
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
 }
+
+/* Current pain value */
 
 .card > div[aria-live='polite'] {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
+
   gap:
     var(--space-2)
     var(--space-4);
@@ -300,17 +316,17 @@
     var(--space-4);
 
   border: 1px solid
-    rgb(221 168 107 / 18%);
+    var(--color-crisis-border);
   border-radius:
     var(--radius-medium);
 
   background:
-    var(--crisis-accent-soft);
+    var(--color-crisis-surface-soft);
 }
 
 .card > div[aria-live='polite'] strong {
   color:
-    var(--crisis-accent);
+    var(--color-crisis-text);
 
   font-size:
     clamp(
@@ -324,8 +340,15 @@
 
 .card > div[aria-live='polite'] p {
   color:
-    var(--color-text);
+    var(--color-crisis-text);
 }
+
+/* ==========================
+   PAIN SCALE
+
+   Única zona cromática de
+   esta pantalla.
+========================== */
 
 .card
   [role='group'][aria-label='Intensidad rápida del dolor'] {
@@ -348,42 +371,103 @@
   padding: var(--space-2);
 
   border: 1px solid
-    var(--color-border-strong);
+    rgba(246, 240, 230, 0.2);
   border-radius:
     var(--radius-medium);
 
   color:
-    var(--color-text);
-  background: #10272b;
+    var(--color-crisis-text);
 
   box-shadow: none;
+}
+
+/* 0 */
+
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(1) {
+  background:
+    var(--color-pain-none);
+}
+
+/* 1–3 */
+
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(2),
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(3),
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(4) {
+  background:
+    var(--color-pain-low);
+}
+
+/* 4–6 */
+
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(5),
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(6),
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(7) {
+  background:
+    var(--color-pain-medium);
+}
+
+/* 7–8 */
+
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(8),
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(9) {
+  background:
+    var(--color-pain-high);
+}
+
+/* 9–10 */
+
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(10),
+.card
+  [role='group'][aria-label='Intensidad rápida del dolor']
+  button:nth-child(11) {
+  background:
+    var(--color-pain-severe);
 }
 
 .card
   [role='group'][aria-label='Intensidad rápida del dolor']
   button:hover {
   border-color:
-    var(--color-primary);
+    var(--color-crisis-text);
 
   color:
-    var(--color-text-strong);
-  background:
-    var(--color-primary-soft);
+    var(--color-crisis-text);
+
+  filter: brightness(1.08);
 }
 
 .card
   [role='group'][aria-label='Intensidad rápida del dolor']
   button[aria-pressed='true'] {
   border-color:
-    var(--crisis-accent);
+    var(--color-crisis-text);
 
-  color: #172326;
-  background:
-    var(--crisis-accent);
+  color:
+    var(--color-crisis-text);
 
   box-shadow:
     0 0 0 3px
-      var(--crisis-accent-soft);
+      rgba(246, 240, 230, 0.22);
 }
 
 .card input[type='range'] {
@@ -393,10 +477,11 @@
 
   border: 0;
 
-  background: transparent;
+  background:
+    transparent;
 
   accent-color:
-    var(--crisis-accent);
+    var(--color-pain-severe);
 }
 
 .card aside {
@@ -405,18 +490,22 @@
     var(--space-4);
 
   border-left: 3px solid
-    var(--color-primary-border);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-small);
 
   background:
-    var(--color-surface-soft);
+    var(--color-crisis-surface-soft);
 }
 
 .card aside p + p {
   margin-top:
     var(--space-1);
 }
+
+/* ==========================
+   GENERIC CHOICE GRID
+========================== */
 
 .grid {
   display: grid;
@@ -439,12 +528,12 @@
     var(--space-4);
 
   border: 1px solid
-    var(--color-border-strong);
+    var(--color-crisis-border-strong);
 
   color:
-    var(--color-text);
+    var(--color-crisis-text-soft);
   background:
-    var(--color-surface);
+    var(--color-crisis-surface);
 
   text-align: left;
 
@@ -453,89 +542,114 @@
 
 .grid button:hover {
   border-color:
-    var(--color-primary-border);
+    var(--color-crisis-text-soft);
 
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
   background:
-    var(--color-primary-soft);
+    var(--color-crisis-surface-soft);
 }
 
 .grid button.active,
 .active {
   border-color:
-    var(--color-primary);
+    var(--color-crisis-text);
 
-  color: #0b2024;
+  color:
+    var(--color-crisis-background);
   background:
-    var(--color-primary);
+    var(--color-crisis-text);
 
   box-shadow:
     0 0 0 3px
       var(--color-focus);
 }
 
+/* ==========================
+   GENERIC ACTIONS
+========================== */
+
 .primary {
   width: 100%;
 
-  color: #0b2024;
+  border-color:
+    var(--color-crisis-text);
+
+  color:
+    var(--color-crisis-background);
   background:
-    var(--color-primary);
+    var(--color-crisis-text);
 }
 
 .primary:hover {
-  background:
-    var(--color-primary-hover);
+  border-color: #ffffff;
+
+  color:
+    var(--color-crisis-background);
+  background: #ffffff;
 }
 
 .secondary {
   min-height: 48px;
 
   border: 1px solid
-    var(--color-border-strong);
+    var(--color-crisis-border-strong);
 
   color:
-    var(--color-text);
+    var(--color-crisis-text);
   background:
-    var(--color-surface);
+    var(--color-crisis-surface);
 }
 
 .secondary:hover {
   border-color:
-    var(--color-primary);
+    var(--color-crisis-text-soft);
 
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
   background:
-    var(--color-primary-soft);
+    var(--color-crisis-surface-soft);
 }
+
+/* ==========================
+   FORM FIELDS
+========================== */
 
 .container input,
 .container textarea,
 .container select {
-  color:
-    var(--color-text);
-  background: #10272b;
   border-color:
-    var(--color-border-strong);
+    var(--color-crisis-border-strong);
+
+  color:
+    var(--color-crisis-text);
+  background:
+    var(--color-crisis-background);
 }
 
 .container input::placeholder,
 .container textarea::placeholder {
-  color: #78918f;
+  color:
+    var(--color-crisis-text-soft);
 }
+
+/* ==========================
+   FINISH BAR
+========================== */
 
 .finishBar {
   position: fixed;
   z-index: 50;
   left: 50%;
+
   bottom:
     max(
       12px,
       env(safe-area-inset-bottom)
     );
 
-  width: calc(100% - 32px);
+  width:
+    calc(100% - 32px);
   max-width: 900px;
   min-height: 68px;
 
@@ -545,27 +659,33 @@
   gap: var(--space-3);
 
   padding:
-    10px 10px
-    10px var(--space-4);
+    10px
+    10px
+    10px
+    var(--space-4);
 
   border: 1px solid
-    var(--color-primary-border);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-large);
 
   color:
-    var(--color-text);
+    var(--color-crisis-text-soft);
   background:
-    rgb(12 35 39 / 96%);
+    rgba(7, 29, 27, 0.97);
 
   box-shadow:
     0 18px 48px
-      rgb(1 10 12 / 42%);
+      rgba(1, 10, 9, 0.42);
 
   transform:
     translateX(-50%);
 
-  backdrop-filter: blur(14px);
+  backdrop-filter:
+    blur(14px);
+
+  -webkit-backdrop-filter:
+    blur(14px);
 }
 
 .finishBarStatus {
@@ -582,14 +702,12 @@
 
   flex: 0 0 auto;
 
+  border: 2px solid
+    var(--color-crisis-text-soft);
   border-radius: 50%;
 
   background:
-    var(--crisis-accent);
-
-  box-shadow:
-    0 0 0 5px
-      var(--crisis-accent-soft);
+    transparent;
 }
 
 .finishBarStatus div {
@@ -601,14 +719,14 @@
 
 .finishBarStatus strong {
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
 
   font-size: 0.88rem;
 }
 
 .finishBarStatus small {
   color:
-    var(--color-text-soft);
+    var(--color-crisis-text-soft);
 
   font-size: 0.7rem;
 }
@@ -619,16 +737,18 @@
   flex: 0 0 auto;
 
   padding:
-    10px var(--space-5);
+    10px
+    var(--space-5);
 
   border: 1px solid
-    var(--crisis-accent);
+    var(--color-crisis-text);
   border-radius:
     var(--radius-medium);
 
-  color: #22180e;
+  color:
+    var(--color-crisis-text);
   background:
-    var(--crisis-accent);
+    transparent;
 
   font-size: 0.86rem;
   font-weight: 800;
@@ -637,8 +757,16 @@
 }
 
 .finishBarButton:hover {
-  background: #e7b779;
+  border-color: #ffffff;
+
+  color:
+    var(--color-crisis-background);
+  background: #ffffff;
 }
+
+/* ==========================
+   FINISH SHEET
+========================== */
 
 .finishSheetBackdrop {
   position: fixed;
@@ -658,9 +786,13 @@
     );
 
   background:
-    rgb(2 12 15 / 72%);
+    rgba(1, 10, 9, 0.76);
 
-  backdrop-filter: blur(5px);
+  backdrop-filter:
+    blur(5px);
+
+  -webkit-backdrop-filter:
+    blur(5px);
 }
 
 .finishSheet {
@@ -676,7 +808,7 @@
     var(--space-4);
 
   border: 1px solid
-    var(--color-primary-border);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-large)
     var(--radius-large)
@@ -684,13 +816,13 @@
     var(--radius-medium);
 
   color:
-    var(--color-text);
+    var(--color-crisis-text-soft);
   background:
-    var(--color-surface);
+    var(--color-crisis-surface);
 
   box-shadow:
     0 24px 70px
-      rgb(1 10 12 / 56%);
+      rgba(1, 10, 9, 0.56);
 }
 
 .finishSheetHandle {
@@ -705,8 +837,12 @@
     var(--radius-pill);
 
   background:
-    var(--color-border-strong);
+    var(--color-crisis-border-strong);
 }
+
+/* ==========================
+   SYMPTOMS
+========================== */
 
 .symptomsCard {
   display: grid;
@@ -721,17 +857,18 @@
 }
 
 .symptomsHeader h2 {
-  margin-bottom: var(--space-1);
+  margin-bottom:
+    var(--space-1);
 
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
 
   font-size: 1.1rem;
 }
 
 .symptomsHeader p {
   color:
-    var(--color-text-soft);
+    var(--color-crisis-text-soft);
 
   font-size: 0.82rem;
 }
@@ -743,12 +880,12 @@
   padding: var(--space-3);
 
   border: 1px solid
-    var(--color-primary-border);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-medium);
 
   background:
-    var(--color-primary-soft);
+    var(--color-crisis-surface-soft);
 }
 
 .selectedSymptoms h3,
@@ -756,7 +893,7 @@
 .symptomResults h3,
 .symptomCategories > h3 {
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
 
   font-size: 0.86rem;
 }
@@ -777,13 +914,14 @@
   padding: 6px 10px;
 
   border: 1px solid
-    var(--color-primary);
+    var(--color-crisis-text);
   border-radius:
     var(--radius-pill);
 
-  color: #0b2024;
+  color:
+    var(--color-crisis-background);
   background:
-    var(--color-primary);
+    var(--color-crisis-text);
 
   font-size: 0.75rem;
   font-weight: 750;
@@ -803,7 +941,7 @@
 
 .symptomSearch > span {
   color:
-    var(--color-text);
+    var(--color-crisis-text);
 
   font-size: 0.82rem;
   font-weight: 700;
@@ -816,20 +954,21 @@
   padding: 10px 14px;
 
   border: 1px solid
-    var(--color-border-strong);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-medium);
 
   color:
-    var(--color-text);
-  background: #10272b;
+    var(--color-crisis-text);
+  background:
+    var(--color-crisis-background);
 
   font: inherit;
 }
 
 .symptomSearch input:focus {
   border-color:
-    var(--color-primary);
+    var(--color-crisis-text);
 
   outline: 3px solid
     var(--color-focus);
@@ -846,7 +985,11 @@
 .symptomGrid {
   display: grid;
   grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
   gap: var(--space-2);
 }
 
@@ -860,14 +1003,14 @@
     var(--space-3);
 
   border: 1px solid
-    var(--color-border-strong);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-medium);
 
   color:
-    var(--color-text);
+    var(--color-crisis-text-soft);
   background:
-    var(--color-surface);
+    var(--color-crisis-surface);
 
   font-size: 0.78rem;
   font-weight: 700;
@@ -878,21 +1021,22 @@
 
 .symptomGrid button:hover {
   border-color:
-    var(--color-primary);
+    var(--color-crisis-text-soft);
 
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
   background:
-    var(--color-primary-soft);
+    var(--color-crisis-surface-soft);
 }
 
 .symptomGrid button[aria-pressed='true'] {
   border-color:
-    var(--color-primary);
+    var(--color-crisis-text);
 
-  color: #0b2024;
+  color:
+    var(--color-crisis-background);
   background:
-    var(--color-primary);
+    var(--color-crisis-text);
 }
 
 .categoryScroller {
@@ -903,13 +1047,20 @@
   display: flex;
   gap: var(--space-2);
 
-  padding-bottom: var(--space-1);
+  padding-bottom:
+    var(--space-1);
 
   overflow-x: auto;
   overflow-y: hidden;
-  overscroll-behavior-inline: contain;
-  scroll-snap-type: x proximity;
+
+  overscroll-behavior-inline:
+    contain;
+
+  scroll-snap-type:
+    x proximity;
+
   touch-action: pan-x;
+
   scrollbar-width: thin;
 }
 
@@ -929,32 +1080,34 @@
     var(--space-3);
 
   border: 1px solid
-    var(--color-border-strong);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-medium);
 
   color:
-    var(--color-text);
+    var(--color-crisis-text-soft);
   background:
-    var(--color-surface);
+    var(--color-crisis-surface);
 
   font-size: 0.75rem;
   font-weight: 700;
   text-align: left;
 
   box-shadow: none;
+
   scroll-snap-align: start;
 }
 
 .categoryScroller > button:hover,
-.categoryScroller > button[aria-pressed='true'] {
+.categoryScroller
+  > button[aria-pressed='true'] {
   border-color:
-    var(--color-primary);
+    var(--color-crisis-text-soft);
 
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
   background:
-    var(--color-primary-soft);
+    var(--color-crisis-surface-soft);
 }
 
 .categoryScroller small {
@@ -964,12 +1117,14 @@
   display: grid;
   place-items: center;
 
+  border: 1px solid
+    var(--color-crisis-border);
   border-radius: 50%;
 
   color:
-    var(--color-primary);
+    var(--color-crisis-text);
   background:
-    var(--color-surface-soft);
+    transparent;
 
   font-size: 0.66rem;
 }
@@ -981,12 +1136,12 @@
   padding: var(--space-3);
 
   border: 1px solid
-    var(--color-primary-border);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-medium);
 
   background:
-    var(--color-surface-soft);
+    var(--color-crisis-surface-soft);
 }
 
 .categoryPanelHeader {
@@ -998,7 +1153,7 @@
 
 .categoryPanelHeader h4 {
   color:
-    var(--color-text-strong);
+    var(--color-crisis-text);
 
   font-size: 0.86rem;
 }
@@ -1009,14 +1164,14 @@
   padding: 5px 9px;
 
   border: 1px solid
-    var(--color-border-strong);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-pill);
 
   color:
-    var(--color-text-soft);
+    var(--color-crisis-text-soft);
   background:
-    var(--color-surface);
+    var(--color-crisis-surface);
 
   font-size: 0.7rem;
 
@@ -1027,12 +1182,12 @@
   padding: var(--space-4);
 
   border: 1px dashed
-    var(--color-border-strong);
+    var(--color-crisis-border-strong);
   border-radius:
     var(--radius-medium);
 
   color:
-    var(--color-text-soft);
+    var(--color-crisis-text-soft);
 
   font-size: 0.82rem;
   text-align: center;
@@ -1047,13 +1202,14 @@
     var(--space-4);
 
   border: 1px solid
-    var(--color-primary);
+    var(--color-crisis-text);
   border-radius:
     var(--radius-medium);
 
-  color: #0b2024;
+  color:
+    var(--color-crisis-background);
   background:
-    var(--color-primary);
+    var(--color-crisis-text);
 
   font-size: 0.86rem;
   font-weight: 800;
@@ -1062,15 +1218,124 @@
 }
 
 .symptomsDone:hover {
-  background:
-    var(--color-primary-hover);
+  border-color: #ffffff;
+
+  color:
+    var(--color-crisis-background);
+  background: #ffffff;
 }
+
+/* ==========================
+   PAIN CARD DETAILS
+========================== */
+
+.painCard {
+  gap: var(--space-3);
+}
+
+.painHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.painHeader > div {
+  display: grid;
+  gap: 2px;
+}
+
+.painHeader > p {
+  max-width: 230px;
+
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.painEyebrow {
+  color:
+    var(--color-crisis-text-soft)
+    !important;
+
+  font-size: 0.7rem !important;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.painValue strong small {
+  font-size: 0.45em;
+  font-weight: 700;
+}
+
+.pendingBadge {
+  margin-inline-start: auto;
+
+  padding: 5px 9px;
+
+  border: 1px solid
+    var(--color-crisis-border-strong);
+  border-radius:
+    var(--radius-pill);
+
+  color:
+    var(--color-crisis-text-soft);
+  background:
+    var(--color-crisis-surface-soft);
+
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.painSlider {
+  display: grid;
+  gap: var(--space-2);
+
+  color:
+    var(--color-crisis-text-soft);
+
+  font-size: 0.8rem;
+}
+
+.painHistory {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.painHistory p {
+  margin: 0;
+
+  font-size: 0.78rem;
+}
+
+.painHistory .secondary {
+  min-height: 36px;
+
+  flex: 0 0 auto;
+
+  padding: 6px 10px;
+
+  font-size: 0.75rem;
+}
+
+.painFirstUpdate {
+  margin: 0;
+
+  font-size: 0.78rem;
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
 
 @media (max-width: 640px) {
   .container {
     gap: var(--space-3);
 
     padding: var(--space-3);
+
     padding-bottom:
       calc(
         var(--space-3) +
@@ -1124,7 +1389,9 @@
   }
 
   .finishBar {
-    width: calc(100% - 20px);
+    width:
+      calc(100% - 20px);
+
     min-height: 64px;
 
     bottom:
@@ -1134,8 +1401,10 @@
       );
 
     padding:
-      8px 8px
-      8px var(--space-3);
+      8px
+      8px
+      8px
+      var(--space-3);
 
     border-radius:
       var(--radius-medium);
@@ -1145,7 +1414,8 @@
     min-height: 46px;
 
     padding:
-      9px var(--space-4);
+      9px
+      var(--space-4);
   }
 
   .finishSheetBackdrop {
@@ -1158,117 +1428,14 @@
     border-right: 0;
     border-bottom: 0;
     border-left: 0;
+
     border-radius:
       var(--radius-large)
       var(--radius-large)
-      0 0;
+      0
+      0;
   }
-}
 
-@media (max-width: 380px) {
-  .card
-    [role='group'][aria-label='Intensidad rápida del dolor'] {
-    grid-template-columns:
-      repeat(
-        3,
-        minmax(44px, 1fr)
-      );
-  }
-}
-
-.painCard {
-  gap: var(--space-3);
-}
-
-.painHeader {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.painHeader > div {
-  display: grid;
-  gap: 2px;
-}
-
-.painHeader > p {
-  max-width: 230px;
-
-  font-size: 0.82rem;
-  text-align: right;
-}
-
-.painEyebrow {
-  color: var(--color-primary) !important;
-
-  font-size: 0.7rem !important;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.painValue strong small {
-  font-size: 0.45em;
-  font-weight: 700;
-}
-
-.pendingBadge {
-  margin-inline-start: auto;
-
-  padding: 5px 9px;
-
-  border: 1px solid
-    rgb(221 168 107 / 35%);
-  border-radius: var(--radius-pill);
-
-  color: var(--crisis-accent);
-  background:
-    var(--crisis-accent-soft);
-
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-
-.painSlider {
-  display: grid;
-  gap: var(--space-2);
-
-  color: var(--color-text-soft);
-
-  font-size: 0.8rem;
-}
-
-.painHistory {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.painHistory p {
-  margin: 0;
-
-  font-size: 0.78rem;
-}
-
-.painHistory .secondary {
-  min-height: 36px;
-
-  flex: 0 0 auto;
-
-  padding: 6px 10px;
-
-  font-size: 0.75rem;
-}
-
-.painFirstUpdate {
-  margin: 0;
-
-  font-size: 0.78rem;
-}
-
-@media (max-width: 640px) {
   .painHeader {
     align-items: flex-start;
   }
@@ -1298,11 +1465,26 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (max-width: 380px) {
+  .card
+    [role='group'][aria-label='Intensidad rápida del dolor'] {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(44px, 1fr)
+      );
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
   .container *,
   .container *::before,
   .container *::after {
     scroll-behavior: auto;
+
     transition: none;
     animation: none;
   }
