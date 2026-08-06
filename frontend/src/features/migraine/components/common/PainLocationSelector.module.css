@@ -6,16 +6,14 @@
 
   padding: var(--space-5);
 
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-large);
+  border: 1px solid
+    var(--color-border);
+  border-radius:
+    var(--radius-large);
 
   color: var(--color-text);
   background:
-    linear-gradient(
-      145deg,
-      var(--color-surface-soft),
-      var(--color-surface)
-    );
+    var(--color-surface);
 }
 
 .header {
@@ -28,7 +26,8 @@
 .title {
   margin: 0 0 var(--space-2);
 
-  color: var(--color-text-strong);
+  color:
+    var(--color-text-strong);
 
   font-size: 1.2rem;
   line-height: 1.3;
@@ -39,7 +38,8 @@
 
   margin: 0;
 
-  color: var(--color-text-soft);
+  color:
+    var(--color-text-soft);
 
   font-size: 0.875rem;
   line-height: 1.5;
@@ -52,11 +52,12 @@
 
   padding: 7px 12px;
 
-  border: 1px solid rgb(212 154 145 / 38%);
-  border-radius: var(--radius-pill);
+  border: 1px solid #d9567f;
+  border-radius:
+    var(--radius-pill);
 
-  color: #e2b3ac;
-  background: rgb(212 154 145 / 8%);
+  color: #d9567f;
+  background: transparent;
 
   font-size: 0.78rem;
   font-weight: 750;
@@ -65,41 +66,44 @@
 }
 
 .clearButton:hover {
-  border-color: #d49a91;
-
-  color: #f3ceca;
-  background: rgb(212 154 145 / 14%);
+  color: #ffffff;
+  background: #c84572;
 }
 
 .rolePicker {
   display: grid;
   grid-template-columns:
-    minmax(170px, 0.65fr)
-    minmax(0, 1.35fr);
+    minmax(190px, 0.7fr)
+    minmax(0, 1.3fr);
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-5);
 
-  padding: var(--space-4);
+  padding: var(--space-5);
 
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
+  border: 1px solid
+    var(--color-border);
+  border-radius:
+    var(--radius-medium);
 
-  background: var(--color-surface);
+  background:
+    var(--color-surface-soft);
 }
 
 .rolePicker h4 {
   margin-bottom: var(--space-1);
 
-  color: var(--color-text-strong);
+  color:
+    var(--color-text-strong);
 
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .rolePicker p {
-  color: var(--color-text-soft);
+  color:
+    var(--color-text-soft);
 
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .roleOptions {
@@ -110,66 +114,82 @@
 }
 
 .roleOptions button {
-  min-height: 44px;
+  min-height: 52px;
 
-  padding: 8px 10px;
+  padding: 9px 11px;
 
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-medium);
+  border: 1px solid
+    var(--color-border-strong);
+  border-radius:
+    var(--radius-medium);
 
   color: var(--color-text);
-  background: var(--color-surface-soft);
+  background:
+    var(--color-surface);
 
   font-size: 0.76rem;
   font-weight: 750;
+  line-height: 1.3;
 
   box-shadow: none;
 }
 
-.roleOptions button:hover {
-  border-color: var(--color-primary);
+.roleOptions button:hover:not(:disabled) {
+  border-color:
+    var(--color-primary-border);
 
-  color: var(--color-text-strong);
-  background: var(--color-primary-soft);
+  color:
+    var(--color-text-strong);
+  background:
+    var(--color-primary-soft);
 }
 
-.roleOptions button[aria-pressed='true'][data-role='primary'] {
-  border-color: #dda86b;
-
-  color: #22180e;
-  background: #dda86b;
+.roleOptions button:disabled {
+  opacity: 0.48;
 }
 
 .roleOptions button[aria-pressed='true'][data-role='origin'] {
-  border-color: #d49a91;
+  border-color: #a995d6;
 
-  color: #251313;
-  background: #d49a91;
+  color: #202344;
+  background: #c9bce9;
+}
+
+.roleOptions button[aria-pressed='true'][data-role='primary'] {
+  border-color: #d9567f;
+
+  color: #ffffff;
+  background: #d9567f;
 }
 
 .roleOptions button[aria-pressed='true'][data-role='additional'] {
-  border-color: var(--color-primary);
+  border-color: #94b982;
 
-  color: #0b2024;
-  background: var(--color-primary);
+  color: #173d31;
+  background: #b9d5a8;
 }
 
 .textSelector {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
+  border: 1px solid
+    var(--color-border);
+  border-radius:
+    var(--radius-medium);
 
-  background: var(--color-surface);
+  background:
+    var(--color-surface-soft);
 }
 
 .textSelector summary {
-  min-height: 48px;
+  min-height: 50px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
 
-  padding: var(--space-3) var(--space-4);
+  padding:
+    var(--space-3)
+    var(--space-4);
 
   color: var(--color-text);
 
@@ -187,7 +207,8 @@
 .textSelector summary::after {
   content: '+';
 
-  color: var(--color-primary);
+  color:
+    var(--color-primary);
 
   font-size: 1.1rem;
 }
@@ -197,7 +218,8 @@
 }
 
 .textSelector[open] summary {
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid
+    var(--color-border);
 }
 
 .search {
@@ -216,23 +238,28 @@
 
 .search input {
   width: 100%;
-  min-height: 46px;
+  min-height: 48px;
 
   padding: 10px 14px;
 
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-medium);
+  border: 1px solid
+    var(--color-border-strong);
+  border-radius:
+    var(--radius-medium);
 
   color: var(--color-text);
-  background: var(--color-surface-soft);
+  background:
+    var(--color-surface);
 
   font: inherit;
 }
 
 .search input:focus {
-  border-color: var(--color-primary);
+  border-color:
+    var(--color-primary);
 
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid
+    var(--color-focus);
   outline-offset: 1px;
 }
 
@@ -249,15 +276,18 @@
 
 .regionList button,
 .sideOptions button {
-  min-height: 42px;
+  min-height: 44px;
 
   padding: 8px 10px;
 
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
+  border: 1px solid
+    var(--color-border);
+  border-radius:
+    var(--radius-medium);
 
   color: var(--color-text);
-  background: var(--color-surface-soft);
+  background:
+    var(--color-surface);
 
   font-size: 0.76rem;
   font-weight: 700;
@@ -267,39 +297,78 @@
 
 .regionList button:hover,
 .sideOptions button:hover {
-  border-color: var(--color-primary);
+  border-color:
+    var(--color-primary);
 
-  color: var(--color-text-strong);
-  background: var(--color-primary-soft);
+  color:
+    var(--color-text-strong);
+  background:
+    var(--color-primary-soft);
 }
 
 .regionList button[aria-pressed='true'],
 .sideOptions button[aria-pressed='true'] {
-  border-color: var(--color-primary);
+  border-color:
+    var(--color-primary);
 
-  color: #0b2024;
-  background: var(--color-primary);
+  color: #ffffff;
+  background:
+    var(--color-primary);
 }
 
 .sideConfiguration {
   display: grid;
   gap: var(--space-3);
 
+  padding: var(--space-4);
+
+  border: 1px solid
+    var(--color-primary-border);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--color-primary-soft);
+}
+
+.textSelector .sideConfiguration {
   margin:
     0 var(--space-4)
     var(--space-4);
-  padding: var(--space-4);
+}
 
-  border: 1px solid var(--color-primary-border);
-  border-radius: var(--radius-medium);
+.container > .sideConfiguration {
+  grid-template-columns:
+    minmax(0, 1fr) auto;
+  align-items: center;
 
-  background: var(--color-primary-soft);
+  border-color: #94b982;
+
+  background:
+    color-mix(
+      in srgb,
+      #b9d5a8 32%,
+      var(--color-surface)
+    );
 }
 
 .sideConfiguration h4 {
-  color: var(--color-text-strong);
+  margin: 0;
+
+  color:
+    var(--color-text-strong);
 
   font-size: 0.9rem;
+}
+
+.sideConfiguration p {
+  margin: 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
 .sideOptions {
@@ -309,110 +378,30 @@
 }
 
 .addButton {
-  min-height: 44px;
+  min-height: 46px;
 
   justify-self: start;
 
-  padding: 9px var(--space-4);
+  padding:
+    9px var(--space-4);
 
-  color: #0b2024;
-  background: var(--color-primary);
-}
-
-.addButton:hover {
-  background: var(--color-primary-hover);
-}
-
-.selected {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.selected > h4 {
-  color: var(--color-text-strong);
-
-  font-size: 0.9rem;
-}
-
-.selected ul {
-  display: grid;
-  gap: var(--space-2);
-
-  margin: 0;
-  padding: 0;
-
-  list-style: none;
-}
-
-.selected li {
-  min-height: 54px;
-
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: var(--space-3);
-
-  padding: var(--space-3) var(--space-4);
-
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
-
-  background: var(--color-surface);
-}
-
-.selected li strong {
-  color: var(--color-text-strong);
-
-  font-size: 0.84rem;
-}
-
-.roleMarker {
-  padding: 5px 8px;
-
-  border-radius: var(--radius-pill);
-
-  font-size: 0.65rem;
-  font-weight: 850;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.roleMarker[data-role='primary'] {
-  color: #22180e;
-  background: #dda86b;
-}
-
-.roleMarker[data-role='origin'] {
-  color: #251313;
-  background: #d49a91;
-}
-
-.roleMarker[data-role='additional'] {
-  color: #0b2024;
-  background: var(--color-primary);
-}
-
-.selected li > button {
-  min-height: 34px;
-
-  padding: 6px 10px;
-
-  border: 1px solid rgb(212 154 145 / 32%);
-  border-radius: var(--radius-pill);
-
-  color: #e2b3ac;
-  background: rgb(212 154 145 / 8%);
-
-  font-size: 0.72rem;
-  font-weight: 750;
+  color: #ffffff;
+  background:
+    var(--color-primary);
 
   box-shadow: none;
 }
 
-.selected li > button:hover {
-  border-color: #d49a91;
+.addButton:hover:not(:disabled) {
+  background:
+    var(--color-primary-hover);
+}
 
-  background: rgb(212 154 145 / 14%);
+.addButton:disabled {
+  color:
+    var(--color-text-disabled);
+  background:
+    var(--color-surface-muted);
 }
 
 @media (max-width: 720px) {
@@ -436,7 +425,8 @@
 
     padding: var(--space-3);
 
-    border-radius: var(--radius-medium);
+    border-radius:
+      var(--radius-medium);
   }
 
   .header {
@@ -447,8 +437,21 @@
     width: 100%;
   }
 
+  .rolePicker {
+    gap: var(--space-4);
+
+    padding: var(--space-4);
+  }
+
   .roleOptions {
     grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .roleOptions button {
+    min-height: 52px;
+
+    text-align: left;
   }
 
   .regionList {
@@ -461,31 +464,21 @@
       repeat(2, minmax(0, 1fr));
   }
 
-  .addButton {
+  .container > .sideConfiguration {
+    grid-template-columns: 1fr;
+  }
+
+  .addButton,
+  .container > .sideConfiguration .addButton {
     width: 100%;
-  }
 
-  .selected li {
-    grid-template-columns: 1fr auto;
-  }
-
-  .roleMarker {
-    grid-column: 1 / -1;
-    justify-self: start;
+    justify-self: stretch;
   }
 }
 
 @media (max-width: 380px) {
   .sideOptions {
     grid-template-columns: 1fr;
-  }
-
-  .selected li {
-    grid-template-columns: 1fr;
-  }
-
-  .selected li > button {
-    width: 100%;
   }
 }
 

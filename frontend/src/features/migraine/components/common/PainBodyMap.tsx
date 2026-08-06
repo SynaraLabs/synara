@@ -318,14 +318,53 @@ const roleLabels:
   additional: 'Adicional',
 };
 
-function findPoint(
+type VisualLocationRole =
+  | PainLocationRole
+  | 'origin-primary';
+
+function findPoints(
   points: PainLocationPoint[],
   zone: MapZone,
-): PainLocationPoint | undefined {
-  return points.find(
+): PainLocationPoint[] {
+  return points.filter(
     point =>
       point.region === zone.region &&
       point.side === zone.side,
+  );
+}
+
+function getVisualRole(
+  points: PainLocationPoint[],
+): VisualLocationRole | undefined {
+  const hasOrigin =
+    points.some(
+      point =>
+        point.role === 'origin',
+    );
+
+  const hasPrimary =
+    points.some(
+      point =>
+        point.role === 'primary',
+    );
+
+  if (hasOrigin && hasPrimary) {
+    return 'origin-primary';
+  }
+
+  return points[0]?.role;
+}
+
+function getRoleLabel(
+  role: VisualLocationRole,
+): string {
+  if (role === 'origin-primary') {
+    return 'Inicio y principal';
+  }
+
+  return (
+    roleLabels[role] ??
+    'Seleccionada'
   );
 }
 
@@ -449,8 +488,8 @@ export function PainBodyMap({
 
         {visibleZones.map(
           zone => {
-            const point =
-              findPoint(
+            const points =
+              findPoints(
                 selectedPoints,
                 zone,
               );
@@ -462,7 +501,7 @@ export function PainBodyMap({
                 zone.side;
 
             const role =
-              point?.role;
+              getVisualRole(points);
 
             return (
               <button
@@ -470,9 +509,15 @@ export function PainBodyMap({
                 type="button"
                 className={`${styles.zone} ${zone.className}`}
                 disabled={disabled}
-                aria-label={zone.label}
+                aria-label={
+                  role
+                    ? `${zone.label}: ${getRoleLabel(
+                        role,
+                      )}`
+                    : zone.label
+                }
                 aria-pressed={
-                  Boolean(point) ||
+                  points.length > 0 ||
                   isPending
                 }
                 data-role={role}
@@ -495,12 +540,7 @@ export function PainBodyMap({
 
                 {role && (
                   <small>
-                    {
-                      roleLabels[
-                        role
-                      ] ??
-                      'Seleccionada'
-                    }
+                    {getRoleLabel(role)}
                   </small>
                 )}
               </button>
@@ -514,15 +554,15 @@ export function PainBodyMap({
         aria-label="Leyenda del mapa"
       >
         <span
-          className={styles.primaryLegend}
+          className={styles.originLegend}
         >
-          Zona principal
+          Lugar de inicio
         </span>
 
         <span
-          className={styles.originLegend}
+          className={styles.primaryLegend}
         >
-          Punto de inicio
+          Zona principal
         </span>
 
         <span
