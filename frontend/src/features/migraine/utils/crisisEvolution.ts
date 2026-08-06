@@ -132,15 +132,11 @@ const isPainLocationPoint = (
     return false;
   }
 
-  const region =
-    value.region;
+  const region = value.region;
 
   if (
     typeof region !== 'string' ||
-    !(
-      region in
-      painRegionCatalogById
-    )
+    !(region in painRegionCatalogById)
   ) {
     return false;
   }
@@ -151,6 +147,18 @@ const isPainLocationPoint = (
   );
 };
 
+const getUniqueLocationLabels = (
+  points: PainLocationPoint[],
+): string[] => {
+  return Array.from(
+    new Set(
+      points.map(
+        formatPainLocationPoint,
+      ),
+    ),
+  );
+};
+
 const getLocationLabels = (
   value: unknown,
 ): string[] => {
@@ -158,51 +166,73 @@ const getLocationLabels = (
     return [];
   }
 
-  const points:
-    PainLocationPoint[] = [];
+  const parts: string[] = [];
 
-  if (
-    isPainLocationPoint(
-      value.primary,
-    )
-  ) {
-    points.push(
-      value.primary,
-    );
-  }
+  let originLabel:
+    string | undefined;
+
+  let primaryLabel:
+    string | undefined;
 
   if (
     isPainLocationPoint(
       value.origin,
     )
   ) {
-    points.push(
-      value.origin,
+    originLabel =
+      formatPainLocationPoint(
+        value.origin,
+      );
+
+    parts.push(
+      `Inicio: ${originLabel}`,
     );
   }
 
   if (
-    Array.isArray(
-      value.additional,
+    isPainLocationPoint(
+      value.primary,
     )
   ) {
-    points.push(
-      ...value.additional.filter(
-        isPainLocationPoint,
-      ),
+    primaryLabel =
+      formatPainLocationPoint(
+        value.primary,
+      );
+
+    parts.push(
+      `Principal: ${primaryLabel}`,
     );
   }
 
-  const uniqueLabels =
-    new Set(
-      points.map(
-        formatPainLocationPoint,
-      ),
+  const additionalPoints =
+    Array.isArray(value.additional)
+      ? value.additional.filter(
+          isPainLocationPoint,
+        )
+      : [];
+
+  const additionalLabels =
+    getUniqueLocationLabels(
+      additionalPoints,
+    ).filter(
+      label =>
+        label !== originLabel &&
+        label !== primaryLabel,
     );
 
-  return Array.from(
-    uniqueLabels,
-  );
+  if (additionalLabels.length > 0) {
+    parts.push(
+      `Adicionales: ${additionalLabels.join(
+        ', ',
+      )}`,
+    );
+  }
+
+  if (parts.length === 0) {
+    return [];
+  }
+
+  return [parts.join(' · ')];
 };
 
 const getSymptoms = (
@@ -253,8 +283,7 @@ const getEventRecords = (
     }
 
     if (
-      event.type ===
-      'intensity'
+      event.type === 'intensity'
     ) {
       const intensity =
         event.data.intensity;
@@ -269,8 +298,7 @@ const getEventRecords = (
 
       records.push({
         id: event.id,
-        timestamp:
-          event.timestamp,
+        timestamp: event.timestamp,
         type: 'intensity',
         intensity,
       });
@@ -279,8 +307,7 @@ const getEventRecords = (
     }
 
     if (
-      event.type ===
-      'location'
+      event.type === 'location'
     ) {
       const locations =
         getLocationLabels(
@@ -288,16 +315,13 @@ const getEventRecords = (
             .anatomicalLocation,
         );
 
-      if (
-        locations.length === 0
-      ) {
+      if (locations.length === 0) {
         continue;
       }
 
       records.push({
         id: event.id,
-        timestamp:
-          event.timestamp,
+        timestamp: event.timestamp,
         type: 'location',
         locations,
       });
@@ -306,8 +330,7 @@ const getEventRecords = (
     }
 
     if (
-      event.type ===
-      'symptom'
+      event.type === 'symptom'
     ) {
       const symptom =
         event.data.symptom;
@@ -319,25 +342,21 @@ const getEventRecords = (
         !isCrisisSymptom(
           symptom,
         ) ||
-        !isSymptomAction(
-          action,
-        )
+        !isSymptomAction(action)
       ) {
         continue;
       }
 
       records.push({
         id: event.id,
-        timestamp:
-          event.timestamp,
+        timestamp: event.timestamp,
         type: 'symptom',
         symptom,
         symptomLabel:
           CRISIS_SYMPTOM_LABELS[
             symptom
           ],
-        symptomAction:
-          action,
+        symptomAction: action,
         activeSymptoms:
           getSymptoms(
             event.data.symptoms,
@@ -355,13 +374,9 @@ const addLegacyIntensityRecords = (
     CrisisEvolutionRecord[],
 ): void => {
   for (
-    const [
-      index,
-      painRecord,
-    ]
+    const [index, painRecord]
     of (
-      crisis.intensityHistory ??
-      []
+      crisis.intensityHistory ?? []
     ).entries()
   ) {
     if (
@@ -380,12 +395,8 @@ const addLegacyIntensityRecords = (
       id:
         painRecord.id ??
         `legacy-intensity-${index}-${painRecord.time}`,
-
-      timestamp:
-        painRecord.time,
-
+      timestamp: painRecord.time,
       type: 'intensity',
-
       intensity:
         painRecord.intensity,
     };
@@ -396,9 +407,7 @@ const addLegacyIntensityRecords = (
         candidate,
       )
     ) {
-      records.push(
-        candidate,
-      );
+      records.push(candidate);
     }
   }
 };
@@ -409,22 +418,16 @@ const addLegacyLocationRecords = (
     CrisisEvolutionRecord[],
 ): void => {
   for (
-    const [
-      index,
-      snapshot,
-    ]
+    const [index, snapshot]
     of (
-      crisis.locationHistory ??
-      []
+      crisis.locationHistory ?? []
     ).entries()
   ) {
     const timestamp =
       snapshot.occurredAt.value;
 
     if (
-      !isValidTimestamp(
-        timestamp,
-      )
+      !isValidTimestamp(timestamp)
     ) {
       continue;
     }
@@ -439,9 +442,7 @@ const addLegacyLocationRecords = (
         anatomicalMap,
       );
 
-    if (
-      locations.length === 0
-    ) {
+    if (locations.length === 0) {
       continue;
     }
 
@@ -462,11 +463,8 @@ const addLegacyLocationRecords = (
       id:
         snapshot.id ??
         `legacy-location-${index}-${timestamp}`,
-
       timestamp,
-
       type: 'location',
-
       locations,
     });
   }
