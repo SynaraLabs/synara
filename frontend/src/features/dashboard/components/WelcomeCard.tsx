@@ -28,7 +28,7 @@ export function WelcomeCard() {
   const greeting =
     name?.trim()
       ? `Hola, ${name.trim()}`
-      : 'Tu acompañamiento';
+      : 'Tu acompañamiento en migraña';
 
   return (
     <section
@@ -37,46 +37,15 @@ export function WelcomeCard() {
       }
       aria-labelledby="welcome-title"
     >
-      <header
-        className={
-          styles.welcomeHeader
-        }
-      >
-        <span
+      <div>
+        <p
           className={
-            styles.welcomeIcon
+            styles.greeting
           }
-          aria-hidden="true"
         >
-          S
-        </span>
+          {greeting}
+        </p>
 
-        <div>
-          <p
-            className={
-              styles.greeting
-            }
-          >
-            {greeting}
-          </p>
-
-          <p
-            className={
-              styles.welcomeHeaderDescription
-            }
-          >
-            Tu espacio para registrar,
-            comprender y acompañar tu
-            salud.
-          </p>
-        </div>
-      </header>
-
-      <div
-        className={
-          styles.welcomePaper
-        }
-      >
         <h1 id="welcome-title">
           Registrá lo que te pasa.
           <br />
