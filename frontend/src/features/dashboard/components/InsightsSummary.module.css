@@ -29,9 +29,7 @@
   color: #172542;
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size:
     clamp(
@@ -164,9 +162,7 @@
   color: #172542;
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size:
     clamp(

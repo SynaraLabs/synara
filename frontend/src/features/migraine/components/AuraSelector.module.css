@@ -41,9 +41,7 @@
     var(--color-text-strong);
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size:
     clamp(
@@ -438,9 +436,7 @@
     var(--color-text-strong);
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size: 1.05rem;
 }

@@ -34,9 +34,7 @@
   color: var(--postdrome-ink);
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size: 1.3rem;
 }
@@ -52,9 +50,7 @@
   color: var(--postdrome-ink);
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size:
     clamp(
@@ -444,9 +440,7 @@
   color: var(--postdrome-ink);
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size: 1.2rem;
 }

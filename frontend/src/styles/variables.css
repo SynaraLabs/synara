@@ -1,92 +1,156 @@
 :root {
   /* ==========================
-     SYNARA COLOR SYSTEM
+     SYNARA COLOR SYSTEM v1
 
-     Base:
-     cálida, clínica y humana.
-
-     Verde:
+     Verde bosque:
      identidad y continuidad.
 
-     Lila:
-     información y observación.
+     Verde salvia:
+     contexto y observación.
 
-     Frambuesa:
-     atención y acción.
+     Verde matcha:
+     recuperación y tratamiento.
+
+     Marfil:
+     calidez y espacio.
+
+     Lila y azul violáceo:
+     fases neurológicas.
+
+     Rosado empolvado:
+     acento y acción.
   ========================== */
 
-  --color-background: #f5f0e7;
+  --color-background: #f6f1e8;
 
   --color-surface: #fffcf7;
   --color-surface-soft: #f2eee7;
   --color-surface-muted: #e9e3da;
 
-  --color-text: #35413d;
-  --color-text-strong: #17253d;
-  --color-text-soft: #66716c;
-  --color-text-secondary: #66716c;
+  --color-text: #3d4944;
+  --color-text-strong: #20312b;
+  --color-text-soft: #68736e;
+  --color-text-secondary: #68736e;
   --color-text-disabled: #929b96;
+
+  /* ==========================
+     BRAND GREENS
+  ========================== */
+
+  --color-forest: #2f6b55;
+  --color-forest-hover: #275a48;
+  --color-forest-deep: #173f38;
+
+  --color-sage: #78947d;
+  --color-sage-soft: #e8eee7;
+  --color-sage-border: #bdcdbc;
+
+  --color-matcha: #7f9f63;
+  --color-matcha-soft: #edf3e5;
+  --color-matcha-border: #c4d3b3;
 
   /* Identidad principal */
 
-  --color-primary: #1f513c;
-  --color-primary-hover: #173e2e;
-  --color-primary-soft: #e4ead8;
-  --color-primary-border: #a9bc98;
+  --color-primary:
+    var(--color-forest);
 
-  /* Lila clínico */
+  --color-primary-hover:
+    var(--color-forest-hover);
 
-  --color-secondary: #6f5b91;
-  --color-secondary-soft: #eee9f5;
-  --color-secondary-border: #c9bddb;
+  --color-primary-soft: #e5efe8;
+  --color-primary-border: #aec8b7;
 
-  /* Frambuesa */
+  /* ==========================
+     SECONDARY COLORS
+  ========================== */
 
-  --color-accent: #b64f70;
-  --color-accent-hover: #963d5a;
-  --color-accent-soft: #f3dfe7;
-  --color-accent-border: #d9a7b9;
+  /* Lila premonitorio */
 
-  /* Estados semánticos */
+  --color-secondary: #8374b8;
+  --color-secondary-soft: #f0ecf7;
+  --color-secondary-border: #d0c7e2;
 
-  --color-success: #47745c;
-  --color-success-soft: #e4eee7;
+  /* Rosado empolvado */
 
-  /*
-   * El estado de advertencia usa
-   * ciruela en lugar de amarillo.
-   */
+  --color-accent: #c36e87;
+  --color-accent-hover: #a95870;
+  --color-accent-soft: #f5e7ec;
+  --color-accent-border: #dfb4c2;
 
-  --color-warning: #765f78;
-  --color-warning-soft: #eee7ef;
+  /* ==========================
+     SEMANTIC STATES
+  ========================== */
 
-  --color-danger: #a8445c;
-  --color-danger-hover: #89364a;
-  --color-danger-soft: #f3dfe4;
+  --color-success: #5f846d;
+  --color-success-soft: #e8f0e9;
 
-  /* Bordes */
+  --color-warning: #75637e;
+  --color-warning-soft: #eee9f1;
+
+  --color-danger: #a85c62;
+  --color-danger-hover: #8d4a50;
+  --color-danger-soft: #f4e6e6;
+
+  /* ==========================
+     BORDERS AND FOCUS
+  ========================== */
 
   --color-border: #ddd7ce;
   --color-border-strong: #c7c0b5;
 
   --color-focus:
-    rgba(31, 81, 60, 0.24);
+    rgb(47 107 85 / 24%);
 
   /* ==========================
      CLINICAL PHASE ACCENTS
   ========================== */
 
-  --color-premonitory: #6f5b91;
-  --color-premonitory-soft: #eee9f5;
+  --color-premonitory: #8374b8;
+  --color-premonitory-soft: #f0ecf7;
+  --color-premonitory-border: #d0c7e2;
 
-  --color-aura: #52658a;
-  --color-aura-soft: #e8ebf2;
+  --color-aura: #6578b8;
+  --color-aura-soft: #ebedf7;
+  --color-aura-border: #c7cee5;
 
-  --color-crisis: #b64f70;
-  --color-crisis-soft: #f3dfe7;
+  /*
+   * Crisis utiliza verde bosque
+   * profundo. El rosado se reserva
+   * para la escala y el mapa.
+   */
 
-  --color-recovery: #47745c;
-  --color-recovery-soft: #e4eee7;
+  --color-crisis:
+    var(--color-forest-deep);
+
+  --color-crisis-soft: #e3ebe7;
+  --color-crisis-border: #afc3ba;
+
+  --color-recovery:
+    var(--color-matcha);
+
+  --color-recovery-soft:
+    var(--color-matcha-soft);
+
+  --color-recovery-border:
+    var(--color-matcha-border);
+
+  --color-trigger:
+    var(--color-sage);
+
+  --color-trigger-soft:
+    var(--color-sage-soft);
+
+  --color-trigger-border:
+    var(--color-sage-border);
+
+  --color-treatment:
+    var(--color-matcha);
+
+  --color-treatment-soft:
+    var(--color-matcha-soft);
+
+  --color-treatment-border:
+    var(--color-matcha-border);
 
   /* ==========================
      PAPER DETAILS
@@ -94,17 +158,25 @@
      Uso reservado para Inicio.
   ========================== */
 
-  --color-paper-cream: #f5f0e7;
-  --color-paper-lilac: #ddd3e8;
-  --color-paper-matcha: #cfdcc0;
-  --color-paper-raspberry: #c57691;
+  --color-paper-cream: #f6f1e8;
+  --color-paper-lilac: #ddd4e8;
+  --color-paper-matcha: #cfddc2;
+  --color-paper-pink: #cf8ba0;
+
+  /*
+   * Alias temporal para estilos
+   * existentes del Inicio.
+   */
+
+  --color-paper-raspberry:
+    var(--color-paper-pink);
 
   /* ==========================
      CRISIS MODE
 
      Bajo estímulo.
-     El color se reserva para
-     escala y mapa del dolor.
+     Más profundo que el verde
+     general de la marca.
   ========================== */
 
   --color-crisis-background: #071d1b;
@@ -121,9 +193,9 @@
 
   --color-pain-none: #42584f;
   --color-pain-low: #82917d;
-  --color-pain-medium: #9b88ae;
-  --color-pain-high: #a86683;
-  --color-pain-severe: #b64f70;
+  --color-pain-medium: #9184ae;
+  --color-pain-high: #ad7189;
+  --color-pain-severe: #c05276;
 
   /* ==========================
      SPACING
@@ -148,10 +220,7 @@
   --radius-large: 20px;
   --radius-pill: 999px;
 
-  /*
-   * Compatibility aliases for
-   * existing components.
-   */
+  /* Compatibility aliases */
 
   --radius-sm:
     var(--radius-small);
@@ -170,21 +239,19 @@
 
   --shadow-small:
     0 1px 2px
-      rgba(23, 37, 61, 0.035),
+      rgb(32 49 43 / 3.5%),
     0 4px 14px
-      rgba(23, 37, 61, 0.045);
+      rgb(32 49 43 / 4.5%);
 
   --shadow-medium:
     0 10px 28px
-      rgba(23, 37, 61, 0.07);
+      rgb(32 49 43 / 7%);
 
   --shadow-large:
     0 16px 42px
-      rgba(23, 37, 61, 0.085);
+      rgb(32 49 43 / 8.5%);
 
-  /*
-   * Compatibility aliases.
-   */
+  /* Compatibility aliases */
 
   --shadow-sm:
     var(--shadow-small);

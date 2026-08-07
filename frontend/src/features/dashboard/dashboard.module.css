@@ -944,9 +944,7 @@
   color: #172542;
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
   font-weight: 700;
   letter-spacing: -0.035em;
 }
@@ -1046,9 +1044,7 @@
   color: #183e32;
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
   font-size: clamp(
     1.3rem,
     2.5vw,
@@ -1158,9 +1154,7 @@
   color: #172542;
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
   font-size: 1.35rem;
 }
 

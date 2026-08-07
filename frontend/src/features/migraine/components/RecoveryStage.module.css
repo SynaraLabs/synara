@@ -105,9 +105,7 @@
     var(--recovery-ink);
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size:
     clamp(
@@ -186,9 +184,7 @@
   color: #30284f;
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size: 1.25rem;
 }
@@ -301,9 +297,7 @@
     var(--recovery-ink);
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size: 1.2rem;
 }
