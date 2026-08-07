@@ -5,14 +5,29 @@ import {
 
 import styles from './ClinicalPhasePanel.module.css';
 
+export type ClinicalPhaseTone =
+  | 'premonitory'
+  | 'aura'
+  | 'crisis'
+  | 'recovery';
+
 interface Props {
   id: string;
+
   eyebrow?: string;
+
   title: string;
+
   description: string;
+
   icon: string;
+
   status?: string;
+
+  tone?: ClinicalPhaseTone;
+
   defaultOpen?: boolean;
+
   isOpen?: boolean;
 
   onOpenChange?: (
@@ -29,6 +44,7 @@ export function ClinicalPhasePanel({
   description,
   icon,
   status,
+  tone,
   defaultOpen = false,
   isOpen,
   onOpenChange,
@@ -58,7 +74,10 @@ export function ClinicalPhasePanel({
 
   return (
     <details
-      className={styles.panel}
+      className={
+        styles.panel
+      }
+      data-tone={tone}
       open={resolvedIsOpen}
       onToggle={event =>
         handleToggle(
@@ -67,13 +86,19 @@ export function ClinicalPhasePanel({
       }
     >
       <summary
-        className={styles.summary}
+        className={
+          styles.summary
+        }
       >
         <span
-          className={styles.main}
+          className={
+            styles.main
+          }
         >
           <span
-            className={styles.icon}
+            className={
+              styles.icon
+            }
             aria-hidden="true"
           >
             {icon}
@@ -110,7 +135,9 @@ export function ClinicalPhasePanel({
         </span>
 
         <span
-          className={styles.side}
+          className={
+            styles.side
+          }
         >
           {status && (
             <span
@@ -134,7 +161,9 @@ export function ClinicalPhasePanel({
       </summary>
 
       <div
-        className={styles.content}
+        className={
+          styles.content
+        }
         aria-labelledby={id}
       >
         {children}

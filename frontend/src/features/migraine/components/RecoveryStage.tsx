@@ -39,8 +39,7 @@ import {
   TriggerSelector,
 } from './TriggerSelector';
 
-import panelStyles from './TrackingPhasePanels.module.css';
-import styles from '../migraine.module.css';
+import styles from './RecoveryStage.module.css';
 
 interface Props {
   episode: MigraineEpisode;
@@ -372,32 +371,45 @@ export function RecoveryStage({
     episode.triggers?.length ?? 0;
 
   return (
-    <>
-      <section>
-        <h2>
-          Recuperación después de la
-          crisis
-        </h2>
+    <section className={styles.root}>
+      <header className={styles.intro}>
+        <span
+          className={styles.introIcon}
+          aria-hidden="true"
+        >
+          ◇
+        </span>
 
-        <p>
-          La crisis terminó y el
-          postdromo comenzó en ese
-          mismo momento. Registrá su
-          evolución o indicá que
-          finalmente no tuviste
-          postdromo.
-        </p>
-      </section>
+        <div className={styles.introContent}>
+          <p className={styles.eyebrow}>
+            Después de la crisis
+          </p>
+
+          <h2>
+            Recuperación
+          </h2>
+
+          <p className={styles.introDescription}>
+            La crisis terminó y el
+            postdromo comenzó en ese
+            mismo momento. Registrá su
+            evolución o indicá que
+            finalmente no tuviste
+            postdromo.
+          </p>
+        </div>
+      </header>
 
       <div
         className={
-          panelStyles.list
+          styles.panelList
         }
       >
         {hasOpenPremonitory && (
           <ClinicalPhasePanel
             id="recovery-premonitory-title"
             eyebrow="Fase pendiente"
+            tone="premonitory"
             title="Señales premonitorias"
             description="Indicá cuándo terminaron o registrá una nueva actualización."
             icon="◌"
@@ -424,6 +436,9 @@ export function RecoveryStage({
               !showPremonitoryEnd && (
                 <button
                   type="button"
+                  className={
+                    styles.resolutionAction
+                  }
                   onClick={
                     handleOpenResolution
                   }
@@ -434,7 +449,11 @@ export function RecoveryStage({
               )}
 
             {showPremonitoryOptions && (
-              <section>
+              <section
+                className={
+                  styles.resolutionOptions
+                }
+              >
                 <h3>
                   ¿Qué pasó con las
                   señales?
@@ -509,7 +528,7 @@ export function RecoveryStage({
             {feedback && (
               <p
                 className={
-                  styles.helperText
+                  styles.feedback
                 }
                 aria-live="polite"
               >
@@ -519,9 +538,10 @@ export function RecoveryStage({
           </ClinicalPhasePanel>
         )}
 
-        <ClinicalPhasePanel
+      <ClinicalPhasePanel
           id="recovery-postdrome-title"
-          eyebrow="Recuperación"
+        eyebrow="Recuperación"
+        tone="recovery"
           title="Postdromo"
           description="Registrá cómo evoluciona la recuperación después de la crisis."
           icon="◇"
@@ -544,9 +564,10 @@ export function RecoveryStage({
           />
         </ClinicalPhasePanel>
 
-        <ClinicalPhasePanel
+      <ClinicalPhasePanel
           id="recovery-triggers-title"
-          eyebrow="Contexto"
+        eyebrow="Contexto"
+        tone="recovery"
           title="Posibles desencadenantes"
           description="Registrá factores que podrían haber influido en este episodio."
           icon="⌁"
@@ -579,42 +600,71 @@ export function RecoveryStage({
       {hasOpenPremonitory && (
         <p
           className={
-            styles.helperText
+          styles.notice
           }
         >
-          Las señales previas todavía
-          continúan. Primero debés
-          registrar cuándo terminaron.
+        <strong>
+          Señales previas pendientes.
+        </strong>{' '}
+
+        Primero debés registrar cuándo
+        terminaron.
         </p>
       )}
 
       {isPostdromeActive && (
         <p
           className={
-            styles.helperText
+          styles.notice
           }
         >
-          El postdromo todavía
-          continúa. Registrá la
-          recuperación completa o
-          indicá que no tuviste
-          postdromo.
+        <strong>
+          La recuperación continúa.
+        </strong>{' '}
+
+        Registrá la recuperación
+        completa o indicá que no
+        tuviste postdromo.
         </p>
       )}
 
-      <button
-        type="button"
-        disabled={
-          !canCompleteEpisode
-        }
-        onClick={
-          handleCompleteEpisode
+      <section
+        className={
+          styles.completionArea
         }
       >
-        Finalizar episodio
-      </button>
+        <div
+          className={
+            styles.completionText
+          }
+        >
+          <h3>
+            Cerrar el seguimiento
+          </h3>
+
+          <p>
+            Podrás consultar todo el
+            episodio desde el historial.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className={
+            styles.completeButton
+          }
+          disabled={
+            !canCompleteEpisode
+          }
+          onClick={
+            handleCompleteEpisode
+          }
+        >
+          Finalizar episodio
+        </button>
+      </section>
 
       <MigraineDevTools />
-    </>
+    </section>
   );
 }

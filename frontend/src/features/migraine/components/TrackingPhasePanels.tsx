@@ -6,8 +6,13 @@ import type {
   MigraineEpisode,
 } from '../types/migraine.types';
 
-import { AuraSelector } from './AuraSelector';
-import { PremonitorySelector } from './PremonitorySelector';
+import {
+  AuraSelector,
+} from './AuraSelector';
+
+import {
+  PremonitorySelector,
+} from './PremonitorySelector';
 
 import {
   ClinicalPhasePanel,
@@ -149,6 +154,7 @@ export function TrackingPhasePanels({
             episode,
           )
         }
+        tone="premonitory"
         isOpen={
           activePanel ===
           'premonitory'
@@ -178,6 +184,7 @@ export function TrackingPhasePanels({
             episode,
           )
         }
+        tone="aura"
         isOpen={
           activePanel ===
           'aura'

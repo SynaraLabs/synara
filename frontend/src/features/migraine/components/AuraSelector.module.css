@@ -1,0 +1,529 @@
+.symptomSelector {
+  --aura-accent: #697dcc;
+
+  --aura-accent-strong:
+    #4f62ae;
+
+  --aura-soft:
+    #f0f2fa;
+
+  --aura-soft-strong:
+    #e4e8f7;
+
+  width: 100%;
+  min-width: 0;
+
+  display: grid;
+  gap: var(--space-5);
+}
+
+.symptomSelector > header {
+  display: grid;
+  gap: var(--space-2);
+
+  padding:
+    var(--space-5)
+    var(--space-6);
+
+  border-left: 4px solid
+    var(--aura-accent);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--aura-soft);
+}
+
+.symptomSelector > header h3 {
+  margin: 0;
+
+  color:
+    var(--color-text-strong);
+
+  font-family:
+    Georgia,
+    'Times New Roman',
+    serif;
+
+  font-size:
+    clamp(
+      1.45rem,
+      3vw,
+      1.9rem
+    );
+
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.symptomSelector > header p {
+  max-width: 680px;
+
+  margin: 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.helperText {
+  margin: 0;
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--aura-accent) 22%,
+      var(--color-border)
+    );
+
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--color-text);
+  background:
+    var(--aura-soft);
+
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.compactSelected {
+  display: grid;
+  gap: var(--space-3);
+
+  padding:
+    var(--space-4);
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--aura-accent) 25%,
+      var(--color-border)
+    );
+
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--aura-soft);
+}
+
+.compactSelected h4,
+.compactResults h4 {
+  margin: 0;
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.875rem;
+}
+
+.compactChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.compactChips button {
+  min-height: 36px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  padding: 7px 11px;
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--aura-accent) 32%,
+      var(--color-border)
+    );
+
+  border-radius:
+    var(--radius-pill);
+
+  color:
+    var(--aura-accent-strong);
+  background:
+    var(--color-surface);
+
+  font-size: 0.78rem;
+  font-weight: 700;
+
+  box-shadow: none;
+}
+
+.compactChips button:hover {
+  border-color:
+    var(--aura-accent);
+
+  background:
+    var(--aura-soft-strong);
+}
+
+.compactChips button span {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.symptomSelector > label {
+  display: grid;
+  gap: var(--space-2);
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.symptomSelector input,
+.symptomSelector select,
+.symptomSelector textarea {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--aura-accent) 20%,
+      var(--color-border-strong)
+    );
+
+  background:
+    var(--color-surface);
+}
+
+.symptomSelector input:focus,
+.symptomSelector select:focus,
+.symptomSelector textarea:focus {
+  border-color:
+    var(--aura-accent);
+
+  box-shadow:
+    0 0 0 4px
+    color-mix(
+      in srgb,
+      var(--aura-accent) 15%,
+      transparent
+    );
+}
+
+.compactCategories {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  display: flex;
+  gap: var(--space-2);
+
+  padding-bottom:
+    var(--space-1);
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  overscroll-behavior-inline:
+    contain;
+
+  scrollbar-width: thin;
+}
+
+.compactCategories button {
+  min-height: 38px;
+
+  flex: 0 0 auto;
+
+  padding: 7px 12px;
+
+  border: 1px solid
+    var(--color-border);
+  border-radius:
+    var(--radius-pill);
+
+  color:
+    var(--color-text-soft);
+  background:
+    var(--color-surface);
+
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  box-shadow: none;
+}
+
+.compactCategories button:hover {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--aura-accent) 45%,
+      var(--color-border)
+    );
+
+  color:
+    var(--aura-accent-strong);
+  background:
+    var(--aura-soft);
+}
+
+.compactCategories button[aria-pressed='true'] {
+  border-color:
+    var(--aura-accent);
+
+  color:
+    var(--aura-accent-strong);
+  background:
+    var(--aura-soft-strong);
+}
+
+.compactResults {
+  display: grid;
+  gap: var(--space-4);
+
+  padding:
+    var(--space-5);
+
+  border: 1px solid
+    var(--color-border);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--aura-soft) 42%,
+      var(--color-surface)
+    );
+}
+
+.compactChoiceGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: var(--space-2);
+}
+
+.compactChoice {
+  min-height: 46px;
+
+  justify-content: flex-start;
+
+  padding:
+    var(--space-2)
+    var(--space-3);
+
+  border: 1px solid
+    var(--color-border);
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--color-text);
+  background:
+    var(--color-surface);
+
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.3;
+  text-align: left;
+
+  box-shadow: none;
+}
+
+.compactChoice:hover {
+  border-color:
+    var(--aura-accent);
+
+  color:
+    var(--color-text-strong);
+  background:
+    var(--aura-soft);
+}
+
+.compactChoice[aria-pressed='true'] {
+  border-color:
+    var(--aura-accent-strong);
+
+  color: #ffffff;
+  background:
+    var(--aura-accent);
+
+  box-shadow: none;
+}
+
+.auraDetailsGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: var(--space-4);
+
+  padding-top:
+    var(--space-5);
+
+  border-top: 1px solid
+    var(--color-border);
+}
+
+.auraDetailsGrid label {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.symptomSelector > button {
+  min-height: 50px;
+
+  border-color:
+    var(--color-primary);
+
+  color: #ffffff;
+  background:
+    var(--color-primary);
+
+  box-shadow: none;
+}
+
+.symptomSelector > button:hover {
+  background:
+    var(--color-primary-hover);
+}
+
+.symptomSelector > section:not(
+  .compactSelected
+):not(
+  .compactResults
+) {
+  display: grid;
+  gap: var(--space-3);
+
+  padding:
+    var(--space-4);
+
+  border: 1px solid
+    var(--color-border);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--color-surface-soft);
+}
+
+.symptomSelector > section:not(
+  .compactSelected
+):not(
+  .compactResults
+) h4 {
+  margin: 0;
+
+  color:
+    var(--color-text-strong);
+
+  font-family:
+    Georgia,
+    'Times New Roman',
+    serif;
+
+  font-size: 1.05rem;
+}
+
+.symptomSelector ul {
+  display: grid;
+  gap: var(--space-3);
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.symptomSelector li {
+  display: grid;
+  gap: var(--space-1);
+
+  margin: 0;
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border-left: 3px solid
+    var(--aura-accent);
+
+  border-radius:
+    var(--radius-small);
+
+  background:
+    var(--color-surface);
+}
+
+.symptomSelector li p {
+  margin: 0;
+
+  color:
+    var(--color-text);
+
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .symptomSelector {
+    gap:
+      var(--space-4);
+  }
+
+  .symptomSelector > header {
+    padding:
+      var(--space-4);
+
+    border-left-width: 3px;
+  }
+
+  .symptomSelector > header h3 {
+    font-size: 1.4rem;
+  }
+
+  .symptomSelector > header p {
+    font-size: 0.84rem;
+  }
+
+  .compactResults {
+    padding:
+      var(--space-4);
+  }
+
+  .compactChoiceGrid,
+  .auraDetailsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .symptomSelector > button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .compactChips button,
+  .compactCategories button,
+  .compactChoice {
+    transition: none;
+  }
+}

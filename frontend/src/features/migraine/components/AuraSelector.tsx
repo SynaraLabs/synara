@@ -4,7 +4,7 @@ import {
   useState,
 } from 'react';
 
-import styles from '../migraine.module.css';
+import styles from './AuraSelector.module.css';
 
 import type {
   AuraClinicalSymptom,
