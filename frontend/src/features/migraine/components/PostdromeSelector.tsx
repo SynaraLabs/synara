@@ -4,7 +4,7 @@ import {
   useState,
 } from 'react';
 
-import styles from '../migraine.module.css';
+import styles from './PostdromeSelector.module.css';
 
 import type {
   PhaseTime,
@@ -971,16 +971,14 @@ export function PostdromeSelector({
 
   if (!postdrome.present) {
     return (
-      <section>
+      <section
+        className={styles.emptyState}
+      >
         <h3>
           Después de la crisis
         </h3>
 
-        <p
-          className={
-            styles.helperText
-          }
-        >
+        <p className={styles.helperText}>
           Registraste que esta crisis
           no tuvo postdromo.
         </p>
@@ -990,56 +988,52 @@ export function PostdromeSelector({
 
 
   return (
-    <section>
-      <h3>
-        Después de la crisis
-      </h3>
+    <section className={styles.root}>
+      <div className={styles.introduction}>
+        <h3>
+          Después de la crisis
+        </h3>
 
-      <p>
-        El postdromo comenzó cuando
-        terminó la crisis. Puede cambiar
-        durante varias horas o días.
-      </p>
+        <p>
+          El postdromo comenzó cuando
+          terminó la crisis. Puede cambiar
+          durante varias horas o días.
+        </p>
+      </div>
 
-      <p
-        className={
-          styles.helperText
-        }
-      >
+      <p className={styles.startInfo}>
         Inicio del postdromo:{' '}
 
-        {formatDateTime(
-          postdromeStart,
-          postdrome.time?.start
-            ?.precision,
-        )}
+        <strong>
+          {formatDateTime(
+            postdromeStart,
+            postdrome.time?.start
+              ?.precision,
+          )}
+        </strong>
       </p>
 
 
       {!isEnded && (
         <>
-          <h4>
-            ¿Cómo te sentís en esta
-            actualización?
-          </h4>
+          <div className={styles.updateIntro}>
+            <h4>
+              ¿Cómo te sentís en esta
+              actualización?
+            </h4>
 
-          <p
-            className={
-              styles.helperText
-            }
-          >
-            Seleccioná tu estado actual.
-            Podés registrar cambios
-            diferentes durante todo el
-            postdromo.
-          </p>
+            <p>
+              Seleccioná tu estado actual.
+              Podés registrar cambios
+              diferentes durante todo el
+              postdromo.
+            </p>
+          </div>
 
 
           {draftSymptoms.length > 0 && (
             <section
-              className={
-                styles.compactSelected
-              }
+              className={styles.selectedArea}
               aria-labelledby="selected-postdrome-symptoms"
             >
               <h4 id="selected-postdrome-symptoms">
@@ -1047,9 +1041,7 @@ export function PostdromeSelector({
               </h4>
 
               <div
-                className={
-                  styles.compactChips
-                }
+                className={styles.selectedChips}
               >
                 {draftSymptoms.map(
                   symptom => (
@@ -1078,16 +1070,18 @@ export function PostdromeSelector({
           )}
 
 
-          <label>
-            Buscar síntomas del
-            postdromo
+          <label className={styles.searchField}>
+            <span>
+              Buscar síntomas del
+              postdromo
+            </span>
 
             <input
               type="search"
               value={
                 searchQuery
               }
-              placeholder="Ejemplo: agotamiento, niebla mental o sensibilidad a la luz"
+              placeholder="Ej.: agotamiento, niebla mental o sensibilidad a la luz"
               onChange={event => {
                 setSearchQuery(
                   event.target.value,
@@ -1109,9 +1103,7 @@ export function PostdromeSelector({
 
           {!normalizedSearchQuery && (
             <div
-              className={
-                styles.compactCategories
-              }
+              className={styles.categoryRail}
               aria-label="Categorías de síntomas del postdromo"
             >
               <button
@@ -1157,9 +1149,7 @@ export function PostdromeSelector({
 
 
           <section
-            className={
-              styles.compactResults
-            }
+            className={styles.resultsArea}
           >
             <h4>
               {normalizedSearchQuery
@@ -1181,7 +1171,7 @@ export function PostdromeSelector({
               >
                 <div
                   className={
-                    styles.compactChoiceGrid
+                    styles.choiceGrid
                   }
                   role="group"
                   aria-label={
@@ -1198,7 +1188,7 @@ export function PostdromeSelector({
                         }
                         type="button"
                         className={
-                          styles.compactChoice
+                          styles.choice
                         }
                         aria-pressed={
                           draftSymptoms.includes(
@@ -1237,93 +1227,94 @@ export function PostdromeSelector({
           </section>
 
 
-          <label>
-            ¿Cuándo ocurrió esta
-            actualización?
+          <section className={styles.formFields}>
+            <label>
+              ¿Cuándo ocurrió esta
+              actualización?
 
-            <input
-              type="datetime-local"
-              value={
-                updateDateTime
-              }
-              min={
-                toLocalDateTimeValue(
-                  postdromeStart,
-                )
-              }
-              max={
-                getCurrentLocalDateTimeValue()
-              }
-              onChange={event => {
-                setUpdateDateTime(
-                  event.target.value,
-                );
+              <input
+                type="datetime-local"
+                value={
+                  updateDateTime
+                }
+                min={
+                  toLocalDateTimeValue(
+                    postdromeStart,
+                  )
+                }
+                max={
+                  getCurrentLocalDateTimeValue()
+                }
+                onChange={event => {
+                  setUpdateDateTime(
+                    event.target.value,
+                  );
 
-                setFeedback('');
-              }}
-            />
-          </label>
+                  setFeedback('');
+                }}
+              />
+            </label>
 
+            <label>
+              Nivel de recuperación
 
-          <label>
-            Nivel de recuperación
+              <select
+                value={
+                  draftRecoveryLevel
+                }
+                onChange={event => {
+                  setDraftRecoveryLevel(
+                    event.target.value as
+                      | RecoveryLevel
+                      | '',
+                  );
 
-            <select
-              value={
-                draftRecoveryLevel
-              }
-              onChange={event => {
-                setDraftRecoveryLevel(
-                  event.target.value as
-                    | RecoveryLevel
-                    | '',
-                );
+                  setFeedback('');
+                }}
+              >
+                <option value="">
+                  Sin indicar
+                </option>
 
-                setFeedback('');
-              }}
-            >
-              <option value="">
-                Sin indicar
-              </option>
+                <option value="minimal">
+                  Recuperación mínima
+                </option>
 
-              <option value="minimal">
-                Recuperación mínima
-              </option>
+                <option value="partial">
+                  Recuperación parcial
+                </option>
 
-              <option value="partial">
-                Recuperación parcial
-              </option>
+                <option value="mostlyRecovered">
+                  Casi completamente
+                  recuperada
+                </option>
+              </select>
+            </label>
 
-              <option value="mostlyRecovered">
-                Casi completamente
-                recuperada
-              </option>
-            </select>
-          </label>
+            <label className={styles.notesField}>
+              Nota de esta actualización
 
+              <textarea
+                value={
+                  draftNotes
+                }
+                onChange={event => {
+                  setDraftNotes(
+                    event.target.value,
+                  );
 
-          <label>
-            Nota de esta actualización
-
-            <textarea
-              value={
-                draftNotes
-              }
-              onChange={event => {
-                setDraftNotes(
-                  event.target.value,
-                );
-
-                setFeedback('');
-              }}
-              placeholder="Ejemplo: dormí dos horas y la niebla mental disminuyó"
-              rows={3}
-            />
-          </label>
+                  setFeedback('');
+                }}
+                placeholder="Ejemplo: dormí dos horas y la niebla mental disminuyó"
+                rows={3}
+              />
+            </label>
+          </section>
 
 
           <button
             type="button"
+            className={styles.registerButton}
             onClick={
               handleRegisterUpdate
             }
@@ -1336,9 +1327,7 @@ export function PostdromeSelector({
 
       {feedback && (
         <p
-          className={
-            styles.helperText
-          }
+          className={styles.feedback}
           aria-live="polite"
         >
           {feedback}
@@ -1348,12 +1337,12 @@ export function PostdromeSelector({
 
       {visibleUpdates.length >
         0 && (
-        <section>
+        <section className={styles.evolution}>
           <h4>
             Evolución del postdromo
           </h4>
 
-          <ul>
+          <ul className={styles.updateList}>
             {visibleUpdates.map(
               update => {
                 const updateTime =
@@ -1371,6 +1360,7 @@ export function PostdromeSelector({
 
                 return (
                   <li
+                    className={styles.updateCard}
                     key={
                       update.id
                     }
@@ -1448,6 +1438,7 @@ export function PostdromeSelector({
         !showEndSelector && (
           <button
             type="button"
+            className={styles.completeAction}
             onClick={() =>
               setShowEndSelector(
                 true,
@@ -1479,9 +1470,7 @@ export function PostdromeSelector({
 
       {isEnded && (
         <p
-          className={
-            styles.helperText
-          }
+          className={styles.completedState}
         >
           Recuperación completa:{' '}
 

@@ -22,6 +22,8 @@ interface Props {
   onChange?: (
     treatment: MigraineEpisode['treatment'],
   ) => void;
+
+  showHeader?: boolean;
 }
 
 const isTreatmentType = (
@@ -45,6 +47,7 @@ const isTreatmentEffectiveness = (
 export function TreatmentSelector({
   value,
   onChange,
+  showHeader = true,
 }: Props) {
   const storeTreatment =
     useMigraineStore(
@@ -230,18 +233,29 @@ export function TreatmentSelector({
       className={
         styles.treatmentSelector
       }
-      aria-labelledby="treatment-title"
+      aria-labelledby={
+        showHeader
+          ? 'treatment-title'
+          : undefined
+      }
+      aria-label={
+        showHeader
+          ? undefined
+          : 'Datos del tratamiento utilizado'
+      }
     >
-      <div>
-        <h3 id="treatment-title">
-          Tratamiento utilizado
-        </h3>
+      {showHeader && (
+        <div>
+          <h3 id="treatment-title">
+            Tratamiento utilizado
+          </h3>
 
-        <p>
-          Registrá qué utilizaste y cómo
-          respondió tu cuerpo.
-        </p>
-      </div>
+          <p>
+            Registrá qué utilizaste y
+            cómo respondió tu cuerpo.
+          </p>
+        </div>
+      )}
 
       <div
         className={
@@ -460,9 +474,9 @@ export function TreatmentSelector({
             </strong>
 
             <small>
-              Podés modificar estos datos
-              antes de finalizar el
-              episodio.
+              Podés modificar estos
+              datos antes de finalizar
+              el episodio.
             </small>
           </div>
         </div>

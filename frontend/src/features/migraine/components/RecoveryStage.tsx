@@ -48,7 +48,8 @@ interface Props {
 type RecoveryPanel =
   | 'premonitory'
   | 'postdrome'
-  | 'triggers';
+  | 'triggers'
+  | 'treatment';
 
 const getTriggerStatus = (
   count: number,
@@ -60,6 +61,23 @@ const getTriggerStatus = (
   return count === 1
     ? '1 seleccionado'
     : `${count} seleccionados`;
+};
+
+const hasTreatmentInformation = (
+  treatment:
+    MigraineEpisode['treatment'],
+): boolean => {
+  return Boolean(
+    treatment.type ||
+      treatment.medication?.trim() ||
+      treatment.dose?.trim() ||
+      treatment.takenAt ||
+      treatment.effectiveness ||
+      treatment.responseTimeMinutes !==
+        undefined ||
+      treatment.sideEffects?.length ||
+      treatment.notes?.trim(),
+  );
 };
 
 export function RecoveryStage({
@@ -370,6 +388,13 @@ export function RecoveryStage({
   const triggerCount =
     episode.triggers?.length ?? 0;
 
+  const treatmentStatus =
+    hasTreatmentInformation(
+      episode.treatment,
+    )
+      ? 'Registrado'
+      : 'Sin registrar';
+
   return (
     <section className={styles.root}>
       <header className={styles.intro}>
@@ -564,7 +589,7 @@ export function RecoveryStage({
           />
         </ClinicalPhasePanel>
 
-      <ClinicalPhasePanel
+        <ClinicalPhasePanel
           id="recovery-triggers-title"
         eyebrow="Contexto"
         tone="recovery"
@@ -593,9 +618,31 @@ export function RecoveryStage({
             }
           />
         </ClinicalPhasePanel>
-      </div>
 
-      <TreatmentSelector />
+        <ClinicalPhasePanel
+          id="recovery-treatment-title"
+          eyebrow="Tratamiento"
+          tone="recovery"
+          title="Tratamiento utilizado"
+          description="Registrá qué utilizaste y cómo respondió tu cuerpo."
+          icon="+"
+          status={treatmentStatus}
+          isOpen={
+            activePanel ===
+            'treatment'
+          }
+          onOpenChange={isOpen =>
+            handlePanelChange(
+              'treatment',
+              isOpen,
+            )
+          }
+        >
+          <TreatmentSelector
+            showHeader={false}
+          />
+        </ClinicalPhasePanel>
+      </div>
 
       {hasOpenPremonitory && (
         <p

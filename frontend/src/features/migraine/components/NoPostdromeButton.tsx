@@ -6,7 +6,7 @@ import {
   useMigraineStore,
 } from '../store/migraine.store';
 
-import styles from '../migraine.module.css';
+import styles from './NoPostdromeButton.module.css';
 
 interface Props {
   onComplete?: () => void;
@@ -120,41 +120,29 @@ export function NoPostdromeButton({
     updatePostdrome({
       ...postdrome,
 
-      present:
-        false,
+      present: false,
 
-      status:
-        'notStarted',
+      status: 'notStarted',
 
-      startTime:
-        undefined,
+      startTime: undefined,
 
-      endTime:
-        undefined,
+      endTime: undefined,
 
-      time:
-        undefined,
+      time: undefined,
 
-      symptoms:
-        [],
+      symptoms: [],
 
-      clinicalSymptoms:
-        [],
+      clinicalSymptoms: [],
 
-      customSymptoms:
-        [],
+      customSymptoms: [],
 
-      updates:
-        [],
+      updates: [],
 
-      recoveryLevel:
-        undefined,
+      recoveryLevel: undefined,
 
-      recoveryHours:
-        undefined,
+      recoveryHours: undefined,
 
-      notes:
-        undefined,
+      notes: undefined,
     });
 
     updateTimeline({
@@ -164,11 +152,9 @@ export function NoPostdromeButton({
       postdromeEnd:
         undefined,
 
-      postdrome:
-        undefined,
+      postdrome: undefined,
 
-      episodeEnd:
-        crisisEnd,
+      episodeEnd: crisisEnd,
     });
 
     /*
@@ -188,9 +174,14 @@ export function NoPostdromeButton({
 
   if (!showConfirmation) {
     return (
-      <>
+      <div
+        className={styles.root}
+      >
         <button
           type="button"
+          className={
+            styles.openButton
+          }
           disabled={
             hasOpenPremonitory
           }
@@ -208,7 +199,7 @@ export function NoPostdromeButton({
         {hasOpenPremonitory && (
           <p
             className={
-              styles.helperText
+              styles.blockedMessage
             }
           >
             Primero resolvé cuándo
@@ -216,55 +207,83 @@ export function NoPostdromeButton({
             previas.
           </p>
         )}
-      </>
+      </div>
     );
   }
 
   return (
-    <section>
-      <h4>
-        Confirmar que no hubo
-        postdromo
-      </h4>
+    <section
+      className={
+        styles.confirmation
+      }
+      aria-labelledby="no-postdrome-title"
+    >
+      <div
+        className={
+          styles.confirmationHeader
+        }
+      >
+        <p
+          className={styles.eyebrow}
+        >
+          Corregir recuperación
+        </p>
 
-      <p>
-        El episodio finalizará en el
-        mismo momento en que terminó la
-        crisis.
+        <h4 id="no-postdrome-title">
+          Confirmar que no hubo
+          postdromo
+        </h4>
+
+        <p
+          className={
+            styles.description
+          }
+        >
+          El episodio finalizará en el
+          mismo momento en que terminó
+          la crisis.
+        </p>
+      </div>
+
+      <p className={styles.notice}>
+        Esta opción eliminará las
+        actualizaciones de recuperación
+        que hayas registrado. Usala
+        solamente si no tuviste síntomas
+        posteriores a la crisis.
       </p>
 
-      <p>
-        Usá esta opción solamente si no
-        tuviste un período de
-        recuperación con síntomas
-        posteriores.
-      </p>
+      <div className={styles.actions}>
+        <button
+          type="button"
+          className={
+            styles.backButton
+          }
+          onClick={() => {
+            setShowConfirmation(
+              false,
+            );
 
-      <button
-        type="button"
-        onClick={handleConfirm}
-      >
-        Confirmar: no tuve postdromo
-      </button>
+            setFeedback('');
+          }}
+        >
+          Volver
+        </button>
 
-      <button
-        type="button"
-        onClick={() => {
-          setShowConfirmation(
-            false,
-          );
-
-          setFeedback('');
-        }}
-      >
-        Volver
-      </button>
+        <button
+          type="button"
+          className={
+            styles.confirmButton
+          }
+          onClick={handleConfirm}
+        >
+          Confirmar: no tuve postdromo
+        </button>
+      </div>
 
       {feedback && (
         <p
-          className={
-            styles.helperText
-          }
+          className={styles.feedback}
           aria-live="polite"
         >
           {feedback}

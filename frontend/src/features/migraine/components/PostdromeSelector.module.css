@@ -1,0 +1,595 @@
+.root {
+  --postdrome-ink: #26382f;
+  --postdrome-accent: #7eaa67;
+  --postdrome-accent-strong: #426c50;
+  --postdrome-soft: #f1f6e9;
+  --postdrome-soft-strong: #e5eed9;
+  --postdrome-border: #cad8bd;
+  --postdrome-muted: #68766f;
+
+  display: grid;
+  gap: var(--space-5);
+
+  color: var(--postdrome-ink);
+}
+
+.emptyState {
+  display: grid;
+  gap: var(--space-2);
+
+  padding: var(--space-5);
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--postdrome-soft);
+}
+
+.emptyState h3 {
+  margin: 0;
+
+  color: var(--postdrome-ink);
+
+  font-family:
+    Georgia,
+    'Times New Roman',
+    serif;
+
+  font-size: 1.3rem;
+}
+
+.introduction {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.introduction h3 {
+  margin: 0;
+
+  color: var(--postdrome-ink);
+
+  font-family:
+    Georgia,
+    'Times New Roman',
+    serif;
+
+  font-size:
+    clamp(
+      1.35rem,
+      3vw,
+      1.7rem
+    );
+}
+
+.introduction > p {
+  max-width: 720px;
+
+  margin: 0;
+
+  color: var(--postdrome-muted);
+
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.startInfo {
+  width: fit-content;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  margin: 0;
+  padding:
+    8px
+    var(--space-3);
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-pill);
+
+  color:
+    var(--postdrome-accent-strong);
+  background:
+    var(--postdrome-soft);
+
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.updateIntro {
+  display: grid;
+  gap: var(--space-1);
+
+  padding-top: var(--space-2);
+}
+
+.updateIntro h4 {
+  margin: 0;
+
+  color: var(--postdrome-ink);
+
+  font-size: 1rem;
+}
+
+.updateIntro p {
+  margin: 0;
+
+  color: var(--postdrome-muted);
+
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.selectedArea {
+  display: grid;
+  gap: var(--space-3);
+
+  padding: var(--space-4);
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--postdrome-soft);
+}
+
+.selectedArea h4 {
+  margin: 0;
+
+  color: var(--postdrome-ink);
+
+  font-size: 0.86rem;
+}
+
+.selectedChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.selectedChips button {
+  min-height: 36px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  padding: 7px 11px;
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-pill);
+
+  color:
+    var(--postdrome-accent-strong);
+  background: #fffdf9;
+
+  font-size: 0.78rem;
+  font-weight: 750;
+
+  box-shadow: none;
+}
+
+.selectedChips button:hover {
+  border-color:
+    var(--postdrome-accent);
+
+  background: #ffffff;
+}
+
+.selectedChips button span {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.searchField {
+  display: grid;
+  gap: var(--space-2);
+
+  padding: var(--space-4);
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-medium);
+
+  background: #fffdf9;
+}
+
+.searchField > span {
+  color: var(--postdrome-ink);
+
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.searchField input {
+  min-height: 50px;
+
+  border-color:
+    var(--postdrome-border);
+
+  background: #ffffff;
+}
+
+.searchField input:focus {
+  border-color:
+    var(--postdrome-accent);
+
+  box-shadow:
+    0 0 0 4px
+      rgba(126, 170, 103, 0.16);
+}
+
+.categoryRail {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  gap: var(--space-2);
+
+  padding-bottom: var(--space-1);
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  overscroll-behavior-inline:
+    contain;
+
+  scrollbar-width: thin;
+}
+
+.categoryRail button {
+  min-height: 38px;
+
+  flex: 0 0 auto;
+
+  padding: 7px 12px;
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-pill);
+
+  color: var(--postdrome-muted);
+  background: #fffdf9;
+
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  box-shadow: none;
+}
+
+.categoryRail button:hover,
+.categoryRail button[aria-pressed='true'] {
+  border-color:
+    var(--postdrome-accent);
+
+  color:
+    var(--postdrome-accent-strong);
+  background:
+    var(--postdrome-soft);
+
+  box-shadow:
+    inset 0 -3px 0
+      var(--postdrome-accent);
+}
+
+.resultsArea {
+  display: grid;
+  gap: var(--space-4);
+
+  padding: var(--space-4);
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-large);
+
+  background: #fffdf9;
+}
+
+.resultsArea > h4 {
+  margin: 0;
+
+  color: var(--postdrome-ink);
+
+  font-size: 0.9rem;
+}
+
+.choiceGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: var(--space-2);
+}
+
+.choice {
+  min-height: 46px;
+
+  justify-content: flex-start;
+
+  padding:
+    var(--space-2)
+    var(--space-3);
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-medium);
+
+  color: var(--postdrome-ink);
+  background: #ffffff;
+
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.3;
+  text-align: left;
+
+  box-shadow: none;
+}
+
+.choice:hover {
+  border-color:
+    var(--postdrome-accent);
+
+  background:
+    var(--postdrome-soft);
+}
+
+.choice[aria-pressed='true'] {
+  border-color:
+    var(--postdrome-accent-strong);
+
+  color: #ffffff;
+  background:
+    var(--postdrome-accent-strong);
+
+  box-shadow:
+    0 7px 18px
+      rgba(66, 108, 80, 0.18);
+}
+
+.formFields {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: var(--space-4);
+
+  padding: var(--space-5);
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-large);
+
+  background:
+    var(--postdrome-soft);
+}
+
+.formFields label {
+  align-content: start;
+}
+
+.notesField {
+  grid-column: 1 / -1;
+}
+
+.registerButton {
+  min-height: 50px;
+
+  border-color:
+    var(--postdrome-accent-strong);
+
+  color: #ffffff;
+  background:
+    var(--postdrome-accent-strong);
+
+  box-shadow:
+    0 9px 22px
+      rgba(66, 108, 80, 0.2);
+}
+
+.registerButton:hover {
+  background: #365b42;
+}
+
+.feedback {
+  margin: 0;
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-left: 4px solid
+    var(--postdrome-accent);
+  border-radius:
+    var(--radius-medium);
+
+  color: var(--postdrome-ink);
+  background:
+    var(--postdrome-soft);
+
+  font-size: 0.84rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.evolution {
+  display: grid;
+  gap: var(--space-4);
+
+  padding-top: var(--space-2);
+}
+
+.evolution h4 {
+  margin: 0;
+
+  color: var(--postdrome-ink);
+
+  font-family:
+    Georgia,
+    'Times New Roman',
+    serif;
+
+  font-size: 1.2rem;
+}
+
+.updateList {
+  display: grid;
+  gap: var(--space-3);
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.updateCard {
+  display: grid;
+  gap: var(--space-2);
+
+  margin: 0;
+  padding: var(--space-4);
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-medium);
+
+  background: #fffdf9;
+}
+
+.updateCard p {
+  margin: 0;
+
+  color: var(--postdrome-muted);
+
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.updateCard p:first-child {
+  color:
+    var(--postdrome-accent-strong);
+}
+
+.completeAction {
+  min-height: 48px;
+
+  border: 1px solid
+    var(--postdrome-accent-strong);
+
+  color:
+    var(--postdrome-accent-strong);
+  background: transparent;
+
+  box-shadow: none;
+}
+
+.completeAction:hover {
+  color: #ffffff;
+  background:
+    var(--postdrome-accent-strong);
+}
+
+.completedState {
+  margin: 0;
+  padding: var(--space-4);
+
+  border: 1px solid
+    var(--postdrome-border);
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--postdrome-accent-strong);
+  background:
+    var(--postdrome-soft);
+
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.helperText {
+  margin: 0;
+
+  color: var(--postdrome-muted);
+
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 680px) {
+  .formFields {
+    grid-template-columns: 1fr;
+  }
+
+  .notesField {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .root {
+    gap: var(--space-4);
+  }
+
+  .selectedArea,
+  .searchField,
+  .resultsArea,
+  .formFields,
+  .updateCard {
+    padding: var(--space-4);
+  }
+
+  .choiceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .startInfo {
+    width: 100%;
+
+    border-radius:
+      var(--radius-medium);
+  }
+
+  .registerButton,
+  .completeAction {
+    width: 100%;
+  }
+
+  .categoryRail {
+    padding-inline-end:
+      var(--space-4);
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
+  .selectedChips button,
+  .categoryRail button,
+  .choice,
+  .registerButton,
+  .completeAction {
+    transition: none;
+  }
+}

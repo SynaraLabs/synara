@@ -106,11 +106,11 @@
 
   box-shadow:
     inset 0 0 0 3px
-    color-mix(
-      in srgb,
-      var(--phase-accent) 24%,
-      transparent
-    );
+      color-mix(
+        in srgb,
+        var(--phase-accent) 24%,
+        transparent
+      );
 }
 
 .main {
@@ -170,9 +170,7 @@
     var(--color-text-strong);
 
   font-family:
-    Georgia,
-    'Times New Roman',
-    serif;
+    var(--font-editorial);
 
   font-size: 1.2rem;
   font-weight: 700;
