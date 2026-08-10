@@ -3,11 +3,10 @@
     var(--color-primary);
 
   --phase-soft:
-    color-mix(
-      in srgb,
-      var(--phase-accent) 11%,
-      var(--color-surface)
-    );
+    var(--color-primary-soft);
+
+  --phase-border:
+    var(--color-primary-border);
 
   overflow: hidden;
 
@@ -30,28 +29,74 @@
 }
 
 .panel[data-tone='premonitory'] {
-  --phase-accent: #8977c8;
+  --phase-accent:
+    var(--color-premonitory);
+
+  --phase-soft:
+    var(--color-premonitory-soft);
+
+  --phase-border:
+    var(--color-premonitory-border);
 }
 
 .panel[data-tone='aura'] {
-  --phase-accent: #697dcc;
+  --phase-accent:
+    var(--color-aura);
+
+  --phase-soft:
+    var(--color-aura-soft);
+
+  --phase-border:
+    var(--color-aura-border);
 }
 
 .panel[data-tone='crisis'] {
-  --phase-accent: #cf527f;
+  --phase-accent:
+    var(--color-crisis);
+
+  --phase-soft:
+    var(--color-crisis-soft);
+
+  --phase-border:
+    var(--color-crisis-phase-border);
 }
 
 .panel[data-tone='recovery'] {
-  --phase-accent: #7eaa67;
+  --phase-accent:
+    var(--color-recovery);
+
+  --phase-soft:
+    var(--color-recovery-soft);
+
+  --phase-border:
+    var(--color-recovery-border);
+}
+
+.panel[data-tone='trigger'] {
+  --phase-accent:
+    var(--color-trigger);
+
+  --phase-soft:
+    var(--color-trigger-soft);
+
+  --phase-border:
+    var(--color-trigger-border);
+}
+
+.panel[data-tone='treatment'] {
+  --phase-accent:
+    var(--color-treatment);
+
+  --phase-soft:
+    var(--color-treatment-soft);
+
+  --phase-border:
+    var(--color-treatment-border);
 }
 
 .panel[open] {
   border-color:
-    color-mix(
-      in srgb,
-      var(--phase-accent) 42%,
-      var(--color-border)
-    );
+    var(--phase-border);
 
   box-shadow:
     0 10px 30px
@@ -131,11 +176,7 @@
   flex-shrink: 0;
 
   border: 1px solid
-    color-mix(
-      in srgb,
-      var(--phase-accent) 28%,
-      transparent
-    );
+    var(--phase-border);
   border-radius: 50%;
 
   color:
@@ -209,11 +250,7 @@
   padding: 4px 11px;
 
   border: 1px solid
-    color-mix(
-      in srgb,
-      var(--phase-accent) 24%,
-      transparent
-    );
+    var(--phase-border);
   border-radius:
     var(--radius-pill);
 
@@ -264,11 +301,7 @@
     var(--space-6);
 
   border-top: 1px solid
-    color-mix(
-      in srgb,
-      var(--phase-accent) 18%,
-      var(--color-border)
-    );
+    var(--phase-border);
 
   background:
     var(--color-surface);

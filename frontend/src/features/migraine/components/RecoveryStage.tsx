@@ -592,7 +592,7 @@ export function RecoveryStage({
         <ClinicalPhasePanel
           id="recovery-triggers-title"
         eyebrow="Contexto"
-        tone="recovery"
+        tone="trigger"
           title="Posibles desencadenantes"
           description="Registrá factores que podrían haber influido en este episodio."
           icon="⌁"
@@ -622,7 +622,7 @@ export function RecoveryStage({
         <ClinicalPhasePanel
           id="recovery-treatment-title"
           eyebrow="Tratamiento"
-          tone="recovery"
+          tone="treatment"
           title="Tratamiento utilizado"
           description="Registrá qué utilizaste y cómo respondió tu cuerpo."
           icon="+"

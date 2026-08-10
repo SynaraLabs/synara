@@ -29,7 +29,7 @@
     var(--color-surface);
 
   background:
-    var(--color-primary-hover);
+    var(--color-forest);
 
   box-shadow:
     10px 0 28px
@@ -516,7 +516,7 @@
     background:
       color-mix(
         in srgb,
-        var(--color-primary-hover)
+        var(--color-forest)
           97%,
         transparent
       );

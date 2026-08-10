@@ -1,5 +1,6 @@
 import {
   Outlet,
+  useLocation,
 } from 'react-router-dom';
 
 import {
@@ -12,6 +13,9 @@ import { Sidebar } from './Sidebar';
 import styles from './layout.module.css';
 
 export function AppLayout() {
+  const location =
+    useLocation();
+
   const isCrisisActive =
     useMigraineStore(
       state =>
@@ -19,26 +23,43 @@ export function AppLayout() {
           ?.crisis.active === true,
     );
 
+  const isMigraineRoute =
+    location.pathname ===
+      '/migraine' ||
+    location.pathname.startsWith(
+      '/migraine/',
+    );
+
+  const showCrisisMode =
+    isCrisisActive &&
+    isMigraineRoute;
+
   return (
     <div
       className={`${styles.container} ${
-        isCrisisActive
+        showCrisisMode
           ? styles.crisisMode
           : ''
       }`}
       data-crisis-active={
-        isCrisisActive
+        showCrisisMode
           ? 'true'
           : undefined
       }
     >
       <Sidebar />
 
-      <div className={styles.content}>
+      <div
+        className={
+          styles.content
+        }
+      >
         <Header />
 
         <main
-          className={styles.main}
+          className={
+            styles.main
+          }
           id="main-content"
         >
           <Outlet />

@@ -9,7 +9,9 @@ export type ClinicalPhaseTone =
   | 'premonitory'
   | 'aura'
   | 'crisis'
-  | 'recovery';
+  | 'recovery'
+  | 'trigger'
+  | 'treatment';
 
 interface Props {
   id: string;
