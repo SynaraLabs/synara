@@ -37,6 +37,8 @@ interface PainLocationSelectorProps {
     value: AnatomicalPainMap,
   ) => void;
 
+  onComplete?: () => void;
+
   disabled?: boolean;
   title?: string;
 }
@@ -149,6 +151,7 @@ function isSamePoint(
 export function PainLocationSelector({
   value,
   onChange,
+  onComplete,
   disabled = false,
   title = '¿Dónde sentís el dolor?',
 }: PainLocationSelectorProps) {
@@ -572,6 +575,7 @@ export function PainLocationSelector({
       );
 
     onChange(normalizedDraft);
+    onComplete?.();
   };
 
   return (

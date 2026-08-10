@@ -49,13 +49,18 @@ import styles from './CrisisTools.module.css';
 
 interface Props {
   crisis: CrisisPhase;
+
   symptoms: CrisisSymptom[];
+
   anatomicalLocation:
     AnatomicalPainMap;
+
   medicationRecords:
     CrisisMedicationRecord[];
+
   nonPharmacologicalRecords:
     NonPharmacologicalRecord[];
+
   functionalCapacityRecords:
     FunctionalCapacityRecord[];
 
@@ -102,7 +107,7 @@ type CrisisPanelId =
 const getLocationCount = (
   location: AnatomicalPainMap,
 ): number => {
-  const keys = new Set<string>();
+  const keys = new Set();
 
   const addPoint = (
     point:
@@ -241,7 +246,7 @@ export function CrisisTools({
   };
 
   return (
-    <div className={styles.list}>
+    <div>
       <ClinicalPhasePanel
         id="crisis-symptoms-title"
         eyebrow="Actualización rápida"
@@ -288,7 +293,8 @@ export function CrisisTools({
           )
         }
         isOpen={
-          activePanel === 'medication'
+          activePanel ===
+          'medication'
         }
         onOpenChange={isOpen =>
           handlePanelChange(
@@ -329,23 +335,15 @@ export function CrisisTools({
         }
       >
         <PainLocationSelector
-          value={anatomicalLocation}
-          onChange={onLocationChange}
+          value={
+            anatomicalLocation
+          }
+          onChange={
+            onLocationChange
+          }
+          onComplete={closePanel}
           title="¿Dónde sentís el dolor?"
         />
-
-        <div
-          className={
-            styles.completion
-          }
-        >
-          <button
-            type="button"
-            onClick={closePanel}
-          >
-            Listo
-          </button>
-        </div>
       </ClinicalPhasePanel>
 
       <ClinicalPhasePanel
@@ -356,7 +354,8 @@ export function CrisisTools({
         icon="◇"
         status={
           formatCount(
-            nonPharmacologicalRecords.length,
+            nonPharmacologicalRecords
+              .length,
             'registro',
             'registros',
           )
@@ -389,13 +388,15 @@ export function CrisisTools({
         icon="↔"
         status={
           formatCount(
-            functionalCapacityRecords.length,
+            functionalCapacityRecords
+              .length,
             'registro',
             'registros',
           )
         }
         isOpen={
-          activePanel === 'capacity'
+          activePanel ===
+          'capacity'
         }
         onOpenChange={isOpen =>
           handlePanelChange(
@@ -428,7 +429,8 @@ export function CrisisTools({
           )
         }
         isOpen={
-          activePanel === 'evolution'
+          activePanel ===
+          'evolution'
         }
         onOpenChange={isOpen =>
           handlePanelChange(
