@@ -1,0 +1,335 @@
+.recentSection {
+  margin-top:
+    var(--space-10);
+}
+
+.recentHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5);
+
+  margin-bottom:
+    var(--space-4);
+}
+
+.eyebrow {
+  margin-bottom:
+    var(--space-2);
+
+  color:
+    var(--color-accent);
+
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recentHeader h2 {
+  color:
+    var(--color-text-strong);
+
+  font-family:
+    var(--font-editorial);
+
+  font-size:
+    clamp(
+      1.8rem,
+      4vw,
+      2.6rem
+    );
+
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.historyLink {
+  min-height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+
+  padding: 8px 14px;
+
+  border: 1px solid
+    var(--color-primary-border);
+  border-radius:
+    var(--radius-pill);
+
+  color:
+    var(--color-primary);
+  background: transparent;
+
+  font-size: 0.8125rem;
+  font-weight: 700;
+
+  box-shadow: none;
+}
+
+.historyLink:hover {
+  color: #ffffff;
+  background:
+    var(--color-primary);
+}
+
+.episodesList {
+  display: grid;
+
+  border-top: 1px solid
+    var(--color-border);
+}
+
+.episodeCard {
+  min-height: 86px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+
+  padding:
+    var(--space-4)
+    var(--space-5);
+
+  border-bottom: 1px solid
+    var(--color-border);
+
+  background: transparent;
+
+  transition:
+    background-color
+      var(--transition);
+}
+
+.episodeCard:hover {
+  background:
+    color-mix(
+      in srgb,
+      var(--color-primary-soft) 38%,
+      transparent
+    );
+}
+
+.episodeMain {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.episodeIcon {
+  width: 32px;
+  height: 32px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  color:
+    var(--color-primary);
+  background:
+    var(--color-primary-soft);
+
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.episodeMain h3 {
+  margin: 0;
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.9375rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.episodeDetails {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap:
+    var(--space-2)
+    var(--space-4);
+
+  margin-top:
+    var(--space-1);
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.episodeDetails strong {
+  color:
+    var(--color-text-strong);
+
+  font-weight: 750;
+}
+
+.episodeDate {
+  flex-shrink: 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.emptyState {
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-5);
+
+  padding:
+    var(--space-6) 0;
+
+  border-top: 1px solid
+    var(--color-border);
+  border-bottom: 1px solid
+    var(--color-border);
+
+  background: transparent;
+}
+
+.emptyStateIcon {
+  width: 36px;
+  height: 36px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  color:
+    var(--color-primary);
+  background:
+    var(--color-primary-soft);
+
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.emptyState h3 {
+  margin: 0;
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.9375rem;
+  font-weight: 750;
+}
+
+.emptyState p {
+  margin-top:
+    var(--space-1);
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.emptyState button {
+  min-height: 42px;
+
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .recentHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .historyLink {
+    align-self: flex-start;
+  }
+
+  .emptyState {
+    grid-template-columns:
+      auto minmax(0, 1fr);
+  }
+
+  .emptyState button {
+    grid-column: 1 / -1;
+
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .recentSection {
+    margin-top:
+      var(--space-8);
+  }
+
+  .episodeCard {
+    min-height: 0;
+
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-2);
+
+    padding:
+      var(--space-4) 0;
+  }
+
+  .episodeMain {
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .episodeDate {
+    margin-left:
+      calc(
+        32px +
+        var(--space-3)
+      );
+  }
+
+  .emptyState {
+    align-items: flex-start;
+
+    padding:
+      var(--space-5) 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .emptyState {
+    grid-template-columns: 1fr;
+  }
+
+  .emptyState button {
+    grid-column: auto;
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
+  .episodeCard {
+    transition: none;
+  }
+}

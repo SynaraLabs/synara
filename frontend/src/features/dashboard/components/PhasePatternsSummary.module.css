@@ -1,6 +1,6 @@
 .section {
   margin-top:
-    var(--space-8);
+    var(--space-10);
 }
 
 .header {
@@ -11,6 +11,25 @@
 
   margin-bottom:
     var(--space-4);
+}
+
+.header h2 {
+  color:
+    var(--color-text-strong);
+
+  font-family:
+    var(--font-editorial);
+
+  font-size:
+    clamp(
+      2rem,
+      4vw,
+      2.75rem
+    );
+
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
 }
 
 .eyebrow {
@@ -42,56 +61,76 @@
       minmax(0, 1fr)
     );
 
-  gap: var(--space-3);
+  border-top: 1px solid
+    var(--color-border-strong);
+  border-bottom: 1px solid
+    var(--color-border-strong);
 }
 
 .card {
-  min-height: 142px;
+  --metric-accent:
+    var(--color-primary);
+
+  min-width: 0;
+  min-height: 160px;
 
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   gap: var(--space-3);
 
-  padding: var(--space-5);
+  padding:
+    var(--space-6)
+    var(--space-5);
 
-  border: 1px solid
-    var(--color-border);
-  border-radius:
-    var(--radius-medium);
+  border-left: 1px solid
+    var(--color-border-strong);
 
-  background:
-    var(--color-surface);
+  background: transparent;
+}
 
-  box-shadow:
-    var(--shadow-small);
+.card:first-child {
+  border-left: 0;
+}
+
+.card:nth-child(2) {
+  --metric-accent:
+    var(--color-premonitory);
+}
+
+.card:nth-child(3) {
+  --metric-accent:
+    var(--color-aura);
+}
+
+.card:nth-child(4) {
+  --metric-accent:
+    var(--color-recovery);
 }
 
 .cardHeader {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .icon {
-  width: 32px;
-  height: 32px;
+  width: 12px;
+  height: 12px;
 
-  display: grid;
-  place-items: center;
+  display: block;
 
   flex-shrink: 0;
 
-  border-radius:
-    var(--radius-small);
+  overflow: hidden;
 
-  color:
-    var(--color-primary);
+  border-radius: 50%;
+
+  color: transparent;
   background:
-    var(--color-primary-soft);
+    var(--metric-accent);
 
-  font-size: 0.875rem;
-  font-weight: 800;
+  font-size: 0;
 }
 
 .label {
@@ -105,17 +144,21 @@
 
 .value {
   color:
-    var(--color-primary);
+    var(--color-text-strong);
+
+  font-family:
+    var(--font-editorial);
 
   font-size:
     clamp(
-      1.45rem,
-      3vw,
-      1.9rem
+      2rem,
+      4vw,
+      2.6rem
     );
 
-  font-weight: 750;
-  line-height: 1.05;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.025em;
 }
 
 .description {
@@ -134,13 +177,35 @@
         minmax(0, 1fr)
       );
   }
+
+  .card {
+    border-bottom: 1px solid
+      var(--color-border-strong);
+  }
+
+  .card:nth-child(odd) {
+    border-left: 0;
+  }
+
+  .card:nth-child(n + 3) {
+    border-bottom: 0;
+  }
 }
 
 @media (max-width: 640px) {
+  .section {
+    margin-top:
+      var(--space-8);
+  }
+
   .header {
     align-items: flex-start;
     flex-direction: column;
     gap: var(--space-2);
+  }
+
+  .header h2 {
+    font-size: 2rem;
   }
 
   .hint {
@@ -148,18 +213,31 @@
   }
 
   .grid {
-    gap: var(--space-2);
+    grid-template-columns: 1fr;
   }
 
   .card {
-    min-height: 132px;
+    min-height: 126px;
 
-    padding: var(--space-4);
+    padding:
+      var(--space-5)
+      var(--space-4);
+
+    border-left: 0;
+    border-bottom: 1px solid
+      var(--color-border-strong);
   }
-}
 
-@media (max-width: 390px) {
-  .grid {
-    grid-template-columns: 1fr;
+  .card:nth-child(n + 3) {
+    border-bottom: 1px solid
+      var(--color-border-strong);
+  }
+
+  .card:last-child {
+    border-bottom: 0;
+  }
+
+  .value {
+    font-size: 2rem;
   }
 }
