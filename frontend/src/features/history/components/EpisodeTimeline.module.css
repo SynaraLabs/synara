@@ -12,6 +12,8 @@
     var(--color-primary);
   --phase-soft:
     var(--color-primary-soft);
+  --phase-border:
+    var(--color-primary-border);
 
   position: relative;
 
@@ -31,22 +33,52 @@
     );
 
   border: 1px solid
-    var(--color-border);
+    var(--phase-border);
   border-radius:
     var(--radius-large);
 
   background:
-    linear-gradient(
-      135deg,
-      var(--phase-soft),
+    color-mix(
+      in srgb,
+      var(--phase-soft) 46%,
       var(--color-surface)
-        42%
     );
 
-  box-shadow:
-    var(--shadow-small);
+  box-shadow: none;
 
   counter-increment: phase;
+}
+
+.timeline[data-tone='premonitory'] > section {
+  --phase-color:
+    var(--color-premonitory);
+  --phase-soft:
+    var(--color-premonitory-soft);
+  --phase-border:
+    var(--color-secondary-border);
+}
+
+.timeline[data-tone='aura'] > section {
+  --phase-color:
+    var(--color-aura);
+  --phase-soft:
+    var(--color-aura-soft);
+  --phase-border: #bdc7da;
+}
+
+.timeline[data-tone='crisis'] > section {
+  --phase-color:
+    var(--color-primary);
+  --phase-soft:
+    var(--color-primary-soft);
+  --phase-border:
+    var(--color-primary-border);
+}
+
+.timeline[data-tone='postdrome'] > section {
+  --phase-color: #6f985d;
+  --phase-soft: #edf3e8;
+  --phase-border: #bfd0b4;
 }
 
 .timeline > section::before {
@@ -105,37 +137,7 @@
     );
 
   background:
-    var(--color-primary-border);
-}
-
-.timeline > section:nth-of-type(2) {
-  --phase-color: #7766a8;
-  --phase-soft:
-    color-mix(
-      in srgb,
-      #7766a8 11%,
-      var(--color-surface)
-    );
-}
-
-.timeline > section:nth-of-type(3) {
-  --phase-color: #b86a3c;
-  --phase-soft:
-    color-mix(
-      in srgb,
-      #b86a3c 11%,
-      var(--color-surface)
-    );
-}
-
-.timeline > section:nth-of-type(4) {
-  --phase-color: #4f8371;
-  --phase-soft:
-    color-mix(
-      in srgb,
-      #4f8371 11%,
-      var(--color-surface)
-    );
+    var(--phase-border);
 }
 
 .timeline > section > h4 {
@@ -201,11 +203,7 @@
   color:
     var(--color-text-soft);
   background:
-    color-mix(
-      in srgb,
-      var(--color-surface) 88%,
-      transparent
-    );
+    var(--color-surface);
 
   font-size: 0.76rem;
   line-height: 1.45;
@@ -244,8 +242,8 @@
   background:
     color-mix(
       in srgb,
-      var(--color-surface-soft) 82%,
-      transparent
+      var(--phase-soft) 32%,
+      var(--color-surface)
     );
 }
 
@@ -292,7 +290,11 @@
     var(--space-3);
 
   border: 1px solid
-    var(--color-border);
+    color-mix(
+      in srgb,
+      var(--phase-color) 15%,
+      var(--color-border)
+    );
   border-radius:
     var(--radius-medium);
 
@@ -528,11 +530,7 @@
     font-size: 0.72rem;
   }
 
-  .timeline > section > div {
-    padding:
-      var(--space-2);
-  }
-
+  .timeline > section > div,
   .timeline li {
     padding:
       var(--space-2);

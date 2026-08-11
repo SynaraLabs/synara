@@ -70,7 +70,6 @@ type DetailView =
 interface DetailNavigationItem {
   id: DetailView;
   label: string;
-  icon: string;
   available: boolean;
 }
 
@@ -384,32 +383,27 @@ export function EpisodeCard({
     {
       id: 'summary',
       label: 'Resumen',
-      icon: '◫',
       available: true,
     },
     {
       id: 'premonitory',
       label: 'Señales',
-      icon: '◌',
       available:
         hasPremonitory,
     },
     {
       id: 'aura',
       label: 'Aura',
-      icon: '◉',
       available: hasAura,
     },
     {
       id: 'crisis',
       label: 'Crisis',
-      icon: '◆',
       available: hasCrisis,
     },
     {
       id: 'postdrome',
       label: 'Post',
-      icon: '◇',
       available:
         hasPostdrome,
     },
@@ -613,6 +607,7 @@ export function EpisodeCard({
                 <button
                   key={item.id}
                   type="button"
+                  data-tone={item.id}
                   disabled={
                     !item.available
                   }
@@ -628,12 +623,6 @@ export function EpisodeCard({
                     )
                   }
                 >
-                  <span
-                    aria-hidden="true"
-                  >
-                    {item.icon}
-                  </span>
-
                   <b>
                     {item.label}
                   </b>
@@ -668,6 +657,7 @@ export function EpisodeCard({
                   className={
                     timelineStyles.timeline
                   }
+                  data-tone="premonitory"
                 >
                   <PremonitoryHistorySection
                     episode={episode}
@@ -688,6 +678,7 @@ export function EpisodeCard({
                   className={
                     timelineStyles.timeline
                   }
+                  data-tone="aura"
                 >
                   <AuraHistorySection
                     episode={episode}
@@ -702,6 +693,7 @@ export function EpisodeCard({
                   className={
                     timelineStyles.timeline
                   }
+                  data-tone="crisis"
                 >
                   <CrisisHistorySection
                     episode={episode}
@@ -716,6 +708,7 @@ export function EpisodeCard({
                   className={
                     timelineStyles.timeline
                   }
+                  data-tone="postdrome"
                 >
                   <PostdromeHistorySection
                     episode={episode}

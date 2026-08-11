@@ -19,7 +19,7 @@
 
      Rosado empolvado:
      acento y acción.
-  ========================== */
+     ========================== */
 
   --color-background: #f6f1e8;
 
@@ -35,7 +35,7 @@
 
   /* ==========================
      BRAND GREENS
-  ========================== */
+     ========================== */
 
   --color-forest: #2f6b55;
   --color-forest-hover: #275a48;
@@ -62,7 +62,7 @@
 
   /* ==========================
      SECONDARY COLORS
-  ========================== */
+     ========================== */
 
   /* Lila premonitorio */
 
@@ -78,8 +78,39 @@
   --color-accent-border: #dfb4c2;
 
   /* ==========================
+     PRODUCT AREAS
+
+     Estas variables identifican
+     secciones de consulta. No
+     reemplazan los colores de las
+     fases clínicas.
+     ========================== */
+
+  --color-history: #60758a;
+  --color-history-soft: #e8edf1;
+  --color-history-border: #bdc9d2;
+
+  --color-reports:
+    var(--color-accent);
+
+  --color-reports-soft:
+    var(--color-accent-soft);
+
+  --color-reports-border:
+    var(--color-accent-border);
+
+  --color-triggers:
+    var(--color-sage);
+
+  --color-triggers-soft:
+    var(--color-sage-soft);
+
+  --color-triggers-border:
+    var(--color-sage-border);
+
+  /* ==========================
      SEMANTIC STATES
-  ========================== */
+     ========================== */
 
   --color-success: #5f846d;
   --color-success-soft: #e8f0e9;
@@ -93,7 +124,7 @@
 
   /* ==========================
      BORDERS AND FOCUS
-  ========================== */
+     ========================== */
 
   --color-border: #ddd7ce;
   --color-border-strong: #c7c0b5;
@@ -103,7 +134,7 @@
 
   /* ==========================
      CLINICAL PHASE ACCENTS
-  ========================== */
+     ========================== */
 
   --color-premonitory: #8374b8;
   --color-premonitory-soft: #f0ecf7;
@@ -156,7 +187,7 @@
      PAPER DETAILS
 
      Uso reservado para Inicio.
-  ========================== */
+     ========================== */
 
   --color-paper-cream: #f6f1e8;
   --color-paper-lilac: #ddd4e8;
@@ -177,7 +208,7 @@
      Bajo estímulo.
      Más profundo que el verde
      general de la marca.
-  ========================== */
+     ========================== */
 
   --color-crisis-background: #071d1b;
   --color-crisis-surface: #102c28;
@@ -199,7 +230,7 @@
 
   /* ==========================
      SPACING
-  ========================== */
+     ========================== */
 
   --space-1: 4px;
   --space-2: 8px;
@@ -213,7 +244,7 @@
 
   /* ==========================
      RADII
-  ========================== */
+     ========================== */
 
   --radius-small: 8px;
   --radius-medium: 14px;
@@ -235,7 +266,7 @@
 
   /* ==========================
      SHADOWS
-  ========================== */
+     ========================== */
 
   --shadow-small:
     0 1px 2px
@@ -264,7 +295,7 @@
 
   /* ==========================
      INTERACTION
-  ========================== */
+     ========================== */
 
   --transition:
     160ms ease;

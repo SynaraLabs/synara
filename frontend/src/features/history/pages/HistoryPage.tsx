@@ -2,21 +2,21 @@ import {
   EpisodeList,
 } from '../components/EpisodeList';
 
-import styles from '../history.module.css';
+import styles from './HistoryPage.module.css';
 
 export function HistoryPage() {
   return (
-    <section className={styles.container}>
+    <section
+      className={styles.container}
+    >
       <header
-        className={
-          styles.pageHeader
-        }
+        className={styles.pageHeader}
       >
-        <div>
+        <div
+          className={styles.heading}
+        >
           <p
-            className={
-              styles.pageEyebrow
-            }
+            className={styles.eyebrow}
           >
             Seguimiento personal
           </p>
@@ -27,42 +27,32 @@ export function HistoryPage() {
 
           <p
             className={
-              styles.pageDescription
+              styles.description
             }
           >
-            Revisá tus episodios
-            registrados, compará su
-            evolución y detectá
-            posibles patrones a lo
+            Revisá tus episodios,
+            compará cómo evolucionaron
+            y reconocé patrones a lo
             largo del tiempo.
           </p>
         </div>
 
         <div
-          className={
-            styles.historySummary
-          }
-          aria-label="Resumen del historial"
+          className={styles.context}
+          aria-label="Información sobre el historial"
         >
           <span
             className={
-              styles.historySummaryIcon
+              styles.contextMarker
             }
             aria-hidden="true"
-          >
-            ◷
-          </span>
+          />
 
-          <div>
-            <small>
-              Registro clínico personal
-            </small>
-
-            <strong>
-              Tus episodios en un solo
-              lugar
-            </strong>
-          </div>
+          <p>
+            Cada registro conserva el
+            recorrido completo de sus
+            fases y actualizaciones.
+          </p>
         </div>
       </header>
 
