@@ -1,0 +1,413 @@
+.page {
+  --report-accent: #5f7890;
+  --report-accent-strong: #49657c;
+  --report-soft: #eaf0f3;
+  --report-border: #bdccd5;
+
+  width: 100%;
+  min-width: 0;
+
+  display: grid;
+  gap: var(--space-6);
+
+  padding-bottom:
+    var(--space-10);
+}
+
+.pageHeader {
+  padding:
+    var(--space-6)
+    0;
+
+  border-bottom: 1px solid
+    var(--report-border);
+}
+
+.eyebrow,
+.controlEyebrow {
+  margin: 0 0
+    var(--space-2);
+
+  color:
+    var(--report-accent);
+
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.pageHeader h1 {
+  max-width: 780px;
+
+  margin: 0;
+
+  color:
+    var(--color-text-strong);
+
+  font-size:
+    clamp(
+      2rem,
+      6vw,
+      3.25rem
+    );
+  line-height: 1.02;
+}
+
+.description {
+  max-width: 66ch;
+
+  margin:
+    var(--space-4)
+    0 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.reportControls {
+  display: grid;
+  gap: var(--space-4);
+
+  padding:
+    var(--space-5);
+
+  border: 1px solid
+    var(--report-border);
+  border-radius:
+    var(--radius-large);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-small);
+}
+
+.controlsHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-6);
+
+  padding-bottom:
+    var(--space-4);
+
+  border-bottom: 1px solid
+    var(--color-border);
+}
+
+.controlsHeader > div {
+  min-width: 0;
+}
+
+.controlsHeader h2 {
+  margin: 0;
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+
+.controlsHeader > p {
+  max-width: 38ch;
+
+  margin: 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.76rem;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.controlGrid {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.1fr)
+    minmax(220px, 1fr)
+    auto;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.periodField {
+  min-width: 0;
+
+  display: grid;
+  align-content: center;
+  gap: var(--space-2);
+}
+
+.periodField > span {
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.periodField select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+
+  padding:
+    10px
+    38px
+    10px
+    var(--space-3);
+
+  border: 1px solid
+    var(--report-border);
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--color-text-strong);
+  background:
+    var(--color-surface);
+
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+
+  outline: none;
+}
+
+.periodField select:focus {
+  border-color:
+    var(--report-accent);
+
+  box-shadow:
+    0 0 0 3px
+    rgb(95 120 144 / 20%);
+}
+
+.reportStatus {
+  min-width: 0;
+
+  display: grid;
+  align-content: center;
+  gap: 2px;
+
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--report-soft);
+}
+
+.reportStatus span,
+.reportStatus small {
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.67rem;
+  line-height: 1.4;
+}
+
+.reportStatus span {
+  color:
+    var(--report-accent);
+
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.reportStatus strong {
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.downloadButton {
+  align-self: end;
+
+  min-height: 48px;
+
+  padding:
+    10px
+    var(--space-5);
+
+  border: 1px solid
+    var(--report-accent-strong);
+  border-radius:
+    var(--radius-medium);
+
+  color: #ffffff;
+  background:
+    var(--report-accent-strong);
+
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background-color
+      var(--transition),
+    border-color
+      var(--transition),
+    transform
+      var(--transition);
+}
+
+.downloadButton:hover {
+  border-color:
+    #3c586e;
+
+  background:
+    #3c586e;
+}
+
+.downloadButton:active {
+  transform:
+    translateY(1px);
+}
+
+.downloadButton:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px
+    rgb(95 120 144 / 24%);
+}
+
+.successFeedback,
+.errorFeedback {
+  margin: 0;
+
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border-radius:
+    var(--radius-medium);
+
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.successFeedback {
+  border: 1px solid
+    var(--color-success);
+
+  color:
+    var(--color-success);
+  background:
+    var(--color-success-soft);
+}
+
+.errorFeedback {
+  border: 1px solid
+    var(--color-danger);
+
+  color:
+    var(--color-danger);
+  background:
+    var(--color-danger-soft);
+}
+
+.privacyNote {
+  margin: 0;
+  padding-top:
+    var(--space-3);
+
+  border-top: 1px solid
+    var(--color-border);
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 920px) {
+  .controlGrid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .downloadButton {
+    width: 100%;
+
+    grid-column:
+      1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    gap: var(--space-5);
+
+    padding-bottom:
+      var(--space-6);
+  }
+
+  .pageHeader {
+    padding:
+      var(--space-5)
+      0;
+  }
+
+  .description {
+    font-size: 0.88rem;
+  }
+
+  .reportControls {
+    padding:
+      var(--space-4);
+
+    border-radius:
+      var(--radius-medium);
+  }
+
+  .controlsHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .controlsHeader > p {
+    max-width: none;
+
+    text-align: left;
+  }
+
+  .controlGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .downloadButton {
+    grid-column: auto;
+
+    min-height: 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .downloadButton {
+    transition: none;
+  }
+}

@@ -10,7 +10,7 @@ import type {
   ClinicalMigraineReport,
 } from '../types/clinicalReport.types';
 
-import styles from '../../migraine/migraine.module.css';
+import styles from './ClinicalReportOverview.module.css';
 
 interface Props {
   report:
@@ -59,41 +59,41 @@ export function ClinicalReportOverview({
   ) {
     return (
       <section
-        className={
-          styles.symptomSelector
-        }
+        className={styles.emptyState}
       >
-        <div>
-          <p>
-            Resumen clínico
-          </p>
+        <p
+          className={styles.eyebrow}
+        >
+          Resumen clínico
+        </p>
 
-          <h2>
-            Todavía no hay episodios
-            en este período
-          </h2>
+        <h2>
+          Todavía no hay episodios en
+          este período
+        </h2>
 
-          <p>
-            Cuando registres episodios,
-            SYNARA podrá calcular
-            frecuencia, intensidad,
-            duración y fases observadas.
-          </p>
-        </div>
+        <p>
+          Cuando registres episodios,
+          SYNARA podrá calcular
+          frecuencia, intensidad,
+          duración y fases observadas.
+        </p>
       </section>
     );
   }
 
   return (
-    <>
-      <section
-        className={
-          styles.symptomSelector
-        }
-        aria-labelledby="clinical-overview-title"
+    <section
+      className={styles.report}
+      aria-labelledby="clinical-overview-title"
+    >
+      <header
+        className={styles.introduction}
       >
         <div>
-          <p>
+          <p
+            className={styles.eyebrow}
+          >
             Resumen clínico
           </p>
 
@@ -103,296 +103,343 @@ export function ClinicalReportOverview({
             Panorama del período
           </h2>
 
-          <p>
-            Este resumen describe los
-            datos registrados. No realiza
-            diagnósticos ni reemplaza la
-            evaluación profesional.
+          <p
+            className={styles.lead}
+          >
+            Una lectura ordenada de los
+            episodios que registraste
+            durante el período
+            seleccionado.
           </p>
         </div>
 
         <div
-          className={
-            styles.selectionSummary
-          }
+          className={styles.episodeCount}
           role="status"
         >
-          <span aria-hidden="true">
-            ◷
-          </span>
+          <strong>
+            {coverage.totalEpisodes}
+          </strong>
 
-          <p>
-            {coverage.totalEpisodes ===
-            1
-              ? '1 episodio registrado'
-              : `${coverage.totalEpisodes} episodios registrados`}
-          </p>
+          <span>
+            {coverage.totalEpisodes === 1
+              ? 'episodio registrado'
+              : 'episodios registrados'}
+          </span>
         </div>
-      </section>
+      </header>
+
+      <p
+        className={styles.disclaimer}
+      >
+        Este resumen describe los datos
+        registrados. No realiza
+        diagnósticos ni reemplaza la
+        evaluación profesional.
+      </p>
 
       <section
-        className={
-          styles.symptomSelector
-        }
-        aria-labelledby="report-terminology-title"
+        className={styles.section}
+        aria-labelledby="report-coverage-title"
       >
-        <div>
-          <h3
-            id="report-terminology-title"
-          >
-            Episodio y crisis no
-            significan lo mismo
-          </h3>
+        <div
+          className={styles.sectionHeader}
+        >
+          <div>
+            <p
+              className={styles.sectionEyebrow}
+            >
+              Cobertura
+            </p>
+
+            <h3
+              id="report-coverage-title"
+            >
+              Episodios analizados
+            </h3>
+          </div>
 
           <p>
             Un episodio puede incluir
-            señales premonitorias, aura,
-            crisis y postdromo. La crisis
-            es solamente la fase de dolor
-            y síntomas agudos.
+            varias fases. La crisis es
+            solamente la fase de dolor y
+            síntomas agudos.
           </p>
         </div>
 
         <div
-          className={
-            styles.compactChoiceGrid
-          }
+          className={styles.metricGrid}
         >
-          <div>
-            <strong>
-              {
-                coverage.totalEpisodes
-              }
-            </strong>
-
+          <article
+            className={styles.metric}
+          >
             <span>
               Episodios
             </span>
-          </div>
 
-          <div>
+            <strong>
+              {coverage.totalEpisodes}
+            </strong>
+          </article>
+
+          <article
+            className={styles.metric}
+          >
+            <span>
+              Con crisis
+            </span>
+
             <strong>
               {
                 coverage
                   .episodesWithCrisis
               }
             </strong>
+          </article>
 
+          <article
+            className={styles.metric}
+          >
             <span>
-              Con crisis
+              Sin crisis
             </span>
-          </div>
 
-          <div>
             <strong>
               {
                 coverage
                   .episodesWithoutCrisis
               }
             </strong>
+          </article>
 
+          <article
+            className={styles.metric}
+          >
             <span>
-              Sin crisis
+              Incompletos
             </span>
-          </div>
 
-          <div>
             <strong>
               {
                 coverage
                   .incompleteEpisodes
               }
             </strong>
-
-            <span>
-              Incompletos
-            </span>
-          </div>
+          </article>
         </div>
       </section>
 
       <section
-        className={
-          styles.symptomSelector
-        }
+        className={styles.section}
         aria-labelledby="report-frequency-title"
       >
-        <div>
-          <h3
-            id="report-frequency-title"
-          >
-            Frecuencia e intensidad
-          </h3>
+        <div
+          className={styles.sectionHeader}
+        >
+          <div>
+            <p
+              className={styles.sectionEyebrow}
+            >
+              Evolución
+            </p>
+
+            <h3
+              id="report-frequency-title"
+            >
+              Frecuencia e intensidad
+            </h3>
+          </div>
 
           <p>
-            Los promedios se calculan
-            solamente con los registros
-            disponibles dentro del
-            período.
+            Promedios calculados con los
+            registros disponibles dentro
+            del período.
           </p>
         </div>
 
         <div
-          className={
-            styles.compactChoiceGrid
-          }
+          className={styles.metricGrid}
         >
-          <div>
+          <article
+            className={styles.metric}
+          >
+            <span>
+              Episodios por mes
+            </span>
+
             <strong>
               {formatMetric(
                 frequency
                   .episodesPerMonth,
               )}
             </strong>
+          </article>
 
+          <article
+            className={styles.metric}
+          >
             <span>
-              Episodios por mes
+              Crisis por mes
             </span>
-          </div>
 
-          <div>
             <strong>
               {formatMetric(
                 frequency
                   .crisesPerMonth,
               )}
             </strong>
+          </article>
 
+          <article
+            className={styles.metric}
+          >
             <span>
-              Crisis por mes
+              Intensidad promedio
             </span>
-          </div>
 
-          <div>
             <strong>
               {formatMetric(
                 pain.averageIntensity,
                 '/10',
               )}
             </strong>
+          </article>
 
+          <article
+            className={styles.metric}
+          >
             <span>
-              Intensidad promedio
+              Intensidad máxima
             </span>
-          </div>
 
-          <div>
             <strong>
               {formatMetric(
                 pain.maximumIntensity,
                 '/10',
               )}
             </strong>
-
-            <span>
-              Intensidad máxima
-            </span>
-          </div>
+          </article>
         </div>
 
-        <p>
+        <p
+          className={styles.dataNote}
+        >
           La intensidad se calculó con{' '}
-          {
-            pain.episodesWithPainData
-          }{' '}
+          {pain.episodesWithPainData}{' '}
           de{' '}
-          {
-            coverage
-              .episodesWithCrisis
-          }{' '}
+          {coverage.episodesWithCrisis}{' '}
           crisis.
         </p>
       </section>
 
       <section
-        className={
-          styles.symptomSelector
-        }
+        className={styles.section}
         aria-labelledby="report-duration-title"
       >
-        <div>
-          <h3
-            id="report-duration-title"
-          >
-            Duración de las crisis
-          </h3>
+        <div
+          className={styles.sectionHeader}
+        >
+          <div>
+            <p
+              className={styles.sectionEyebrow}
+            >
+              Tiempo
+            </p>
+
+            <h3
+              id="report-duration-title"
+            >
+              Duración de las crisis
+            </h3>
+          </div>
 
           <p>
-            Solo se incluyen crisis con
+            Solo incluye crisis con
             fechas válidas de inicio y
             finalización.
           </p>
         </div>
 
         <div
-          className={
-            styles.compactChoiceGrid
-          }
+          className={`${styles.metricGrid} ${styles.threeColumns}`}
         >
-          <div>
+          <article
+            className={styles.metric}
+          >
+            <span>
+              Duración promedio
+            </span>
+
             <strong>
               {formatDuration(
                 duration.averageMinutes,
               )}
             </strong>
+          </article>
 
+          <article
+            className={styles.metric}
+          >
             <span>
-              Duración promedio
+              Crisis más corta
             </span>
-          </div>
 
-          <div>
             <strong>
               {formatDuration(
                 duration.shortestMinutes,
               )}
             </strong>
+          </article>
 
+          <article
+            className={styles.metric}
+          >
             <span>
-              Crisis más corta
+              Crisis más larga
             </span>
-          </div>
 
-          <div>
             <strong>
               {formatDuration(
                 duration.longestMinutes,
               )}
             </strong>
-
-            <span>
-              Crisis más larga
-            </span>
-          </div>
+          </article>
         </div>
 
-        <p>
+        <p
+          className={styles.dataNote}
+        >
           Hay duración completa en{' '}
           {
             duration
               .crisesWithDurationData
           }{' '}
           de{' '}
-          {
-            coverage
-              .episodesWithCrisis
-          }{' '}
+          {coverage.episodesWithCrisis}{' '}
           crisis.
         </p>
       </section>
 
       <section
-        className={
-          styles.symptomSelector
-        }
+        className={styles.section}
         aria-labelledby="report-phases-title"
       >
-        <div>
-          <h3
-            id="report-phases-title"
-          >
-            Fases registradas
-          </h3>
+        <div
+          className={styles.sectionHeader}
+        >
+          <div>
+            <p
+              className={styles.sectionEyebrow}
+            >
+              Recorrido
+            </p>
+
+            <h3
+              id="report-phases-title"
+            >
+              Fases registradas
+            </h3>
+          </div>
 
           <p>
             Un mismo episodio puede
@@ -401,19 +448,15 @@ export function ClinicalReportOverview({
         </div>
 
         <div
-          className={
-            styles.compactChoiceGrid
-          }
+          className={styles.phaseGrid}
         >
           {phases.map(
             phase => (
-              <div
+              <article
                 key={phase.phase}
+                className={styles.phaseCard}
+                data-phase={phase.phase}
               >
-                <strong>
-                  {phase.count}
-                </strong>
-
                 <span>
                   {
                     PHASE_LABELS[
@@ -422,28 +465,42 @@ export function ClinicalReportOverview({
                   }
                 </span>
 
+                <strong>
+                  {phase.percentage}%
+                </strong>
+
                 <small>
-                  {phase.percentage}% de
-                  los episodios
+                  {phase.count}{' '}
+                  {phase.count === 1
+                    ? 'episodio'
+                    : 'episodios'}
                 </small>
-              </div>
+              </article>
             ),
           )}
         </div>
       </section>
 
       <section
-        className={
-          styles.symptomSelector
-        }
+        className={`${styles.section} ${styles.qualitySection}`}
         aria-labelledby="report-quality-title"
       >
-        <div>
-          <h3
-            id="report-quality-title"
-          >
-            Cobertura de los datos
-          </h3>
+        <div
+          className={styles.sectionHeader}
+        >
+          <div>
+            <p
+              className={styles.sectionEyebrow}
+            >
+              Calidad del informe
+            </p>
+
+            <h3
+              id="report-quality-title"
+            >
+              Cobertura de los datos
+            </h3>
+          </div>
 
           <p>
             Una sección no completada se
@@ -453,62 +510,70 @@ export function ClinicalReportOverview({
           </p>
         </div>
 
-        <ul>
-          <li>
-            Síntomas registrados en{' '}
-            {
-              dataQuality
-                .episodesWithSymptomData
-            }{' '}
-            de{' '}
-            {
-              coverage.totalEpisodes
-            }{' '}
-            episodios.
-          </li>
+        <dl
+          className={styles.qualityList}
+        >
+          <div>
+            <dt>
+              Síntomas
+            </dt>
 
-          <li>
-            Desencadenantes registrados
-            en{' '}
-            {
-              dataQuality
-                .episodesWithTriggerData
-            }{' '}
-            de{' '}
-            {
-              coverage.totalEpisodes
-            }{' '}
-            episodios.
-          </li>
+            <dd>
+              {
+                dataQuality
+                  .episodesWithSymptomData
+              }{' '}
+              de{' '}
+              {coverage.totalEpisodes}
+            </dd>
+          </div>
 
-          <li>
-            Tratamiento registrado en{' '}
-            {
-              dataQuality
-                .episodesWithTreatmentData
-            }{' '}
-            de{' '}
-            {
-              coverage.totalEpisodes
-            }{' '}
-            episodios.
-          </li>
+          <div>
+            <dt>
+              Desencadenantes
+            </dt>
 
-          <li>
-            Inicio y final de crisis en{' '}
-            {
-              dataQuality
-                .episodesWithCompleteCrisisDates
-            }{' '}
-            de{' '}
-            {
-              coverage
-                .episodesWithCrisis
-            }{' '}
-            crisis.
-          </li>
-        </ul>
+            <dd>
+              {
+                dataQuality
+                  .episodesWithTriggerData
+              }{' '}
+              de{' '}
+              {coverage.totalEpisodes}
+            </dd>
+          </div>
+
+          <div>
+            <dt>
+              Tratamiento
+            </dt>
+
+            <dd>
+              {
+                dataQuality
+                  .episodesWithTreatmentData
+              }{' '}
+              de{' '}
+              {coverage.totalEpisodes}
+            </dd>
+          </div>
+
+          <div>
+            <dt>
+              Crisis con fechas completas
+            </dt>
+
+            <dd>
+              {
+                dataQuality
+                  .episodesWithCompleteCrisisDates
+              }{' '}
+              de{' '}
+              {coverage.episodesWithCrisis}
+            </dd>
+          </div>
+        </dl>
       </section>
-    </>
+    </section>
   );
 }

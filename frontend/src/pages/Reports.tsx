@@ -27,7 +27,7 @@ import {
   downloadClinicalReportPdf,
 } from '../features/reports/utils/downloadClinicalReportPdf';
 
-import styles from '../features/migraine/migraine.module.css';
+import styles from './Reports.module.css';
 
 interface PeriodOption {
   value: ClinicalReportPeriod;
@@ -151,122 +151,162 @@ export function Reports() {
     }
   };
 
+  const downloadFailed =
+    downloadFeedback.startsWith(
+      'No se pudo',
+    );
+
   return (
     <section
-      className={
-        styles.phaseFlow
-      }
+      className={styles.page}
     >
       <header
-        className={
-          styles.symptomSelector
-        }
+        className={styles.pageHeader}
       >
-        <div>
-          <p>
-            Informes para
-            profesionales
-          </p>
+        <p
+          className={styles.eyebrow}
+        >
+          Informes para profesionales
+        </p>
 
-          <h1>
-            Resumen clínico de
-            migrañas
-          </h1>
+        <h1>
+          Resumen clínico de migrañas
+        </h1>
+
+        <p
+          className={styles.description}
+        >
+          Prepará una síntesis de tus
+          episodios para revisar o
+          compartir durante una consulta.
+        </p>
+      </header>
+
+      <section
+        className={styles.reportControls}
+        aria-labelledby="report-preparation-title"
+      >
+        <div
+          className={styles.controlsHeader}
+        >
+          <div>
+            <p
+              className={styles.controlEyebrow}
+            >
+              Preparar informe
+            </p>
+
+            <h2
+              id="report-preparation-title"
+            >
+              Elegí el período que querés
+              analizar
+            </h2>
+          </div>
 
           <p>
-            Revisá el período y
-            descargá un documento con
-            tu perfil clínico y los
-            episodios registrados para
-            compartirlo en consulta.
+            El resumen se actualiza
+            automáticamente al cambiar
+            el período.
           </p>
         </div>
-
-        <label>
-          Período analizado
-
-          <select
-            value={period}
-            onChange={event => {
-              if (
-                isClinicalReportPeriod(
-                  event.target.value,
-                )
-              ) {
-                setPeriod(
-                  event.target.value,
-                );
-
-                setDownloadFeedback(
-                  '',
-                );
-              }
-            }}
-          >
-            {PERIOD_OPTIONS.map(
-              option => (
-                <option
-                  key={
-                    option.value
-                  }
-                  value={
-                    option.value
-                  }
-                >
-                  {option.label}
-                </option>
-              ),
-            )}
-          </select>
-        </label>
 
         <div
-          className={
-            styles.selectionSummary
-          }
-          role="status"
+          className={styles.controlGrid}
         >
-          <span aria-hidden="true">
-            ◷
-          </span>
+          <label
+            className={styles.periodField}
+          >
+            <span>
+              Período analizado
+            </span>
 
-          <p>
-            {
-              selectedPeriod
-                ?.label
-            }
-            {' · '}
-            generado el{' '}
-            {formatReportDate(
-              report.generatedAt,
-            )}
-          </p>
+            <select
+              value={period}
+              onChange={event => {
+                if (
+                  isClinicalReportPeriod(
+                    event.target.value,
+                  )
+                ) {
+                  setPeriod(
+                    event.target.value,
+                  );
+
+                  setDownloadFeedback(
+                    '',
+                  );
+                }
+              }}
+            >
+              {PERIOD_OPTIONS.map(
+                option => (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                ),
+              )}
+            </select>
+          </label>
+
+          <div
+            className={styles.reportStatus}
+            role="status"
+          >
+            <span>
+              Informe preparado
+            </span>
+
+            <strong>
+              {selectedPeriod?.label}
+            </strong>
+
+            <small>
+              Actualizado el{' '}
+              {formatReportDate(
+                report.generatedAt,
+              )}
+            </small>
+          </div>
+
+          <button
+            type="button"
+            className={styles.downloadButton}
+            onClick={handleDownload}
+          >
+            Descargar informe PDF
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={
-            handleDownload
-          }
-        >
-          Descargar informe PDF
-        </button>
 
         {downloadFeedback && (
           <p
-            role="status"
+            className={
+              downloadFailed
+                ? styles.errorFeedback
+                : styles.successFeedback
+            }
+            role={
+              downloadFailed
+                ? 'alert'
+                : 'status'
+            }
           >
             {downloadFeedback}
           </p>
         )}
 
-        <small>
-          El PDF se genera localmente
-          en este dispositivo. SYNARA
-          no envía tu información
-          médica a un servidor.
-        </small>
-      </header>
+        <p
+          className={styles.privacyNote}
+        >
+          El PDF se genera localmente en
+          este dispositivo. SYNARA no
+          envía tu información médica a
+          un servidor.
+        </p>
+      </section>
 
       <ClinicalReportOverview
         report={report}
