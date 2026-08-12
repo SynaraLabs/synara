@@ -21,6 +21,8 @@ import {
 
 import styles from '../history.module.css';
 
+import listStyles from './EpisodeList.module.css';
+
 type HistoryFilter =
   | 'all'
   | 'crisis'
@@ -307,15 +309,11 @@ export function EpisodeList() {
 
   return (
     <section
-      className={
-        styles.historyExplorer
-      }
+        className={`${styles.historyExplorer} ${listStyles.explorer}`}
       aria-label="Episodios de migraña registrados"
     >
       <div
-        className={
-          styles.historyMetrics
-        }
+          className={`${styles.historyMetrics} ${listStyles.metrics}`}
         aria-label="Resumen de episodios"
       >
         <article>
@@ -364,14 +362,10 @@ export function EpisodeList() {
       </div>
 
       <div
-        className={
-          styles.historyControls
-        }
+          className={`${styles.historyControls} ${listStyles.controls}`}
       >
         <label
-          className={
-            styles.historySearch
-          }
+            className={`${styles.historySearch} ${listStyles.search}`}
         >
           <span>
             Buscar en el historial
@@ -395,9 +389,7 @@ export function EpisodeList() {
         </label>
 
         <div
-          className={
-            styles.historyFilters
-          }
+            className={`${styles.historyFilters} ${listStyles.filters}`}
           role="group"
           aria-label="Filtrar episodios"
         >
@@ -483,9 +475,7 @@ export function EpisodeList() {
       </div>
 
       <div
-        className={
-          styles.resultsHeader
-        }
+          className={`${styles.resultsHeader} ${listStyles.results}`}
         aria-live="polite"
       >
         <p>

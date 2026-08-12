@@ -1,0 +1,62 @@
+.list {
+  gap: var(--space-2);
+}
+
+.chip {
+  --chip-color:
+    var(--color-history);
+  --chip-soft:
+    var(--color-history-soft);
+  --chip-border:
+    var(--color-history-border);
+
+  border-color:
+    var(--chip-border) !important;
+
+  color:
+    var(--chip-color) !important;
+  background:
+    var(--chip-soft) !important;
+}
+
+.chip[data-tone='premonitory'] {
+  --chip-color:
+    var(--color-premonitory);
+  --chip-soft:
+    var(--color-premonitory-soft);
+  --chip-border:
+    var(--color-premonitory-border);
+}
+
+.chip[data-tone='aura'] {
+  --chip-color:
+    var(--color-aura);
+  --chip-soft:
+    var(--color-aura-soft);
+  --chip-border:
+    var(--color-aura-border);
+}
+
+.chip[data-tone='crisis'] {
+  --chip-color:
+    var(--color-crisis);
+  --chip-soft:
+    var(--color-crisis-soft);
+  --chip-border:
+    var(--color-crisis-phase-border);
+}
+
+.chip[data-tone='postdrome'] {
+  --chip-color:
+    var(--color-recovery);
+  --chip-soft:
+    var(--color-recovery-soft);
+  --chip-border:
+    var(--color-recovery-border);
+}
+
+@media (max-width: 600px) {
+  .list {
+    gap: var(--space-1);
+  }
+}

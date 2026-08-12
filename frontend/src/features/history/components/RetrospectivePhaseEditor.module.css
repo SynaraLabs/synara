@@ -1,32 +1,34 @@
 .editor,
 .missing {
+  --retrospective-accent:
+    var(--phase-accent, var(--color-primary));
+  --retrospective-soft:
+    var(--phase-soft, var(--color-primary-soft));
+  --retrospective-border:
+    var(--phase-border, var(--color-primary-border));
+
   width: 100%;
   min-width: 0;
 
   border: 1px solid
-    var(--color-border);
+    var(--retrospective-border);
   border-radius:
     var(--radius-large);
 
   background:
     var(--color-surface);
-
-  box-shadow:
-    var(--shadow-small);
 }
 
 .editor {
   display: grid;
   gap: var(--space-5);
 
-  padding:
-    var(--space-5);
+  padding: var(--space-5);
 }
 
 .header {
   display: grid;
   grid-template-columns:
-    auto
     minmax(0, 1fr)
     auto;
   align-items: center;
@@ -36,32 +38,12 @@
     var(--space-4);
 
   border-bottom: 1px solid
-    var(--color-border);
+    var(--retrospective-border);
 }
 
 .icon,
 .missingIcon {
-  display: grid;
-  place-items: center;
-
-  flex-shrink: 0;
-
-  border-radius:
-    var(--radius-medium);
-
-  color:
-    var(--color-primary);
-  background:
-    var(--color-primary-soft);
-
-  font-weight: 850;
-}
-
-.icon {
-  width: 44px;
-  height: 44px;
-
-  font-size: 1rem;
+  display: none;
 }
 
 .header > div {
@@ -73,7 +55,7 @@
   margin: 0 0 2px;
 
   color:
-    var(--color-primary);
+    var(--retrospective-accent);
 
   font-size: 0.64rem;
   font-weight: 800;
@@ -88,7 +70,7 @@
   color:
     var(--color-text-strong);
 
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.3;
 }
 
@@ -101,7 +83,7 @@
   color:
     var(--color-text-soft);
 
-  font-size: 0.75rem;
+  font-size: 0.76rem;
   line-height: 1.45;
 }
 
@@ -111,17 +93,17 @@
   display: inline-flex;
   align-items: center;
 
-  padding:
-    4px
-    10px;
+  padding: 4px 10px;
 
+  border: 1px solid
+    var(--retrospective-border);
   border-radius:
     var(--radius-pill);
 
   color:
-    var(--color-primary);
+    var(--retrospective-accent);
   background:
-    var(--color-primary-soft);
+    var(--retrospective-soft);
 
   font-size: 0.64rem;
   font-weight: 800;
@@ -131,10 +113,7 @@
 .dateGrid {
   display: grid;
   grid-template-columns:
-    repeat(
-      2,
-      minmax(0, 1fr)
-    );
+    repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
 }
 
@@ -171,7 +150,6 @@
     var(--color-surface);
 
   font: inherit;
-
   outline: none;
 }
 
@@ -179,29 +157,30 @@
   min-height: 44px;
 
   padding:
-    9px
-    var(--space-3);
+    9px var(--space-3);
 }
 
 .notes textarea {
   min-height: 105px;
 
-  padding:
-    var(--space-3);
+  padding: var(--space-3);
 
   line-height: 1.5;
-
   resize: vertical;
 }
 
 .dateGrid input:focus,
 .notes textarea:focus {
   border-color:
-    var(--color-primary);
+    var(--retrospective-accent);
 
   box-shadow:
     0 0 0 3px
-      var(--color-focus);
+    color-mix(
+      in srgb,
+      var(--retrospective-accent) 18%,
+      transparent
+    );
 }
 
 .dateGrid input:disabled {
@@ -227,16 +206,15 @@
   display: grid;
   gap: var(--space-3);
 
-  padding:
-    var(--space-4);
+  padding: var(--space-4);
 
   border: 1px solid
-    var(--color-primary-border);
+    var(--color-crisis-phase-border);
   border-radius:
     var(--radius-large);
 
   background:
-    var(--color-primary-soft);
+    var(--color-crisis-soft);
 }
 
 .pain > div:first-child {
@@ -257,7 +235,7 @@
 
 .pain > div:first-child strong {
   color:
-    var(--color-primary);
+    var(--color-crisis);
 
   font-size: 1.35rem;
   line-height: 1;
@@ -268,10 +246,7 @@
 
   display: grid;
   grid-template-columns:
-    repeat(
-      11,
-      minmax(36px, 1fr)
-    );
+    repeat(11, minmax(36px, 1fr));
   gap: var(--space-1);
 
   overflow-x: auto;
@@ -288,58 +263,47 @@
   padding: 6px;
 
   border: 1px solid
-    var(--color-primary-border);
+    var(--color-crisis-phase-border);
   border-radius:
     var(--radius-medium);
 
   color:
-    var(--color-primary);
+    var(--color-crisis);
   background:
     var(--color-surface);
 
   font-size: 0.75rem;
   font-weight: 800;
-
-  box-shadow: none;
 }
 
 .painLevels button:hover {
   background:
-    var(--color-primary-soft);
+    var(--color-crisis-soft);
 }
 
 .painLevels button[aria-pressed='true'] {
   border-color:
-    var(--color-primary);
+    var(--color-crisis);
 
   color: #ffffff;
   background:
-    var(--color-primary);
+    var(--color-crisis);
 }
 
 .missing {
   display: grid;
   grid-template-columns:
-    auto
     minmax(0, 1fr)
     auto;
   align-items: center;
   gap: var(--space-4);
 
-  padding:
-    var(--space-4);
+  padding: var(--space-4);
 
   border-style: dashed;
 
   background:
-    var(--color-surface-soft);
-}
-
-.missingIcon {
-  width: 40px;
-  height: 40px;
-
-  font-size: 0.92rem;
+    var(--retrospective-soft);
 }
 
 .missing > div {
@@ -350,37 +314,35 @@
   min-height: 40px;
 
   padding:
-    7px
-    var(--space-4);
+    7px var(--space-4);
 
   border: 1px solid
-    var(--color-primary);
+    var(--retrospective-accent);
   border-radius:
     var(--radius-medium);
 
   color: #ffffff;
   background:
-    var(--color-primary);
+    var(--retrospective-accent);
 
   font-size: 0.72rem;
   font-weight: 800;
   white-space: nowrap;
-
-  box-shadow: none;
 }
 
 .missing > button:hover {
   background:
-    var(--color-primary-hover);
+    color-mix(
+      in srgb,
+      var(--retrospective-accent) 88%,
+      #000000
+    );
 }
 
 @media (max-width: 760px) {
   .painLevels {
     grid-template-columns:
-      repeat(
-        6,
-        minmax(38px, 1fr)
-      );
+      repeat(6, minmax(38px, 1fr));
   }
 }
 
@@ -388,20 +350,15 @@
   .editor {
     gap: var(--space-4);
 
-    padding:
-      var(--space-3);
+    padding: var(--space-3);
 
     border-radius:
       var(--radius-medium);
   }
 
   .header {
-    grid-template-columns:
-      auto
-      minmax(0, 1fr);
-
+    grid-template-columns: 1fr;
     align-items: flex-start;
-
     gap: var(--space-3);
 
     padding-bottom:
@@ -409,15 +366,7 @@
   }
 
   .header > strong {
-    grid-column:
-      1 / -1;
-
     justify-self: flex-start;
-  }
-
-  .icon {
-    width: 38px;
-    height: 38px;
   }
 
   .dateGrid {
@@ -425,8 +374,7 @@
   }
 
   .pain {
-    padding:
-      var(--space-3);
+    padding: var(--space-3);
 
     border-radius:
       var(--radius-medium);
@@ -434,21 +382,14 @@
 
   .painLevels {
     grid-template-columns:
-      repeat(
-        4,
-        minmax(40px, 1fr)
-      );
+      repeat(4, minmax(40px, 1fr));
   }
 
   .missing {
-    grid-template-columns:
-      auto
-      minmax(0, 1fr);
-
+    grid-template-columns: 1fr;
     gap: var(--space-3);
 
-    padding:
-      var(--space-3);
+    padding: var(--space-3);
 
     border-radius:
       var(--radius-medium);
@@ -456,19 +397,13 @@
 
   .missing > button {
     width: 100%;
-
-    grid-column:
-      1 / -1;
   }
 }
 
 @media (max-width: 380px) {
   .painLevels {
     grid-template-columns:
-      repeat(
-        3,
-        minmax(40px, 1fr)
-      );
+      repeat(3, minmax(40px, 1fr));
   }
 }
 

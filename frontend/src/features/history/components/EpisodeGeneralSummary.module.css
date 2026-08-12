@@ -1,0 +1,140 @@
+.root {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.panel {
+  --summary-color:
+    var(--color-history);
+  --summary-soft:
+    var(--color-history-soft);
+  --summary-border:
+    var(--color-history-border);
+
+  display: grid;
+  gap: var(--space-3);
+
+  padding: var(--space-4);
+
+  border: 1px solid
+    var(--summary-border);
+  border-radius:
+    var(--radius-large);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--summary-soft) 72%,
+      var(--color-surface)
+    );
+}
+
+.contextPanel {
+  --summary-color:
+    var(--color-triggers);
+  --summary-soft:
+    var(--color-triggers-soft);
+  --summary-border:
+    var(--color-triggers-border);
+}
+
+.header {
+  display: grid;
+  gap: 2px;
+}
+
+.header small {
+  color:
+    var(--summary-color);
+
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.header strong {
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.items {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: var(--space-2);
+}
+
+.items p {
+  margin: 0;
+  padding: var(--space-3);
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--summary-color) 13%,
+      var(--color-border)
+    );
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--color-text-soft);
+  background:
+    var(--color-surface);
+
+  font-size: 0.76rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.items b {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.treatmentItem {
+  border-color:
+    var(--color-treatment-border) !important;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--color-treatment-soft) 34%,
+      var(--color-surface)
+    ) !important;
+}
+
+@media (max-width: 600px) {
+  .root {
+    gap: var(--space-2);
+  }
+
+  .panel {
+    padding: var(--space-3);
+
+    border-radius:
+      var(--radius-medium);
+  }
+
+  .items {
+    grid-template-columns: 1fr;
+  }
+
+  .items p {
+    padding: var(--space-2);
+  }
+}

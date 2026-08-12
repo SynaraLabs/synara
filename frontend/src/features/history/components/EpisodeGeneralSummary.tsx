@@ -21,15 +21,12 @@ import {
   formatDateTime,
 } from '../utils/historyFormatters';
 
-import styles from './EpisodeTimeline.module.css';
+import styles from './EpisodeGeneralSummary.module.css';
 
 interface Props {
   episode: MigraineEpisode;
-
   episodeStart: string;
-
   phases: string[];
-
   hasCrisis: boolean;
 }
 
@@ -48,8 +45,7 @@ const getTreatmentTypeLabel = (
       option =>
         option.value ===
         treatmentType,
-    )?.label ??
-    treatmentType
+    )?.label ?? treatmentType
   );
 };
 
@@ -69,8 +65,7 @@ const getEffectivenessLabel = (
       option =>
         option.value ===
         effectiveness,
-    )?.label ??
-    effectiveness
+    )?.label ?? effectiveness
   );
 };
 
@@ -82,14 +77,14 @@ const hasTreatmentData = (
 
   return Boolean(
     treatment.type ||
-    treatment.medication?.trim() ||
-    treatment.dose?.trim() ||
-    treatment.takenAt ||
-    treatment.effectiveness ||
-    treatment.responseTimeMinutes !==
-      undefined ||
-    treatment.sideEffects?.length ||
-    treatment.notes?.trim(),
+      treatment.medication?.trim() ||
+      treatment.dose?.trim() ||
+      treatment.takenAt ||
+      treatment.effectiveness ||
+      treatment.responseTimeMinutes !==
+        undefined ||
+      treatment.sideEffects?.length ||
+      treatment.notes?.trim(),
   );
 };
 
@@ -97,14 +92,12 @@ const createSummaryId = (
   episode: MigraineEpisode,
 ): string => {
   const source =
-    episode.id ??
-    episode.createdAt;
+    episode.id ?? episode.createdAt;
 
-  const safeId =
-    source.replace(
-      /[^a-zA-Z0-9_-]/g,
-      '-',
-    );
+  const safeId = source.replace(
+    /[^a-zA-Z0-9_-]/g,
+    '-',
+  );
 
   return `episode-summary-${safeId}`;
 };
@@ -116,14 +109,10 @@ export function EpisodeGeneralSummary({
   hasCrisis,
 }: Props) {
   const summaryId =
-    createSummaryId(
-      episode,
-    );
+    createSummaryId(episode);
 
   const episodeDuration =
-    getEpisodeDuration(
-      episode,
-    );
+    getEpisodeDuration(episode);
 
   const triggers =
     episode.triggers ?? [];
@@ -132,78 +121,50 @@ export function EpisodeGeneralSummary({
     episode.treatment;
 
   const treatmentRegistered =
-    hasTreatmentData(
-      episode,
-    );
+    hasTreatmentData(episode);
 
   const effectivenessLabel =
-    getEffectivenessLabel(
-      episode,
-    );
+    getEffectivenessLabel(episode);
 
   const hasGeneralContext =
     triggers.length > 0 ||
     treatmentRegistered ||
-    Boolean(
-      episode.notes?.trim(),
-    );
+    Boolean(episode.notes?.trim());
 
   return (
     <section
+      className={styles.root}
       aria-labelledby={`${summaryId}-title`}
     >
       <div
-        className={
-          styles.context
-        }
+        className={styles.panel}
       >
         <div
-          className={
-            styles.contextHeader
-          }
+          className={styles.header}
         >
-          <span
-            className={
-              styles.contextIcon
-            }
-            aria-hidden="true"
+          <small>
+            Resumen general
+          </small>
+
+          <strong
+            id={`${summaryId}-title`}
           >
-            ◫
-          </span>
-
-          <div>
-            <small>
-              Resumen general
-            </small>
-
-            <strong
-              id={`${summaryId}-title`}
-            >
-              Información del episodio
-            </strong>
-          </div>
+            Información del episodio
+          </strong>
         </div>
 
         <div
-          className={
-            styles.contextItems
-          }
+          className={styles.items}
         >
           <p>
-            <b>
-              Inicio
-            </b>
-
+            <b>Inicio</b>
             {formatDateTime(
               episodeStart,
             )}
           </p>
 
           <p>
-            <b>
-              Duración total
-            </b>
-
+            <b>Duración total</b>
             {episodeDuration !==
             undefined
               ? formatDuration(
@@ -217,7 +178,6 @@ export function EpisodeGeneralSummary({
               <b>
                 Intensidad máxima
               </b>
-
               {getMaxPainIntensity(
                 episode,
               )}
@@ -229,7 +189,6 @@ export function EpisodeGeneralSummary({
             <b>
               Fases registradas
             </b>
-
             {phases.length > 0
               ? phases.join(', ')
               : 'No determinadas'}
@@ -239,40 +198,21 @@ export function EpisodeGeneralSummary({
 
       {hasGeneralContext && (
         <div
-          className={
-            styles.context
-          }
+          className={`${styles.panel} ${styles.contextPanel}`}
         >
           <div
-            className={
-              styles.contextHeader
-            }
+            className={styles.header}
           >
-            <span
-              className={
-                styles.contextIcon
-              }
-              aria-hidden="true"
-            >
-              ◇
-            </span>
+            <small>Contexto</small>
 
-            <div>
-              <small>
-                Contexto
-              </small>
-
-              <strong>
-                Lo que acompañó este
-                episodio
-              </strong>
-            </div>
+            <strong>
+              Lo que acompañó este
+              episodio
+            </strong>
           </div>
 
           <div
-            className={
-              styles.contextItems
-            }
+            className={styles.items}
           >
             {triggers.length > 0 && (
               <p>
@@ -280,7 +220,6 @@ export function EpisodeGeneralSummary({
                   Posibles
                   desencadenantes
                 </b>
-
                 {triggers
                   .map(
                     trigger =>
@@ -294,11 +233,14 @@ export function EpisodeGeneralSummary({
 
             {treatmentRegistered && (
               <>
-                <p>
+                <p
+                  className={
+                    styles.treatmentItem
+                  }
+                >
                   <b>
                     Tipo de tratamiento
                   </b>
-
                   {getTreatmentTypeLabel(
                     episode,
                   )}
@@ -306,71 +248,68 @@ export function EpisodeGeneralSummary({
 
                 {treatment.medication
                   ?.trim() && (
-                  <p>
+                  <p
+                    className={
+                      styles.treatmentItem
+                    }
+                  >
                     <b>
                       Medicación o
                       suplemento
                     </b>
-
-                    {
-                      treatment
-                        .medication
-                        .trim()
-                    }
+                    {treatment.medication.trim()}
                   </p>
                 )}
 
                 {treatment.dose
                   ?.trim() && (
-                  <p>
-                    <b>
-                      Dosis
-                    </b>
-
-                    {
-                      treatment.dose
-                        .trim()
+                  <p
+                    className={
+                      styles.treatmentItem
                     }
+                  >
+                    <b>Dosis</b>
+                    {treatment.dose.trim()}
                   </p>
                 )}
 
                 {treatment.takenAt && (
-                  <p>
-                    <b>
-                      Hora de uso
-                    </b>
-
-                    {
-                      treatment.takenAt
+                  <p
+                    className={
+                      styles.treatmentItem
                     }
+                  >
+                    <b>Hora de uso</b>
+                    {treatment.takenAt}
                   </p>
                 )}
 
                 {effectivenessLabel && (
-                  <p>
+                  <p
+                    className={
+                      styles.treatmentItem
+                    }
+                  >
                     <b>
                       Resultado percibido
                     </b>
-
-                    {
-                      effectivenessLabel
-                    }
+                    {effectivenessLabel}
                   </p>
                 )}
 
                 {treatment
                   .responseTimeMinutes !==
                   undefined && (
-                  <p>
+                  <p
+                    className={
+                      styles.treatmentItem
+                    }
+                  >
                     <b>
                       Tiempo hasta sentir
                       mejoría
                     </b>
-
-                    {
-                      treatment
-                        .responseTimeMinutes
-                    }{' '}
+                    {treatment.responseTimeMinutes}{' '}
                     minutos
                   </p>
                 )}
@@ -378,30 +317,31 @@ export function EpisodeGeneralSummary({
                 {treatment.sideEffects &&
                   treatment.sideEffects
                     .length > 0 && (
-                    <p>
-                      <b>
-                        Efectos
-                        secundarios
-                      </b>
-
-                      {treatment
-                        .sideEffects
-                        .join(', ')}
-                    </p>
-                  )}
+                  <p
+                    className={
+                      styles.treatmentItem
+                    }
+                  >
+                    <b>
+                      Efectos secundarios
+                    </b>
+                    {treatment.sideEffects.join(
+                      ', ',
+                    )}
+                  </p>
+                )}
 
                 {treatment.notes
                   ?.trim() && (
-                  <p>
-                    <b>
-                      Notas del
-                      tratamiento
-                    </b>
-
-                    {
-                      treatment.notes
-                        .trim()
+                  <p
+                    className={
+                      styles.treatmentItem
                     }
+                  >
+                    <b>
+                      Notas del tratamiento
+                    </b>
+                    {treatment.notes.trim()}
                   </p>
                 )}
               </>
@@ -412,10 +352,7 @@ export function EpisodeGeneralSummary({
                 <b>
                   Notas personales
                 </b>
-
-                {
-                  episode.notes.trim()
-                }
+                {episode.notes.trim()}
               </p>
             )}
           </div>

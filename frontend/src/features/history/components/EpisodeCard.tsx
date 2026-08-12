@@ -53,6 +53,8 @@ import timelineStyles from './EpisodeTimeline.module.css';
 
 import navigationStyles from './EpisodeDetailNavigation.module.css';
 
+import phaseStyles from './EpisodePhaseChips.module.css';
+
 interface Props {
   episode: MigraineEpisode;
 
@@ -550,14 +552,24 @@ export function EpisodeCard({
 
           {phases.length > 0 && (
             <div
-              className={
-                styles.phaseChips
-              }
+              className={`${styles.phaseChips} ${phaseStyles.list}`}
               aria-label="Fases registradas"
             >
               {phases.map(
                 phase => (
-                  <span key={phase}>
+                  <span
+                    key={phase}
+                    className={phaseStyles.chip}
+                    data-tone={
+                      phase === 'Premonitorio'
+                        ? 'premonitory'
+                        : phase === 'Aura'
+                          ? 'aura'
+                          : phase === 'Crisis'
+                            ? 'crisis'
+                            : 'postdrome'
+                    }
+                  >
                     {phase}
                   </span>
                 ),

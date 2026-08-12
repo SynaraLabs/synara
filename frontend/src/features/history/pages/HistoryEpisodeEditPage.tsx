@@ -49,37 +49,30 @@ import {
 
 import styles from './HistoryEpisodeEditPage.module.css';
 
-const PHASES:
-  {
-    id: ClinicalPhase;
-    label: string;
-    shortLabel: string;
-    icon: string;
-  }[] = [
+const PHASES: {
+  id: ClinicalPhase;
+  label: string;
+  shortLabel: string;
+}[] = [
   {
     id: 'premonitory',
-    label:
-      'Señales premonitorias',
+    label: 'Señales premonitorias',
     shortLabel: 'Señales',
-    icon: '◌',
   },
   {
     id: 'aura',
     label: 'Aura',
     shortLabel: 'Aura',
-    icon: '◉',
   },
   {
     id: 'crisis',
     label: 'Crisis',
     shortLabel: 'Crisis',
-    icon: '◆',
   },
   {
     id: 'postdrome',
     label: 'Postdromo',
     shortLabel: 'Post',
-    icon: '◇',
   },
 ];
 
@@ -90,15 +83,11 @@ const cloneEpisode = (
     typeof structuredClone ===
     'function'
   ) {
-    return structuredClone(
-      episode,
-    );
+    return structuredClone(episode);
   }
 
   return JSON.parse(
-    JSON.stringify(
-      episode,
-    ),
+    JSON.stringify(episode),
   ) as MigraineEpisode;
 };
 
@@ -106,46 +95,36 @@ const phaseIsPresent = (
   episode: MigraineEpisode,
   phase: ClinicalPhase,
 ): boolean => {
-  if (
-    phase === 'premonitory'
-  ) {
+  if (phase === 'premonitory') {
     return (
-      episode.premonitory
-        .present === true
+      episode.premonitory.present ===
+      true
     );
   }
 
   if (phase === 'aura') {
     return (
-      episode.aura.present ===
-      true
+      episode.aura.present === true
     );
   }
 
   if (phase === 'crisis') {
     return Boolean(
-      episode.timeline
-        ?.crisisStart ||
+      episode.timeline?.crisisStart ||
+        episode.crisis.startTime ||
+        episode.crisis.time?.start
+          ?.value ||
+        episode.crisis.events?.length ||
         episode.crisis
-          .startTime ||
-        episode.crisis.time
-          ?.start?.value ||
-        episode.crisis.events
-          ?.length ||
-        episode.crisis
-          .intensityHistory
-          ?.length ||
-        (
-          episode.crisis.status &&
+          .intensityHistory?.length ||
+        (episode.crisis.status &&
           episode.crisis.status !==
-            'notStarted'
-        ),
+            'notStarted'),
     );
   }
 
   return (
-    episode.postdrome.present ===
-    true
+    episode.postdrome.present === true
   );
 };
 
@@ -153,12 +132,7 @@ const validatePhaseDates = (
   episode: MigraineEpisode,
   phase: ClinicalPhase,
 ): string | null => {
-  if (
-    !phaseIsPresent(
-      episode,
-      phase,
-    )
-  ) {
+  if (!phaseIsPresent(episode, phase)) {
     return null;
   }
 
@@ -168,11 +142,8 @@ const validatePhaseDates = (
       phase,
     );
 
-  const start =
-    time.start?.value;
-
-  const end =
-    time.end?.value;
+  const start = time.start?.value;
+  const end = time.end?.value;
 
   if (
     start &&
@@ -201,10 +172,7 @@ const validatePhaseDates = (
     return 'La finalización no puede ser anterior al inicio.';
   }
 
-  if (
-    phase === 'crisis' &&
-    !start
-  ) {
+  if (phase === 'crisis' && !start) {
     return 'Para agregar una crisis, registrá su fecha y hora de inicio.';
   }
 
@@ -212,54 +180,38 @@ const validatePhaseDates = (
 };
 
 export function HistoryEpisodeEditPage() {
-  const {
-    episodeId = '',
-  } = useParams<{
-    episodeId: string;
-  }>();
+  const { episodeId = '' } =
+    useParams<{
+      episodeId: string;
+    }>();
 
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
   const storedEpisode =
-    useMigraineStore(
-      state =>
-        state.history.find(
-          episode =>
-            episode.id ===
-            episodeId,
-        ),
+    useMigraineStore(state =>
+      state.history.find(
+        episode =>
+          episode.id === episodeId,
+      ),
     );
 
-  const [
-    draft,
-    setDraft,
-  ] = useState<
-    MigraineEpisode | null
-  >(
-    storedEpisode
-      ? cloneEpisode(
-          storedEpisode,
-        )
-      : null,
-  );
+  const [draft, setDraft] =
+    useState<MigraineEpisode | null>(
+      storedEpisode
+        ? cloneEpisode(storedEpisode)
+        : null,
+    );
 
-  const [
-    activePhase,
-    setActivePhase,
-  ] = useState<ClinicalPhase>(
-    'premonitory',
-  );
+  const [activePhase, setActivePhase] =
+    useState<ClinicalPhase>(
+      'premonitory',
+    );
 
-  const [
-    feedback,
-    setFeedback,
-  ] = useState('');
+  const [feedback, setFeedback] =
+    useState('');
 
-  const [
-    isSaved,
-    setIsSaved,
-  ] = useState(false);
+  const [isSaved, setIsSaved] =
+    useState(false);
 
   useEffect(() => {
     if (!storedEpisode) {
@@ -267,54 +219,34 @@ export function HistoryEpisodeEditPage() {
       return;
     }
 
-    setDraft(
-      cloneEpisode(
-        storedEpisode,
-      ),
-    );
-
+    setDraft(cloneEpisode(storedEpisode));
     setFeedback('');
     setIsSaved(false);
-  }, [
-    episodeId,
-    storedEpisode,
-  ]);
+  }, [episodeId, storedEpisode]);
 
-  const hasChanges =
-    useMemo(() => {
-      if (
-        !draft ||
-        !storedEpisode
-      ) {
-        return false;
-      }
+  const hasChanges = useMemo(() => {
+    if (!draft || !storedEpisode) {
+      return false;
+    }
 
-      return (
-        JSON.stringify(draft) !==
-        JSON.stringify(
-          storedEpisode,
-        )
-      );
-    }, [
-      draft,
-      storedEpisode,
-    ]);
+    return (
+      JSON.stringify(draft) !==
+      JSON.stringify(storedEpisode)
+    );
+  }, [draft, storedEpisode]);
 
-  if (
-    !storedEpisode ||
-    !draft
-  ) {
+  if (!storedEpisode || !draft) {
     return (
       <section
-        className={
-          styles.notFound
-        }
+        className={styles.notFound}
       >
-        <span
-          aria-hidden="true"
+        <p
+          className={
+            styles.notFoundEyebrow
+          }
         >
-          ◷
-        </span>
+          Historial
+        </p>
 
         <h1>
           No encontramos el episodio
@@ -339,35 +271,24 @@ export function HistoryEpisodeEditPage() {
   }
 
   const handleSave = () => {
-    for (
-      const phase of PHASES
-    ) {
-      const error =
-        validatePhaseDates(
-          draft,
-          phase.id,
-        );
+    for (const phase of PHASES) {
+      const error = validatePhaseDates(
+        draft,
+        phase.id,
+      );
 
       if (error) {
-        setActivePhase(
-          phase.id,
-        );
-
+        setActivePhase(phase.id);
         setFeedback(
           `${phase.label}: ${error}`,
         );
-
         setIsSaved(false);
-
         return;
       }
     }
 
     const crisisIsPresent =
-      phaseIsPresent(
-        draft,
-        'crisis',
-      );
+      phaseIsPresent(draft, 'crisis');
 
     const crisisTime =
       getRetrospectivePhaseTime(
@@ -377,7 +298,6 @@ export function HistoryEpisodeEditPage() {
 
     const crisisStart =
       crisisTime.start?.value;
-
     const crisisEnd =
       crisisTime.end?.value;
 
@@ -407,12 +327,10 @@ export function HistoryEpisodeEditPage() {
         }
 
         setIsSaved(false);
-
         return;
       }
 
       navigate('/migraine');
-
       return;
     }
 
@@ -421,35 +339,28 @@ export function HistoryEpisodeEditPage() {
         draft,
       );
 
-    const result =
-      updateHistoryEpisode(
-        episodeId,
-        () =>
-          normalizedEpisode,
-      );
+    const result = updateHistoryEpisode(
+      episodeId,
+      () => normalizedEpisode,
+    );
 
     if (!result.ok) {
       setFeedback(
         'No se pudieron guardar los cambios. Volvé a intentarlo.',
       );
-
       setIsSaved(false);
-
       return;
     }
 
     setDraft(
       result.episode
-        ? cloneEpisode(
-            result.episode,
-          )
+        ? cloneEpisode(result.episode)
         : normalizedEpisode,
     );
 
     setFeedback(
       'Los cambios retrospectivos se guardaron correctamente.',
     );
-
     setIsSaved(true);
   };
 
@@ -466,40 +377,46 @@ export function HistoryEpisodeEditPage() {
 
   return (
     <section
-      className={
-        styles.container
-      }
+      className={styles.container}
+      data-active-phase={activePhase}
     >
       <header
-        className={
-          styles.pageHeader
-        }
+        className={styles.pageHeader}
       >
         <div>
-          <p>
+          <p
+            className={
+              styles.pageEyebrow
+            }
+          >
             Edición retrospectiva
           </p>
 
-          <h1>
-            Completar episodio
-          </h1>
+          <h1>Completar episodio</h1>
 
-          <span>
+          <p
+            className={styles.date}
+          >
             {formatCreatedDate(
               storedEpisode.createdAt,
             )}
-          </span>
+          </p>
 
-          <small>
+          <p
+            className={
+              styles.pageDescription
+            }
+          >
             Agregá información que
             recordaste después sin
             modificar la fecha original
             del registro.
-          </small>
+          </p>
         </div>
 
         <button
           type="button"
+          className={styles.backButton}
           onClick={handleCancel}
         >
           Volver
@@ -512,104 +429,78 @@ export function HistoryEpisodeEditPage() {
         }
         aria-label="Fases del episodio"
       >
-        {PHASES.map(
-          phase => {
-            const isPresent =
-              phaseIsPresent(
-                draft,
-                phase.id,
-              );
-
-            return (
-              <button
-                key={phase.id}
-                type="button"
-                className={
-                  activePhase ===
-                  phase.id
-                    ? styles.activePhase
-                    : ''
-                }
-                aria-current={
-                  activePhase ===
-                  phase.id
-                    ? 'step'
-                    : undefined
-                }
-                onClick={() => {
-                  setActivePhase(
-                    phase.id,
-                  );
-
-                  setFeedback('');
-                  setIsSaved(false);
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  {phase.icon}
-                </span>
-
-                <b>
-                  {
-                    phase.shortLabel
-                  }
-                </b>
-
-                <small>
-                  {isPresent
-                    ? 'Registrada'
-                    : 'Sin registrar'}
-                </small>
-              </button>
+        {PHASES.map(phase => {
+          const isPresent =
+            phaseIsPresent(
+              draft,
+              phase.id,
             );
-          },
-        )}
+
+          return (
+            <button
+              key={phase.id}
+              type="button"
+              data-tone={phase.id}
+              aria-current={
+                activePhase === phase.id
+                  ? 'step'
+                  : undefined
+              }
+              onClick={() => {
+                setActivePhase(phase.id);
+                setFeedback('');
+                setIsSaved(false);
+              }}
+            >
+              <b>{phase.shortLabel}</b>
+
+              <small>
+                {isPresent
+                  ? 'Registrada'
+                  : 'Sin registrar'}
+              </small>
+            </button>
+          );
+        })}
       </nav>
 
-      <RetrospectiveTriggerPanel
-        episode={draft}
-        onChange={
-          updatedEpisode => {
-            setDraft(
-              updatedEpisode,
-            );
-
+      <div
+        className={styles.phaseEditor}
+        data-tone={activePhase}
+      >
+        <RetrospectivePhaseEditor
+          phase={activePhase}
+          episode={draft}
+          onChange={updatedEpisode => {
+            setDraft(updatedEpisode);
             setFeedback('');
             setIsSaved(false);
-          }
-        }
-      />
+          }}
+        />
+      </div>
 
-      <RetrospectiveTreatmentPanel
-        episode={draft}
-        onChange={
-          updatedEpisode => {
-            setDraft(
-              updatedEpisode,
-            );
-
+      <div
+        className={styles.contextEditors}
+        aria-label="Contexto general del episodio"
+      >
+        <RetrospectiveTriggerPanel
+          episode={draft}
+          onChange={updatedEpisode => {
+            setDraft(updatedEpisode);
             setFeedback('');
             setIsSaved(false);
-          }
-        }
-      />
+          }}
+        />
 
-      <RetrospectivePhaseEditor
-        phase={activePhase}
-        episode={draft}
-        onChange={
-          updatedEpisode => {
-            setDraft(
-              updatedEpisode,
-            );
-
+        <RetrospectiveTreatmentPanel
+          episode={draft}
+          onChange={updatedEpisode => {
+            setDraft(updatedEpisode);
             setFeedback('');
             setIsSaved(false);
-          }
-        }
-      />
+          }}
+        />
+      </div>
 
       {feedback && (
         <p
@@ -619,37 +510,37 @@ export function HistoryEpisodeEditPage() {
               : styles.error
           }
           role={
-            isSaved
-              ? 'status'
-              : 'alert'
+            isSaved ? 'status' : 'alert'
           }
         >
           {feedback}
         </p>
       )}
 
-      <footer
-        className={
-          styles.actions
-        }
-      >
-        <button
-          type="button"
-          onClick={handleCancel}
-        >
-          Cancelar
-        </button>
+      <footer className={styles.actions}>
+        <p>
+          {hasChanges
+            ? 'Tenés cambios pendientes.'
+            : 'El episodio está actualizado.'}
+        </p>
 
-        <button
-          type="button"
-          className={
-            styles.saveButton
-          }
-          disabled={!hasChanges}
-          onClick={handleSave}
-        >
-          Guardar cambios
-        </button>
+        <div>
+          <button
+            type="button"
+            onClick={handleCancel}
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            className={styles.saveButton}
+            disabled={!hasChanges}
+            onClick={handleSave}
+          >
+            Guardar cambios
+          </button>
+        </div>
       </footer>
     </section>
   );
