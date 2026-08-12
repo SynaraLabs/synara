@@ -1,0 +1,197 @@
+.section {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.introduction {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-accent-border);
+}
+
+.eyebrow,
+.blockHeader p {
+  margin: 0;
+  color: var(--color-accent-hover);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.introduction h2 {
+  margin: var(--space-1) 0 var(--space-2);
+  color: var(--color-text-strong);
+  font-size: clamp(1.45rem, 4vw, 2rem);
+  line-height: 1.15;
+}
+
+.introduction > p:last-child {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.block {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-small);
+}
+
+.blockHeader {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-accent-border);
+  background: var(--color-accent-soft);
+}
+
+.blockHeader h3 {
+  margin: 3px 0 0;
+  color: var(--color-text-strong);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.fields {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.fields label {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+}
+
+.fields label > span {
+  color: var(--color-text-strong);
+  font-size: 0.8rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.fields input,
+.fields select {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-medium);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.fields input:focus,
+.fields select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgb(195 110 135 / 16%);
+}
+
+.cycleQuestion {
+  max-width: 480px;
+}
+
+.cycleDetails {
+  display: grid;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.pairedFields,
+.relationRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.inputWithUnit {
+  position: relative;
+}
+
+.inputWithUnit input {
+  padding-right: 54px;
+}
+
+.inputWithUnit > span {
+  position: absolute;
+  top: 50%;
+  right: var(--space-3);
+  transform: translateY(-50%);
+  color: var(--color-text-soft);
+  font-size: 0.75rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.note,
+.inactiveMessage {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-soft);
+  background: var(--color-surface-soft);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.note {
+  align-self: end;
+  border-left: 3px solid var(--color-accent-border);
+}
+
+.inactiveMessage {
+  max-width: 620px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+}
+
+@media (max-width: 700px) {
+  .block {
+    border-radius: var(--radius-medium);
+  }
+
+  .blockHeader,
+  .fields {
+    padding: var(--space-4);
+  }
+
+  .pairedFields,
+  .relationRow {
+    grid-template-columns: 1fr;
+  }
+
+  .note {
+    align-self: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .introduction h2 {
+    font-size: 1.4rem;
+  }
+
+  .introduction > p:last-child {
+    font-size: 0.84rem;
+  }
+
+  .blockHeader,
+  .fields {
+    padding: var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fields input,
+  .fields select {
+    transition: none;
+  }
+}

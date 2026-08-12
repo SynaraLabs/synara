@@ -6,7 +6,7 @@ import {
   useProfileStore,
 } from '../store/profile.store';
 
-import styles from '../../migraine/migraine.module.css';
+import styles from './MenstrualContextSection.module.css';
 
 const isHormonalRelation = (
   value: string,
@@ -40,166 +40,154 @@ export function MenstrualContextSection() {
 
   return (
     <section
-      className={
-        styles.symptomSelector
-      }
+      className={styles.section}
       aria-labelledby="menstrual-context-title"
     >
-      <div>
+      <header className={styles.introduction}>
+        <p className={styles.eyebrow}>
+          Observación personal
+        </p>
+
         <h2 id="menstrual-context-title">
           Contexto hormonal
         </h2>
 
         <p>
-          Esta información permite
-          observar posibles relaciones
-          temporales entre las crisis y
-          el ciclo menstrual.
+          Esta información permite observar posibles
+          relaciones temporales entre las crisis y el ciclo
+          menstrual. Completala solamente si corresponde a tu
+          situación actual.
         </p>
-      </div>
+      </header>
 
-      <label>
-        ¿Tenés ciclo menstrual?
+      <div className={styles.block}>
+        <header className={styles.blockHeader}>
+          <div>
+            <p>Ciclo menstrual</p>
+            <h3>Información para comparar con tus episodios</h3>
+          </div>
+        </header>
 
-        <select
-          value={
-            hasMenstrualCycle
-              ? 'yes'
-              : 'no'
-          }
-          onChange={event =>
-            updateMenstrualContext({
-              hasMenstrualCycle:
-                event.target.value ===
-                'yes',
-            })
-          }
-        >
-          <option value="yes">
-            Sí
-          </option>
-
-          <option value="no">
-            No
-          </option>
-        </select>
-      </label>
-
-      {hasMenstrualCycle && (
-        <>
-          <label>
-            Duración promedio del ciclo
-
-            <input
-              type="number"
-              min="15"
-              max="60"
-              step="1"
-              inputMode="numeric"
-              value={
-                menstrual
-                  ?.averageCycleDays ??
-                ''
-              }
-              placeholder="Ejemplo: 28"
-              onChange={event => {
-                const value =
-                  event.target.value;
-
-                updateMenstrualContext({
-                  averageCycleDays:
-                    value === ''
-                      ? undefined
-                      : Number(value),
-                });
-              }}
-            />
-          </label>
-
-          <label>
-            Fecha de última menstruación
-
-            <input
-              type="date"
-              value={
-                menstrual
-                  ?.lastPeriodDate ??
-                ''
-              }
-              onChange={event =>
-                updateMenstrualContext({
-                  lastPeriodDate:
-                    event.target.value ||
-                    undefined,
-                })
-              }
-            />
-          </label>
-
-          <label>
-            Relación que observaste con
-            las migrañas
+        <div className={styles.fields}>
+          <label className={styles.cycleQuestion}>
+            <span>¿Tenés ciclo menstrual?</span>
 
             <select
-              value={
-                menstrual
-                  ?.hormonalRelation ??
-                ''
-              }
-              onChange={event => {
-                const value =
-                  event.target.value;
-
+              value={hasMenstrualCycle ? 'yes' : 'no'}
+              onChange={event =>
                 updateMenstrualContext({
-                  hormonalRelation:
-                    isHormonalRelation(
-                      value,
-                    )
-                      ? value
-                      : undefined,
-                });
-              }}
+                  hasMenstrualCycle:
+                    event.target.value === 'yes',
+                })
+              }
             >
-              <option value="">
-                Seleccionar
-              </option>
-
-              <option value="menstruation">
-                Alrededor de la
-                menstruación
-              </option>
-
-              <option value="ovulation">
-                Alrededor de la
-                ovulación
-              </option>
-
-              <option value="both">
-                En ambos momentos
-              </option>
-
-              <option value="none">
-                No observé relación
-              </option>
-
-              <option value="unknown">
-                Todavía no lo sé
-              </option>
+              <option value="yes">Sí</option>
+              <option value="no">No</option>
             </select>
           </label>
 
-          <div>
-            <p>
-              Una coincidencia temporal
-              no confirma por sí sola un
-              desencadenante. SYNARA
-              comparará esta información
-              con los episodios
-              registrados.
+          {!hasMenstrualCycle && (
+            <p className={styles.inactiveMessage} role="status">
+              No necesitás completar esta sección. Podés cambiar
+              la respuesta si tu situación se modifica.
             </p>
-          </div>
-        </>
-      )}
+          )}
+
+          {hasMenstrualCycle && (
+            <div className={styles.cycleDetails}>
+              <div className={styles.pairedFields}>
+                <label>
+                  <span>Duración promedio del ciclo</span>
+
+                  <div className={styles.inputWithUnit}>
+                    <input
+                      type="number"
+                      min="15"
+                      max="60"
+                      step="1"
+                      inputMode="numeric"
+                      value={menstrual?.averageCycleDays ?? ''}
+                      placeholder="Ejemplo: 28"
+                      onChange={event => {
+                        const value = event.target.value;
+
+                        updateMenstrualContext({
+                          averageCycleDays:
+                            value === ''
+                              ? undefined
+                              : Number(value),
+                        });
+                      }}
+                    />
+
+                    <span>días</span>
+                  </div>
+                </label>
+
+                <label>
+                  <span>Fecha de última menstruación</span>
+
+                  <input
+                    type="date"
+                    value={menstrual?.lastPeriodDate ?? ''}
+                    onChange={event =>
+                      updateMenstrualContext({
+                        lastPeriodDate:
+                          event.target.value || undefined,
+                      })
+                    }
+                  />
+                </label>
+              </div>
+
+              <div className={styles.relationRow}>
+                <label>
+                  <span>
+                    Relación que observaste con las migrañas
+                  </span>
+
+                  <select
+                    value={menstrual?.hormonalRelation ?? ''}
+                    onChange={event => {
+                      const value = event.target.value;
+
+                      updateMenstrualContext({
+                        hormonalRelation:
+                          isHormonalRelation(value)
+                            ? value
+                            : undefined,
+                      });
+                    }}
+                  >
+                    <option value="">Seleccionar</option>
+                    <option value="menstruation">
+                      Alrededor de la menstruación
+                    </option>
+                    <option value="ovulation">
+                      Alrededor de la ovulación
+                    </option>
+                    <option value="both">
+                      En ambos momentos
+                    </option>
+                    <option value="none">
+                      No observé relación
+                    </option>
+                    <option value="unknown">
+                      Todavía no lo sé
+                    </option>
+                  </select>
+                </label>
+
+                <aside className={styles.note}>
+                  Una coincidencia temporal no confirma por sí
+                  sola un desencadenante. SYNARA comparará esta
+                  información con los episodios registrados.
+                </aside>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }

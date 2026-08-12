@@ -1,7 +1,11 @@
 import {
   useEffect,
+  useId,
+  useMemo,
   useState,
 } from 'react';
+
+import styles from './ProfileStringListField.module.css';
 
 interface Props {
   label: string;
@@ -32,10 +36,7 @@ const parseValues = (
     new Set(
       value
         .split('\n')
-        .map(
-          item =>
-            item.trim(),
-        )
+        .map(item => item.trim())
         .filter(Boolean),
     ),
   );
@@ -48,20 +49,26 @@ export function ProfileStringListField({
   rows = 4,
   onChange,
 }: Props) {
-  const [
-    draft,
-    setDraft,
-  ] = useState(
-    formatValues(value),
-  );
+  const fieldId = useId();
+
+  const [draft, setDraft] =
+    useState(
+      formatValues(value),
+    );
 
   useEffect(() => {
     setDraft(
       formatValues(value),
     );
-  }, [
-    value,
-  ]);
+  }, [value]);
+
+  const draftCount =
+    useMemo(
+      () =>
+        parseValues(draft)
+          .length,
+      [draft],
+    );
 
   const saveDraft = () => {
     const normalizedValues =
@@ -79,13 +86,27 @@ export function ProfileStringListField({
   };
 
   return (
-    <label>
-      {label}
+    <div className={styles.field}>
+      <div className={styles.header}>
+        <label htmlFor={fieldId}>
+          {label}
+        </label>
+
+        <span aria-live="polite">
+          {draftCount === 0
+            ? 'Sin datos'
+            : draftCount === 1
+              ? '1 registro'
+              : `${draftCount} registros`}
+        </span>
+      </div>
 
       <textarea
+        id={fieldId}
         value={draft}
         rows={rows}
         placeholder={placeholder}
+        aria-describedby={`${fieldId}-help`}
         onChange={event =>
           setDraft(
             event.target.value,
@@ -93,6 +114,11 @@ export function ProfileStringListField({
         }
         onBlur={saveDraft}
       />
-    </label>
+
+      <small id={`${fieldId}-help`}>
+        Escribí un dato por línea. Se guarda automáticamente
+        al salir del campo.
+      </small>
+    </div>
   );
 }

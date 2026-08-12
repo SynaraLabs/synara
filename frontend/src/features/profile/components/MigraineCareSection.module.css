@@ -1,0 +1,211 @@
+.section {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.introduction {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-accent-border);
+}
+
+.eyebrow,
+.blockHeader p {
+  margin: 0;
+  color: var(--color-accent-hover);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.introduction h2 {
+  margin: var(--space-1) 0 var(--space-2);
+  color: var(--color-text-strong);
+  font-size: clamp(1.45rem, 4vw, 2rem);
+  line-height: 1.15;
+}
+
+.introduction > p:last-child {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.block {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-small);
+}
+
+.blockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-accent-border);
+  background: var(--color-accent-soft);
+}
+
+.blockHeader h3 {
+  margin: 3px 0 0;
+  color: var(--color-text-strong);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.blockHeader > span {
+  color: var(--color-accent-hover);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.fields,
+.blockContent {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.fields > label,
+.conditionalFields label,
+.notesField {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.fields label > span,
+.notesField > span {
+  color: var(--color-text-strong);
+  font-size: 0.8rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.fields input,
+.fields select,
+.notesField textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-medium);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.fields input,
+.fields select {
+  min-height: 46px;
+  padding: 10px var(--space-3);
+}
+
+.notesField textarea {
+  min-height: 112px;
+  padding: var(--space-3);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.fields input:focus,
+.fields select:focus,
+.notesField textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgb(195 110 135 / 16%);
+}
+
+.conditionalFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-accent-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-accent-soft);
+}
+
+.explanation {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-accent-border);
+  color: var(--color-text-soft);
+  background: var(--color-surface-soft);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.listGrid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.blockContent label {
+  color: var(--color-text-strong);
+}
+
+.blockContent textarea {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+}
+
+@media (max-width: 700px) {
+  .section {
+    gap: var(--space-3);
+  }
+
+  .block {
+    border-radius: var(--radius-medium);
+  }
+
+  .blockHeader {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .fields,
+  .blockContent {
+    padding: var(--space-4);
+  }
+
+  .conditionalFields,
+  .listGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .introduction h2 {
+    font-size: 1.4rem;
+  }
+
+  .introduction > p:last-child {
+    font-size: 0.84rem;
+  }
+
+  .blockHeader > span {
+    display: none;
+  }
+
+  .fields,
+  .blockContent,
+  .conditionalFields {
+    padding: var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fields input,
+  .fields select,
+  .notesField textarea {
+    transition: none;
+  }
+}

@@ -10,7 +10,7 @@ import {
   useProfileStore,
 } from '../store/profile.store';
 
-import styles from '../../migraine/migraine.module.css';
+import styles from './MigraineHistorySection.module.css';
 
 const CURRENT_YEAR =
   new Date().getFullYear();
@@ -31,10 +31,8 @@ const isDiagnosingProfessional = (
 ): value is DiagnosingProfessional => {
   return (
     value === 'neurologist' ||
-    value ===
-      'headacheSpecialist' ||
-    value ===
-      'generalPractitioner' ||
+    value === 'headacheSpecialist' ||
+    value === 'generalPractitioner' ||
     value === 'other' ||
     value === 'unknown'
   );
@@ -114,118 +112,60 @@ export function MigraineHistorySection() {
 
   return (
     <section
-      className={
-        styles.symptomSelector
-      }
+      className={styles.section}
       aria-labelledby="migraine-history-title"
     >
-      <div>
+      <header className={styles.introduction}>
+        <p className={styles.eyebrow}>
+          Tu recorrido
+        </p>
+
         <h2 id="migraine-history-title">
           Historia de migraña
         </h2>
 
         <p>
-          Esta información ayuda a
-          interpretar tus registros en
-          contexto. Podés dejar sin
-          responder cualquier dato que
-          no conozcas.
+          Contanos lo que sepas hasta
+          ahora. Podés dejar cualquier
+          dato sin responder y volver
+          cuando quieras.
         </p>
-      </div>
+      </header>
 
-      <label>
-        ¿A qué edad comenzaron tus
-        migrañas o dolores de cabeza
-        similares?
+      <div className={styles.block}>
+        <header className={styles.blockHeader}>
+          <div>
+            <p>Inicio y diagnóstico</p>
+            <h3>
+              Cómo comenzó tu historia
+            </h3>
+          </div>
 
-        <input
-          type="number"
-          min="0"
-          max="100"
-          step="1"
-          inputMode="numeric"
-          value={
-            migraineHistory
-              .onsetAge ?? ''
-          }
-          placeholder="Ejemplo: 16"
-          onChange={event =>
-            updateMigraineHistory({
-              onsetAge:
-                parseOptionalNumber(
-                  event.target.value,
-                ),
-            })
-          }
-        />
-      </label>
+          <span>01</span>
+        </header>
 
-      <label>
-        Situación del diagnóstico
-
-        <select
-          value={diagnosisStatus}
-          onChange={event => {
-            const value =
-              event.target.value;
-
-            updateMigraineHistory({
-              diagnosisStatus:
-                isDiagnosisStatus(
-                  value,
-                )
-                  ? value
-                  : undefined,
-            });
-          }}
-        >
-          <option value="">
-            Seleccionar
-          </option>
-
-          <option value="diagnosed">
-            Tengo diagnóstico
-            profesional
-          </option>
-
-          <option value="suspected">
-            Está en estudio o existe
-            sospecha
-          </option>
-
-          <option value="notDiagnosed">
-            No tengo diagnóstico
-          </option>
-
-          <option value="unknown">
-            No estoy segura/o
-          </option>
-        </select>
-      </label>
-
-      {showDiagnosisDetails && (
-        <>
+        <div className={styles.fields}>
           <label>
-            Año aproximado del
-            diagnóstico
+            <span>
+              ¿A qué edad comenzaron tus
+              migrañas o dolores de cabeza
+              similares?
+            </span>
 
             <input
               type="number"
-              min="1900"
-              max={CURRENT_YEAR}
+              min="0"
+              max="100"
               step="1"
               inputMode="numeric"
               value={
                 migraineHistory
-                  .diagnosisYear ??
-                ''
+                  .onsetAge ?? ''
               }
-              placeholder={`Ejemplo: ${
-                CURRENT_YEAR - 5
-              }`}
+              placeholder="Ejemplo: 16"
               onChange={event =>
                 updateMigraineHistory({
-                  diagnosisYear:
+                  onsetAge:
                     parseOptionalNumber(
                       event.target.value,
                     ),
@@ -235,22 +175,19 @@ export function MigraineHistorySection() {
           </label>
 
           <label>
-            Profesional que realizó el
-            diagnóstico
+            <span>
+              Situación del diagnóstico
+            </span>
 
             <select
-              value={
-                migraineHistory
-                  .diagnosedBy ??
-                ''
-              }
+              value={diagnosisStatus}
               onChange={event => {
                 const value =
                   event.target.value;
 
                 updateMigraineHistory({
-                  diagnosedBy:
-                    isDiagnosingProfessional(
+                  diagnosisStatus:
+                    isDiagnosisStatus(
                       value,
                     )
                       ? value
@@ -261,419 +198,374 @@ export function MigraineHistorySection() {
               <option value="">
                 Seleccionar
               </option>
-
-              <option value="neurologist">
-                Neurólogo/a
+              <option value="diagnosed">
+                Tengo diagnóstico profesional
               </option>
-
-              <option value="headacheSpecialist">
-                Especialista en
-                cefaleas
+              <option value="suspected">
+                Está en estudio o existe sospecha
               </option>
-
-              <option value="generalPractitioner">
-                Médico/a general o
-                clínico/a
+              <option value="notDiagnosed">
+                No tengo diagnóstico
               </option>
-
-              <option value="other">
-                Otro profesional
-              </option>
-
               <option value="unknown">
-                No lo recuerdo
+                No estoy segura/o
               </option>
             </select>
           </label>
-        </>
-      )}
 
-      <label>
-        ¿Con qué frecuencia tenés aura?
+          {showDiagnosisDetails && (
+            <div className={styles.conditionalFields}>
+              <label>
+                <span>
+                  Año aproximado del diagnóstico
+                </span>
 
-        <select
-          value={
-            migraineHistory
-              .auraPattern ?? ''
-          }
-          onChange={event => {
-            const value =
-              event.target.value;
+                <input
+                  type="number"
+                  min="1900"
+                  max={CURRENT_YEAR}
+                  step="1"
+                  inputMode="numeric"
+                  value={
+                    migraineHistory
+                      .diagnosisYear ?? ''
+                  }
+                  placeholder={`Ejemplo: ${CURRENT_YEAR - 5}`}
+                  onChange={event =>
+                    updateMigraineHistory({
+                      diagnosisYear:
+                        parseOptionalNumber(
+                          event.target.value,
+                        ),
+                    })
+                  }
+                />
+              </label>
 
-            updateMigraineHistory({
-              auraPattern:
-                isAuraPattern(value)
-                  ? value
-                  : undefined,
-            });
-          }}
-        >
-          <option value="">
-            Seleccionar
-          </option>
+              <label>
+                <span>
+                  Profesional que realizó el diagnóstico
+                </span>
 
-          <option value="never">
-            Nunca
-          </option>
+                <select
+                  value={
+                    migraineHistory
+                      .diagnosedBy ?? ''
+                  }
+                  onChange={event => {
+                    const value =
+                      event.target.value;
 
-          <option value="sometimes">
-            En algunas crisis
-          </option>
-
-          <option value="usually">
-            En la mayoría de las crisis
-          </option>
-
-          <option value="always">
-            En todas o casi todas
-          </option>
-
-          <option value="unknown">
-            No sé identificarla
-          </option>
-        </select>
-      </label>
-
-      <div>
-        <p>
-          El aura puede incluir cambios
-          visuales, sensaciones,
-          dificultades del lenguaje u
-          otros síntomas neurológicos
-          temporales. No es lo mismo que
-          las señales premonitorias.
-        </p>
+                    updateMigraineHistory({
+                      diagnosedBy:
+                        isDiagnosingProfessional(
+                          value,
+                        )
+                          ? value
+                          : undefined,
+                    });
+                  }}
+                >
+                  <option value="">Seleccionar</option>
+                  <option value="neurologist">Neurólogo/a</option>
+                  <option value="headacheSpecialist">Especialista en cefaleas</option>
+                  <option value="generalPractitioner">Médico/a general o clínico/a</option>
+                  <option value="other">Otro profesional</option>
+                  <option value="unknown">No lo recuerdo</option>
+                </select>
+              </label>
+            </div>
+          )}
+        </div>
       </div>
 
-      <label>
-        Patrón habitual de la migraña
+      <div className={styles.block}>
+        <header className={styles.blockHeader}>
+          <div>
+            <p>Características habituales</p>
+            <h3>Cómo suelen presentarse</h3>
+          </div>
 
-        <select
-          value={
-            migraineHistory.course ??
-            ''
-          }
-          onChange={event => {
-            const value =
-              event.target.value;
+          <span>02</span>
+        </header>
 
-            updateMigraineHistory({
-              course:
-                isMigraineCourse(value)
-                  ? value
-                  : undefined,
-            });
-          }}
-        >
-          <option value="">
-            Seleccionar
-          </option>
+        <div className={styles.fields}>
+          <label>
+            <span>¿Con qué frecuencia tenés aura?</span>
 
-          <option value="episodic">
-            Episódica
-          </option>
+            <select
+              value={migraineHistory.auraPattern ?? ''}
+              onChange={event => {
+                const value = event.target.value;
 
-          <option value="chronic">
-            Crónica
-          </option>
+                updateMigraineHistory({
+                  auraPattern:
+                    isAuraPattern(value)
+                      ? value
+                      : undefined,
+                });
+              }}
+            >
+              <option value="">Seleccionar</option>
+              <option value="never">Nunca</option>
+              <option value="sometimes">En algunas crisis</option>
+              <option value="usually">En la mayoría de las crisis</option>
+              <option value="always">En todas o casi todas</option>
+              <option value="unknown">No sé identificarla</option>
+            </select>
+          </label>
 
-          <option value="variable">
-            Cambia según el período
-          </option>
+          <aside className={styles.note}>
+            El aura puede incluir cambios visuales,
+            sensaciones, dificultades del lenguaje u
+            otros síntomas neurológicos temporales.
+            No es lo mismo que las señales premonitorias.
+          </aside>
 
-          <option value="unknown">
-            No lo sé
-          </option>
-        </select>
-      </label>
+          <label>
+            <span>Patrón habitual de la migraña</span>
 
-      <div>
-        <p>
-          Si nunca te indicaron si es
-          episódica o crónica, podés
-          elegir “No lo sé”. SYNARA no
-          usará esta respuesta para
-          diagnosticarte.
-        </p>
+            <select
+              value={migraineHistory.course ?? ''}
+              onChange={event => {
+                const value = event.target.value;
+
+                updateMigraineHistory({
+                  course:
+                    isMigraineCourse(value)
+                      ? value
+                      : undefined,
+                });
+              }}
+            >
+              <option value="">Seleccionar</option>
+              <option value="episodic">Episódica</option>
+              <option value="chronic">Crónica</option>
+              <option value="variable">Cambia según el período</option>
+              <option value="unknown">No lo sé</option>
+            </select>
+          </label>
+
+          <aside
+            className={styles.note}
+            aria-label="Diferencia entre migraña episódica y crónica"
+          >
+            En general, se considera episódica cuando hay
+            dolor de cabeza menos de 15 días al mes. La
+            migraña crónica implica 15 o más días al mes
+            durante más de 3 meses, con características de
+            migraña en al menos 8 de esos días. Si nunca te
+            lo indicaron, elegí “No lo sé”: esta referencia
+            no reemplaza una evaluación profesional.
+          </aside>
+        </div>
       </div>
 
-      <label>
-        Días con cualquier dolor de
-        cabeza por mes
+      <div className={styles.block}>
+        <header className={styles.blockHeader}>
+          <div>
+            <p>Frecuencia y duración</p>
+            <h3>Tu patrón aproximado</h3>
+          </div>
 
-        <input
-          type="number"
-          min="0"
-          max="31"
-          step="1"
-          inputMode="numeric"
-          value={
-            migraineHistory
-              .headacheDaysPerMonth ??
-            ''
-          }
-          placeholder="Entre 0 y 31"
-          onChange={event =>
-            updateMigraineHistory({
-              headacheDaysPerMonth:
-                parseOptionalNumber(
-                  event.target.value,
-                ),
-            })
-          }
-        />
-      </label>
+          <span>03</span>
+        </header>
 
-      <label>
-        De esos días, ¿cuántos suelen
-        tener características de
-        migraña?
+        <div className={styles.fields}>
+          <div className={styles.pairedFields}>
+            <label>
+              <span>Días con cualquier dolor de cabeza por mes</span>
+              <input
+                type="number"
+                min="0"
+                max="31"
+                step="1"
+                inputMode="numeric"
+                value={migraineHistory.headacheDaysPerMonth ?? ''}
+                placeholder="Entre 0 y 31"
+                onChange={event =>
+                  updateMigraineHistory({
+                    headacheDaysPerMonth:
+                      parseOptionalNumber(event.target.value),
+                  })
+                }
+              />
+            </label>
 
-        <input
-          type="number"
-          min="0"
-          max="31"
-          step="1"
-          inputMode="numeric"
-          value={
-            migraineHistory
-              .migraineDaysPerMonth ??
-            ''
-          }
-          placeholder="Entre 0 y 31"
-          onChange={event =>
-            updateMigraineHistory({
-              migraineDaysPerMonth:
-                parseOptionalNumber(
-                  event.target.value,
-                ),
-            })
-          }
-        />
-      </label>
+            <label>
+              <span>De esos días, ¿cuántos suelen tener características de migraña?</span>
+              <input
+                type="number"
+                min="0"
+                max="31"
+                step="1"
+                inputMode="numeric"
+                value={migraineHistory.migraineDaysPerMonth ?? ''}
+                placeholder="Entre 0 y 31"
+                onChange={event =>
+                  updateMigraineHistory({
+                    migraineDaysPerMonth:
+                      parseOptionalNumber(event.target.value),
+                  })
+                }
+              />
+            </label>
+          </div>
 
-      <div>
-        <p>
-          Contá días, no cantidad de
-          crisis. Una misma crisis puede
-          abarcar más de un día.
-        </p>
+          <aside className={styles.note}>
+            Contá días, no cantidad de crisis. Una misma
+            crisis puede abarcar más de un día.
+          </aside>
+
+          <div className={styles.durationRow}>
+            <div className={styles.durationFields}>
+              <label>
+                <span>Duración mínima habitual de una crisis</span>
+                <div className={styles.inputWithUnit}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="720"
+                    step="0.5"
+                    inputMode="decimal"
+                    value={migraineHistory.usualDurationMinHours ?? ''}
+                    placeholder="0"
+                    onChange={event =>
+                      updateMigraineHistory({
+                        usualDurationMinHours:
+                          parseOptionalNumber(event.target.value),
+                      })
+                    }
+                  />
+                  <span>horas</span>
+                </div>
+              </label>
+
+              <label>
+                <span>Duración máxima habitual de una crisis</span>
+                <div className={styles.inputWithUnit}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="720"
+                    step="0.5"
+                    inputMode="decimal"
+                    value={migraineHistory.usualDurationMaxHours ?? ''}
+                    placeholder="0"
+                    onChange={event =>
+                      updateMigraineHistory({
+                        usualDurationMaxHours:
+                          parseOptionalNumber(event.target.value),
+                      })
+                    }
+                  />
+                  <span>horas</span>
+                </div>
+              </label>
+            </div>
+
+            <aside
+              className={styles.note}
+              aria-label="Diferencia entre crisis y episodio"
+            >
+              En SYNARA, la crisis es la fase en la que
+              aparecen el dolor y los síntomas más activos.
+              El episodio es el recorrido completo y también
+              puede incluir señales premonitorias, aura y
+              postdromo.
+            </aside>
+          </div>
+        </div>
       </div>
 
-      <label>
-        Duración mínima habitual de una
-        crisis
+      <div className={styles.block}>
+        <header className={styles.blockHeader}>
+          <div>
+            <p>Antecedentes</p>
+            <h3>Datos importantes para el contexto</h3>
+          </div>
 
-        <input
-          type="number"
-          min="0"
-          max="720"
-          step="0.5"
-          inputMode="decimal"
-          value={
-            migraineHistory
-              .usualDurationMinHours ??
-            ''
-          }
-          placeholder="Horas"
-          onChange={event =>
-            updateMigraineHistory({
-              usualDurationMinHours:
-                parseOptionalNumber(
-                  event.target.value,
-                ),
-            })
-          }
-        />
-      </label>
+          <span>04</span>
+        </header>
 
-      <label>
-        Duración máxima habitual de una
-        crisis
+        <div className={styles.fields}>
+          <label>
+            <span>¿Hay antecedentes de migraña en tu familia?</span>
+            <select
+              value={migraineHistory.familyHistory ?? ''}
+              onChange={event => {
+                const value = event.target.value;
+                updateMigraineHistory({
+                  familyHistory:
+                    isClinicalAnswer(value) ? value : undefined,
+                });
+              }}
+            >
+              <option value="">Seleccionar</option>
+              <option value="yes">Sí</option>
+              <option value="no">No</option>
+              <option value="unknown">No sé</option>
+            </select>
+          </label>
 
-        <input
-          type="number"
-          min="0"
-          max="720"
-          step="0.5"
-          inputMode="decimal"
-          value={
-            migraineHistory
-              .usualDurationMaxHours ??
-            ''
-          }
-          placeholder="Horas"
-          onChange={event =>
-            updateMigraineHistory({
-              usualDurationMaxHours:
-                parseOptionalNumber(
-                  event.target.value,
-                ),
-            })
-          }
-        />
-      </label>
+          <label>
+            <span>¿Alguna crisis duró más de 72 horas?</span>
+            <select
+              value={migraineHistory.statusMigrainosusHistory ?? ''}
+              onChange={event => {
+                const value = event.target.value;
+                updateMigraineHistory({
+                  statusMigrainosusHistory:
+                    isClinicalAnswer(value) ? value : undefined,
+                });
+              }}
+            >
+              <option value="">Seleccionar</option>
+              <option value="yes">Sí</option>
+              <option value="no">No</option>
+              <option value="unknown">No sé</option>
+            </select>
+          </label>
 
-      <label>
-        ¿Hay antecedentes de migraña en
-        tu familia?
+          <label>
+            <span>¿Tuviste que consultar en una guardia o recibir atención urgente por una crisis?</span>
+            <select
+              value={migraineHistory.emergencyCareHistory ?? ''}
+              onChange={event => {
+                const value = event.target.value;
+                updateMigraineHistory({
+                  emergencyCareHistory:
+                    isClinicalAnswer(value) ? value : undefined,
+                });
+              }}
+            >
+              <option value="">Seleccionar</option>
+              <option value="yes">Sí</option>
+              <option value="no">No</option>
+              <option value="unknown">No sé</option>
+            </select>
+          </label>
 
-        <select
-          value={
-            migraineHistory
-              .familyHistory ?? ''
-          }
-          onChange={event => {
-            const value =
-              event.target.value;
-
-            updateMigraineHistory({
-              familyHistory:
-                isClinicalAnswer(value)
-                  ? value
-                  : undefined,
-            });
-          }}
-        >
-          <option value="">
-            Seleccionar
-          </option>
-
-          <option value="yes">
-            Sí
-          </option>
-
-          <option value="no">
-            No
-          </option>
-
-          <option value="unknown">
-            No sé
-          </option>
-        </select>
-      </label>
-
-      <label>
-        ¿Alguna crisis duró más de 72
-        horas?
-
-        <select
-          value={
-            migraineHistory
-              .statusMigrainosusHistory ??
-            ''
-          }
-          onChange={event => {
-            const value =
-              event.target.value;
-
-            updateMigraineHistory({
-              statusMigrainosusHistory:
-                isClinicalAnswer(value)
-                  ? value
-                  : undefined,
-            });
-          }}
-        >
-          <option value="">
-            Seleccionar
-          </option>
-
-          <option value="yes">
-            Sí
-          </option>
-
-          <option value="no">
-            No
-          </option>
-
-          <option value="unknown">
-            No sé
-          </option>
-        </select>
-      </label>
-
-      <label>
-        ¿Tuviste que consultar en una
-        guardia o recibir atención
-        urgente por una crisis?
-
-        <select
-          value={
-            migraineHistory
-              .emergencyCareHistory ??
-            ''
-          }
-          onChange={event => {
-            const value =
-              event.target.value;
-
-            updateMigraineHistory({
-              emergencyCareHistory:
-                isClinicalAnswer(value)
-                  ? value
-                  : undefined,
-            });
-          }}
-        >
-          <option value="">
-            Seleccionar
-          </option>
-
-          <option value="yes">
-            Sí
-          </option>
-
-          <option value="no">
-            No
-          </option>
-
-          <option value="unknown">
-            No sé
-          </option>
-        </select>
-      </label>
-
-      <label>
-        ¿Notaste un cambio reciente
-        importante en la frecuencia,
-        duración o características?
-
-        <select
-          value={
-            migraineHistory
-              .recentPatternChange ??
-            ''
-          }
-          onChange={event => {
-            const value =
-              event.target.value;
-
-            updateMigraineHistory({
-              recentPatternChange:
-                isClinicalAnswer(value)
-                  ? value
-                  : undefined,
-            });
-          }}
-        >
-          <option value="">
-            Seleccionar
-          </option>
-
-          <option value="yes">
-            Sí
-          </option>
-
-          <option value="no">
-            No
-          </option>
-
-          <option value="unknown">
-            No estoy segura/o
-          </option>
-        </select>
-      </label>
+          <label>
+            <span>¿Notaste un cambio reciente importante en la frecuencia, duración o características?</span>
+            <select
+              value={migraineHistory.recentPatternChange ?? ''}
+              onChange={event => {
+                const value = event.target.value;
+                updateMigraineHistory({
+                  recentPatternChange:
+                    isClinicalAnswer(value) ? value : undefined,
+                });
+              }}
+            >
+              <option value="">Seleccionar</option>
+              <option value="yes">Sí</option>
+              <option value="no">No</option>
+              <option value="unknown">No estoy segura/o</option>
+            </select>
+          </label>
+        </div>
+      </div>
     </section>
   );
 }

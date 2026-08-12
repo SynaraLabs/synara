@@ -1,54 +1,64 @@
-import styles from '../../migraine/migraine.module.css';
+import styles from './MigraineTerminologyNote.module.css';
 
 export function MigraineTerminologyNote() {
   return (
     <aside
-      className={
-        styles.symptomSelector
-      }
+      className={styles.note}
       aria-labelledby="migraine-terminology-title"
     >
-      <div>
-        <h3 id="migraine-terminology-title">
-          Antes de completar tu historia
-        </h3>
+      <details>
+        <summary>
+          <span>
+            <small>
+              Antes de completar tu historia
+            </small>
 
-        <p>
-          En SYNARA, una crisis y un
-          episodio no significan
-          exactamente lo mismo.
-        </p>
-      </div>
+            <strong
+              id="migraine-terminology-title"
+            >
+              Episodio y crisis no significan
+              lo mismo
+            </strong>
+          </span>
 
-      <div>
-        <p>
-          <b>
-            Episodio:
-          </b>{' '}
-          es el proceso completo. Puede
-          comenzar con señales
-          premonitorias, continuar con
-          aura o crisis y finalizar con
-          el postdromo o recuperación.
-        </p>
+          <span
+            className={styles.chevron}
+            aria-hidden="true"
+          />
+        </summary>
 
-        <p>
-          <b>
-            Crisis:
-          </b>{' '}
-          es la fase en la que aparecen
-          el dolor y los síntomas más
-          activos de la migraña.
-        </p>
+        <div
+          className={styles.content}
+        >
+          <p>
+            <b>
+              Episodio:
+            </b>{' '}
+            es el proceso completo. Puede
+            comenzar con señales
+            premonitorias, continuar con
+            aura o crisis y finalizar con
+            el postdromo o recuperación.
+          </p>
 
-        <p>
-          No todos los episodios tienen
-          todas las fases. También puede
-          haber señales premonitorias o
-          aura que no evolucionen hacia
-          una crisis.
-        </p>
-      </div>
+          <p>
+            <b>
+              Crisis:
+            </b>{' '}
+            es la fase en la que aparecen
+            el dolor y los síntomas más
+            activos de la migraña.
+          </p>
+
+          <p>
+            No todos los episodios tienen
+            todas las fases. También puede
+            haber señales premonitorias o
+            aura que no evolucionen hacia
+            una crisis.
+          </p>
+        </div>
+      </details>
     </aside>
   );
 }

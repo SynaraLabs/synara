@@ -30,7 +30,7 @@ import {
   MigraineTerminologyNote,
 } from './MigraineTerminologyNote';
 
-import styles from '../../migraine/migraine.module.css';
+import styles from './ProfileForm.module.css';
 
 import navigationStyles from './ProfileSectionNavigation.module.css';
 
@@ -43,36 +43,31 @@ type ProfileSectionId =
 
 interface ProfileSectionDefinition {
   id: ProfileSectionId;
+
   label: string;
-  icon: string;
 }
 
 const PROFILE_SECTIONS:
   ProfileSectionDefinition[] = [
   {
     id: 'personal',
-    label: 'Datos',
-    icon: '♙',
+    label: 'Datos personales',
   },
   {
     id: 'migraineHistory',
-    label: 'Migraña',
-    icon: '◉',
+    label: 'Historia de migraña',
   },
   {
     id: 'care',
     label: 'Tratamientos',
-    icon: '+',
   },
   {
     id: 'clinicalBackground',
     label: 'Antecedentes',
-    icon: '◫',
   },
   {
     id: 'menstrual',
-    label: 'Hormonal',
-    icon: '◇',
+    label: 'Contexto hormonal',
   },
 ];
 
@@ -107,7 +102,41 @@ export function ProfileForm() {
     );
 
   return (
-    <>
+    <section
+      className={styles.profile}
+    >
+      <header
+        className={styles.pageHeader}
+      >
+        <p
+          className={styles.eyebrow}
+        >
+          Tu información de salud
+        </p>
+
+        <h1>
+          Perfil clínico personal
+        </h1>
+
+        <p
+          className={styles.description}
+        >
+          Reuní la información que ayuda
+          a interpretar tus episodios en
+          contexto y a preparar informes
+          más completos.
+        </p>
+
+        <p
+          className={styles.saveNotice}
+          role="status"
+        >
+          Los cambios se guardan
+          automáticamente en este
+          dispositivo.
+        </p>
+      </header>
+
       <nav
         className={
           navigationStyles.navigation
@@ -131,15 +160,7 @@ export function ProfileForm() {
                 )
               }
             >
-              <span
-                aria-hidden="true"
-              >
-                {section.icon}
-              </span>
-
-              <b>
-                {section.label}
-              </b>
+              {section.label}
             </button>
           ),
         )}
@@ -153,97 +174,120 @@ export function ProfileForm() {
         {activeSection ===
           'personal' && (
           <section
-            className={
-              styles.symptomSelector
-            }
+            className={styles.personalSection}
             aria-labelledby="personal-profile-title"
           >
-            <div>
-              <h2 id="personal-profile-title">
-                Perfil personal
-              </h2>
+            <header
+              className={styles.sectionHeader}
+            >
+              <div>
+                <p>
+                  Identificación
+                </p>
 
-              <p>
-                Estos datos ayudan a
-                SYNARA a interpretar
-                tus episodios en
-                contexto.
-              </p>
-            </div>
+                <h2 id="personal-profile-title">
+                  Datos personales
+                </h2>
+              </div>
 
-            <label>
-              Nombre
+              <span>
+                Información opcional
+              </span>
+            </header>
 
-              <input
-                type="text"
-                value={profile.name}
-                autoComplete="name"
-                onChange={event =>
-                  updateField(
-                    'name',
-                    event.target.value,
-                  )
-                }
-              />
-            </label>
+            <p
+              className={styles.sectionDescription}
+            >
+              Estos datos aportan contexto
+              a tus registros y a los
+              informes que decidas
+              descargar.
+            </p>
 
-            <label>
-              Fecha de nacimiento
+            <div
+              className={styles.fieldGrid}
+            >
+              <label>
+                <span>
+                  Nombre
+                </span>
 
-              <input
-                type="date"
-                value={
-                  profile.birthDate
-                }
-                onChange={event =>
-                  updateField(
-                    'birthDate',
-                    event.target.value,
-                  )
-                }
-              />
-            </label>
-
-            <label>
-              Sexo
-
-              <select
-                value={profile.sex}
-                onChange={event => {
-                  const value =
-                    event.target.value;
-
-                  if (
-                    !isUserSex(
-                      value,
+                <input
+                  type="text"
+                  value={profile.name}
+                  autoComplete="name"
+                  placeholder="Tu nombre"
+                  onChange={event =>
+                    updateField(
+                      'name',
+                      event.target.value,
                     )
-                  ) {
-                    return;
                   }
+                />
+              </label>
 
-                  updateField(
-                    'sex',
-                    value,
-                  );
-                }}
-              >
-                <option value="preferNotToSay">
-                  Prefiero no decirlo
-                </option>
+              <label>
+                <span>
+                  Fecha de nacimiento
+                </span>
 
-                <option value="female">
-                  Femenino
-                </option>
+                <input
+                  type="date"
+                  value={
+                    profile.birthDate
+                  }
+                  onChange={event =>
+                    updateField(
+                      'birthDate',
+                      event.target.value,
+                    )
+                  }
+                />
+              </label>
 
-                <option value="male">
-                  Masculino
-                </option>
+              <label>
+                <span>
+                  Sexo
+                </span>
 
-                <option value="other">
-                  Otro
-                </option>
-              </select>
-            </label>
+                <select
+                  value={profile.sex}
+                  onChange={event => {
+                    const value =
+                      event.target.value;
+
+                    if (
+                      !isUserSex(
+                        value,
+                      )
+                    ) {
+                      return;
+                    }
+
+                    updateField(
+                      'sex',
+                      value,
+                    );
+                  }}
+                >
+                  <option value="preferNotToSay">
+                    Prefiero no decirlo
+                  </option>
+
+                  <option value="female">
+                    Femenino
+                  </option>
+
+                  <option value="male">
+                    Masculino
+                  </option>
+
+                  <option value="other">
+                    Otro
+                  </option>
+                </select>
+              </label>
+            </div>
           </section>
         )}
 
@@ -271,6 +315,6 @@ export function ProfileForm() {
           <MenstrualContextSection />
         )}
       </div>
-    </>
+    </section>
   );
 }
