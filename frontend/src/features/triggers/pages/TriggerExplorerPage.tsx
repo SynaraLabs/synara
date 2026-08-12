@@ -36,9 +36,7 @@ import {
   compareTriggerExplorationWithHistory,
 } from '../utils/triggerHistoryComparison';
 
-import styles from '../../migraine/migraine.module.css';
-
-import navigationStyles from '../components/TriggerSectionNavigation.module.css';
+import styles from './TriggerExplorerPage.module.css';
 
 type TriggerExplorerView =
   | 'questions'
@@ -48,50 +46,42 @@ type TriggerExplorerView =
 interface TriggerExplorerViewDefinition {
   id: TriggerExplorerView;
   label: string;
-  icon: string;
 }
 
 const EXPLORER_VIEWS:
   TriggerExplorerViewDefinition[] = [
   {
     id: 'questions',
-    label: 'Preguntas',
-    icon: '?',
+    label: 'Explorar',
   },
   {
     id: 'summary',
     label: 'Resumen',
-    icon: '◫',
   },
   {
     id: 'comparison',
-    label: 'Comparación',
-    icon: '↔',
+    label: 'Comparar',
   },
 ];
 
 export function TriggerExplorerPage() {
-  const history =
-    useMigraineStore(
-      state => state.history,
-    );
+  const history = useMigraineStore(
+    state => state.history,
+  );
 
   const exploration =
     useTriggerExplorationStore(
-      state =>
-        state.exploration,
+      state => state.exploration,
     );
 
   const setActiveCategory =
     useTriggerExplorationStore(
-      state =>
-        state.setActiveCategory,
+      state => state.setActiveCategory,
     );
 
   const updateResponse =
     useTriggerExplorationStore(
-      state =>
-        state.updateResponse,
+      state => state.updateResponse,
     );
 
   const updateResponseNotes =
@@ -106,63 +96,58 @@ export function TriggerExplorerPage() {
         state.completeExploration,
     );
 
-  const [
-    activeView,
-    setActiveView,
-  ] = useState<TriggerExplorerView>(
-    exploration.completedAt
-      ? 'summary'
-      : 'questions',
+  const [activeView, setActiveView] =
+    useState<TriggerExplorerView>(
+      exploration.completedAt
+        ? 'summary'
+        : 'questions',
+    );
+
+  const summary = useMemo(
+    () =>
+      createTriggerExplorationSummary(
+        exploration.responses,
+      ),
+    [exploration.responses],
   );
 
-  const summary =
-    useMemo(
-      () =>
-        createTriggerExplorationSummary(
-          exploration.responses,
-        ),
-      [
-        exploration.responses,
-      ],
-    );
-
-  const historyComparison =
-    useMemo(
-      () =>
-        compareTriggerExplorationWithHistory(
-          exploration.responses,
-          history,
-        ),
-      [
+  const historyComparison = useMemo(
+    () =>
+      compareTriggerExplorationWithHistory(
         exploration.responses,
         history,
-      ],
-    );
+      ),
+    [exploration.responses, history],
+  );
 
   const answeredCount =
     summary.answeredCount;
-
   const totalQuestions =
     summary.totalCount;
 
   const isComplete =
-    answeredCount ===
-    totalQuestions;
+    answeredCount === totalQuestions;
 
   const hasCompletedExploration =
-    Boolean(
-      exploration.completedAt,
-    );
+    Boolean(exploration.completedAt);
 
-  const activeSectionIndex =
-    Math.max(
-      0,
-      TRIGGER_EDUCATION_SECTIONS.findIndex(
-        section =>
-          section.id ===
-          exploration.activeCategory,
-      ),
-    );
+  const progress =
+    totalQuestions > 0
+      ? Math.round(
+          (answeredCount /
+            totalQuestions) *
+            100,
+        )
+      : 0;
+
+  const activeSectionIndex = Math.max(
+    0,
+    TRIGGER_EDUCATION_SECTIONS.findIndex(
+      section =>
+        section.id ===
+        exploration.activeCategory,
+    ),
+  );
 
   const activeSection =
     TRIGGER_EDUCATION_SECTIONS[
@@ -179,399 +164,353 @@ export function TriggerExplorerPage() {
       activeSectionIndex + 1
     ];
 
+  const activeSectionAnswered =
+    activeSection
+      ? activeSection.questions.filter(
+          question =>
+            exploration.responses[
+              question.id
+            ],
+        ).length
+      : 0;
+
   const handleComplete = () => {
     if (!isComplete) {
       return;
     }
 
     completeExploration();
+    setActiveView('summary');
+  };
 
-    setActiveView(
-      'summary',
-    );
+  const handleCategoryChange = (
+    categoryId:
+      (typeof TRIGGER_EDUCATION_SECTIONS)[number]['id'],
+  ) => {
+    setActiveCategory(categoryId);
+
+    window.requestAnimationFrame(() => {
+      document
+        .getElementById(
+          'trigger-active-section',
+        )
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+    });
   };
 
   return (
-    <section
-      className={
-        styles.phaseFlow
-      }
-    >
+    <section className={styles.page}>
+      <header className={styles.pageHeader}>
+        <p className={styles.eyebrow}>
+          Observación personal
+        </p>
+
+        <h1>Posibles desencadenantes</h1>
+
+        <p className={styles.introduction}>
+          Explorá qué factores podrían
+          relacionarse con tus episodios.
+          No hace falta completar todo de
+          una vez.
+        </p>
+      </header>
+
       <nav
-        className={
-          navigationStyles.navigation
-        }
+        className={styles.viewNavigation}
         aria-label="Secciones de posibles desencadenantes"
       >
-        {EXPLORER_VIEWS.map(
-          view => {
-            const requiresCompletion =
-              view.id !==
-              'questions';
+        {EXPLORER_VIEWS.map(view => {
+          const isDisabled =
+            view.id !== 'questions' &&
+            !hasCompletedExploration;
 
-            const isDisabled =
-              requiresCompletion &&
-              !hasCompletedExploration;
-
-            return (
-              <button
-                key={view.id}
-                type="button"
-                disabled={isDisabled}
-                aria-current={
-                  activeView === view.id
-                    ? 'page'
-                    : undefined
-                }
-                onClick={() =>
-                  setActiveView(
-                    view.id,
-                  )
-                }
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  {view.icon}
-                </span>
-
-                <b>
-                  {view.label}
-                </b>
-              </button>
-            );
-          },
-        )}
+          return (
+            <button
+              key={view.id}
+              type="button"
+              disabled={isDisabled}
+              aria-current={
+                activeView === view.id
+                  ? 'page'
+                  : undefined
+              }
+              onClick={() =>
+                setActiveView(view.id)
+              }
+            >
+              {view.label}
+            </button>
+          );
+        })}
       </nav>
 
-      <div
-        className={
-          navigationStyles.content
-        }
-      >
-        {activeView ===
-          'summary' &&
-          exploration.completedAt && (
+      {activeView === 'summary' &&
+        exploration.completedAt && (
+          <div className={styles.resultView}>
             <TriggerExplorationSummary
               summary={summary}
               completedAt={
                 exploration.completedAt
               }
               onReturnToQuestions={() =>
-                setActiveView(
-                  'questions',
-                )
+                setActiveView('questions')
               }
             />
-          )}
+          </div>
+        )}
 
-        {activeView ===
-          'comparison' &&
-          hasCompletedExploration && (
+      {activeView === 'comparison' &&
+        hasCompletedExploration && (
+          <div className={styles.resultView}>
             <TriggerHistoryComparison
               comparison={
                 historyComparison
               }
             />
-          )}
+          </div>
+        )}
 
-        {activeView ===
-          'questions' &&
-          activeSection && (
-            <>
-              <header
+      {activeView === 'questions' &&
+        activeSection && (
+          <div className={styles.guide}>
+            <section
+              className={styles.progressPanel}
+              aria-label={`${answeredCount} de ${totalQuestions} preguntas respondidas`}
+            >
+              <div
                 className={
-                  styles.symptomSelector
+                  styles.progressHeading
                 }
               >
                 <div>
-                  <p>
-                    Aprender y observar
-                  </p>
+                  <strong>
+                    Tu exploración
+                  </strong>
 
-                  <h1>
-                    Posibles
-                    desencadenantes
-                  </h1>
-
-                  <p>
-                    Respondé según lo que
-                    hayas observado hasta
-                    ahora. No hace falta
-                    completar todo de una
-                    vez.
-                  </p>
-                </div>
-
-                <div
-                  className={
-                    styles.selectionSummary
-                  }
-                  role="status"
-                >
-                  <span
-                    aria-hidden="true"
-                  >
-                    {isComplete
-                      ? '✓'
-                      : '◷'}
-                  </span>
-
-                  <p>
+                  <span>
                     {answeredCount} de{' '}
                     {totalQuestions}{' '}
-                    preguntas respondidas
-                  </p>
-                </div>
-              </header>
-
-              <section
-                className={
-                  styles.symptomSelector
-                }
-                aria-labelledby="trigger-principles-title"
-              >
-                <div>
-                  <h2 id="trigger-principles-title">
-                    Cómo usar esta guía
-                  </h2>
-
-                  <p>
-                    El objetivo es
-                    formular hipótesis y
-                    reconocer patrones,
-                    no buscar una causa
-                    única para cada
-                    crisis.
-                  </p>
+                    respondidas
+                  </span>
                 </div>
 
-                <ul>
-                  {TRIGGER_EDUCATION_PRINCIPLES.map(
-                    principle => (
-                      <li
-                        key={
-                          principle
-                        }
-                      >
-                        {principle}
-                      </li>
-                    ),
-                  )}
-                </ul>
-              </section>
+                <b>{progress}%</b>
+              </div>
 
-              <nav
-                className={
-                  styles.compactCategories
-                }
-                aria-label="Categorías de posibles desencadenantes"
+              <div
+                className={styles.progressTrack}
+                aria-hidden="true"
               >
-                {TRIGGER_EDUCATION_SECTIONS.map(
-                  section => {
-                    const sectionAnswered =
-                      section.questions.filter(
-                        question =>
-                          exploration
-                            .responses[
-                              question
-                                .id
-                            ],
-                      ).length;
+                <span
+                  style={{
+                    width: `${progress}%`,
+                  }}
+                />
+              </div>
+            </section>
 
-                    return (
-                      <button
-                        key={
-                          section.id
-                        }
-                        type="button"
-                        aria-pressed={
-                          section.id ===
-                          activeSection.id
-                        }
-                        onClick={() =>
-                          setActiveCategory(
-                            section.id,
-                          )
-                        }
-                      >
-                        {section.icon}{' '}
-                        {
-                          section.shortTitle
-                        }
-                        {' · '}
+            <details
+              className={styles.guidance}
+            >
+              <summary>
+                Cómo usar esta guía
+              </summary>
+
+              <p>
+                Buscamos reconocer patrones
+                y formular hipótesis, no una
+                causa única para cada crisis.
+              </p>
+
+              <ul>
+                {TRIGGER_EDUCATION_PRINCIPLES.map(
+                  principle => (
+                    <li key={principle}>
+                      {principle}
+                    </li>
+                  ),
+                )}
+              </ul>
+            </details>
+
+            <nav
+              className={
+                styles.categoryNavigation
+              }
+              aria-label="Categorías de posibles desencadenantes"
+            >
+              {TRIGGER_EDUCATION_SECTIONS.map(
+                section => {
+                  const sectionAnswered =
+                    section.questions.filter(
+                      question =>
+                        exploration.responses[
+                          question.id
+                        ],
+                    ).length;
+
+                  return (
+                    <button
+                      key={section.id}
+                      type="button"
+                      aria-current={
+                        section.id ===
+                        activeSection.id
+                          ? 'step'
+                          : undefined
+                      }
+                      onClick={() =>
+                        handleCategoryChange(
+                          section.id,
+                        )
+                      }
+                    >
+                      <span>
+                        {section.shortTitle}
+                      </span>
+
+                      <small>
                         {sectionAnswered}/
                         {
-                          section
-                            .questions
+                          section.questions
                             .length
                         }
-                      </button>
-                    );
-                  },
-                )}
-              </nav>
+                      </small>
+                    </button>
+                  );
+                },
+              )}
+            </nav>
 
-              <section
-                aria-labelledby={`trigger-section-${activeSection.id}`}
+            <section
+              id="trigger-active-section"
+              className={styles.activeSection}
+              aria-labelledby={`trigger-section-${activeSection.id}`}
+            >
+              <header
+                className={styles.sectionHeader}
               >
-                <header
-                  className={
-                    styles.symptomSelector
-                  }
-                >
-                  <div>
-                    <p>
-                      Categoría{' '}
-                      {activeSectionIndex +
-                        1}{' '}
-                      de{' '}
-                      {
-                        TRIGGER_EDUCATION_SECTIONS.length
-                      }
-                    </p>
-
-                    <h2
-                      id={`trigger-section-${activeSection.id}`}
-                    >
-                      {
-                        activeSection.icon
-                      }{' '}
-                      {
-                        activeSection.title
-                      }
-                    </h2>
-
-                    <p>
-                      {
-                        activeSection.introduction
-                      }
-                    </p>
-                  </div>
-
-                  <div
-                    className={
-                      styles.selectionSummary
+                <div>
+                  <p>
+                    Categoría{' '}
+                    {activeSectionIndex + 1}{' '}
+                    de{' '}
+                    {
+                      TRIGGER_EDUCATION_SECTIONS.length
                     }
-                  >
-                    <p>
-                      {
-                        activeSection.questions.filter(
-                          question =>
-                            exploration
-                              .responses[
-                                question
-                                  .id
-                              ],
-                        ).length
-                      }{' '}
-                      de{' '}
-                      {
-                        activeSection
-                          .questions
-                          .length
-                      }{' '}
-                      respondidas
-                    </p>
-                  </div>
-                </header>
+                  </p>
 
+                  <h2
+                    id={`trigger-section-${activeSection.id}`}
+                  >
+                    {activeSection.title}
+                  </h2>
+
+                  <span>
+                    {
+                      activeSection.introduction
+                    }
+                  </span>
+                </div>
+
+                <strong>
+                  {activeSectionAnswered}/
+                  {activeSection.questions.length}
+                </strong>
+              </header>
+
+              <div
+                className={styles.questions}
+              >
                 {activeSection.questions.map(
                   question => (
                     <TriggerQuestionCard
-                      key={
-                        question.id
-                      }
-                      question={
-                        question
-                      }
+                      key={question.id}
+                      question={question}
                       response={
-                        exploration
-                          .responses[
-                            question.id
-                          ]
+                        exploration.responses[
+                          question.id
+                        ]
                       }
-                      onAnswer={
-                        answer =>
-                          updateResponse(
-                            question.id,
-                            answer,
-                          )
+                      onAnswer={answer =>
+                        updateResponse(
+                          question.id,
+                          answer,
+                        )
                       }
-                      onNotesChange={
-                        notes =>
-                          updateResponseNotes(
-                            question.id,
-                            notes,
-                          )
+                      onNotesChange={notes =>
+                        updateResponseNotes(
+                          question.id,
+                          notes,
+                        )
                       }
                     />
                   ),
                 )}
-              </section>
+              </div>
+            </section>
 
-              <footer
-                className={
-                  styles.selectionSummary
-                }
+            <footer
+              className={styles.actions}
+            >
+              <button
+                type="button"
+                className={styles.previousButton}
+                disabled={!previousSection}
+                onClick={() => {
+                  if (previousSection) {
+                    handleCategoryChange(
+                      previousSection.id,
+                    );
+                  }
+                }}
               >
+                Anterior
+              </button>
+
+              {nextSection ? (
                 <button
                   type="button"
-                  disabled={
-                    !previousSection
+                  className={styles.nextButton}
+                  onClick={() =>
+                    handleCategoryChange(
+                      nextSection.id,
+                    )
                   }
-                  onClick={() => {
-                    if (
-                      previousSection
-                    ) {
-                      setActiveCategory(
-                        previousSection.id,
-                      );
-                    }
-                  }}
                 >
-                  Categoría anterior
+                  Siguiente
                 </button>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.nextButton}
+                  disabled={!isComplete}
+                  onClick={handleComplete}
+                >
+                  Ver mi resumen
+                </button>
+              )}
+            </footer>
 
-                {nextSection ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActiveCategory(
-                        nextSection.id,
-                      )
-                    }
-                  >
-                    Siguiente categoría
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    disabled={
-                      !isComplete
-                    }
-                    onClick={
-                      handleComplete
-                    }
-                  >
-                    Ver mi resumen
-                  </button>
-                )}
-              </footer>
-
-              {!isComplete &&
-                !nextSection && (
-                  <p>
-                    Para ver el resumen,
-                    respondé todas las
-                    preguntas. Siempre
-                    podés elegir
-                    “Todavía no lo sé”.
-                  </p>
-                )}
-            </>
-          )}
-      </div>
+            {!isComplete &&
+              !nextSection && (
+                <p
+                  className={
+                    styles.completionHelp
+                  }
+                >
+                  Para ver el resumen,
+                  respondé todas las
+                  preguntas. “Todavía no lo
+                  sé” también es una respuesta
+                  válida.
+                </p>
+              )}
+          </div>
+        )}
     </section>
   );
 }

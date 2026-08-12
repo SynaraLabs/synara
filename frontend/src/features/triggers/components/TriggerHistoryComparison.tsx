@@ -7,7 +7,7 @@ import type {
   TriggerHistoryComparisonItem,
 } from '../utils/triggerHistoryComparison';
 
-import styles from '../../migraine/migraine.module.css';
+import styles from './TriggerHistoryComparison.module.css';
 
 interface Props {
   comparison:
@@ -119,6 +119,34 @@ const getStatusLabel = (
   return 'En observación';
 };
 
+const getStatusTone = (
+  item:
+    TriggerHistoryComparisonItem,
+): string => {
+  if (
+    item.dataQuality ===
+    'insufficient'
+  ) {
+    return 'insufficient';
+  }
+
+  if (
+    item.alignment ===
+    'aligned'
+  ) {
+    return 'aligned';
+  }
+
+  if (
+    item.alignment ===
+    'different'
+  ) {
+    return 'different';
+  }
+
+  return 'observing';
+};
+
 const getAnswerPriority = (
   item:
     TriggerHistoryComparisonItem,
@@ -193,295 +221,370 @@ export function TriggerHistoryComparison({
         },
       );
 
+  const hasTriggerData =
+    comparison
+      .episodesWithTriggerData > 0;
+
+  const hasEnoughData =
+    comparison
+      .episodesWithTriggerData >=
+    comparison
+      .minimumEpisodesRequired;
+
   return (
     <section
-      className={
-        styles.phaseFlow
-      }
+      className={styles.root}
       aria-labelledby="trigger-history-comparison-title"
     >
       <header
-        className={
-          styles.symptomSelector
-        }
+        className={styles.header}
+      >
+        <p
+          className={styles.eyebrow}
+        >
+          Percepción y registros
+        </p>
+
+        <h2 id="trigger-history-comparison-title">
+          Lo que percibís y lo que
+          registraste
+        </h2>
+
+        <p
+          className={styles.lead}
+        >
+          SYNARA busca coincidencias
+          entre tus respuestas y tus
+          episodios. Estas observaciones
+          ayudan a mirar patrones, pero
+          no demuestran causas.
+        </p>
+      </header>
+
+      <section
+        className={styles.dataSummary}
+        aria-labelledby="comparison-data-title"
       >
         <div>
-          <p>
-            Percepción y registros
+          <p
+            className={styles.summaryLabel}
+            id="comparison-data-title"
+          >
+            Base disponible
           </p>
 
-          <h2 id="trigger-history-comparison-title">
-            Comparación con tus
-            episodios
-          </h2>
+          <strong
+            className={styles.summaryValue}
+          >
+            {
+              comparison
+                .episodesWithTriggerData
+            }
+            <span>
+              {' '}/{' '}
+              {
+                comparison
+                  .totalHistoryEpisodes
+              }
+            </span>
+          </strong>
 
-          <p>
-            SYNARA compara lo que
-            percibís con los
-            desencadenantes que
-            registraste en cada
-            episodio. Esto describe
-            coincidencias, no demuestra
-            causas.
+          <p
+            className={styles.summaryText}
+          >
+            episodios con
+            desencadenantes registrados
           </p>
         </div>
 
         <div
-          className={
-            styles.selectionSummary
-          }
-          role="status"
+          className={styles.progress}
+          aria-hidden="true"
         >
           <span
-            aria-hidden="true"
-          >
-            {comparison
-              .episodesWithTriggerData >=
-            comparison
-              .minimumEpisodesRequired
-              ? '✓'
-              : '◷'}
-          </span>
-
-          <p>
-            {
-              comparison
-                .episodesWithTriggerData
-            }{' '}
-            de{' '}
-            {
-              comparison
-                .totalHistoryEpisodes
-            }{' '}
-            episodios tienen
-            desencadenantes registrados
-          </p>
+            style={{
+              width:
+                comparison
+                  .totalHistoryEpisodes > 0
+                  ? `${Math.min(
+                      100,
+                      (
+                        comparison
+                          .episodesWithTriggerData /
+                        comparison
+                          .totalHistoryEpisodes
+                      ) * 100,
+                    )}%`
+                  : '0%',
+            }}
+          />
         </div>
-      </header>
 
-      {comparison
-        .episodesWithTriggerData ===
-      0 ? (
-        <section
-          className={
-            styles.symptomSelector
+        <p
+          className={styles.dataStatus}
+          data-ready={
+            hasEnoughData
+              ? 'true'
+              : 'false'
           }
         >
-          <div>
-            <h3>
-              Todavía no hay datos para
-              comparar
-            </h3>
+          {hasEnoughData
+            ? 'Ya hay una base inicial para describir repeticiones.'
+            : `La comparación será más representativa al alcanzar ${comparison.minimumEpisodesRequired} episodios con esta información.`}
+        </p>
+      </section>
 
-            <p>
-              Tus respuestas personales
-              ya están guardadas. La
-              comparación comenzará
-              cuando registres posibles
-              desencadenantes dentro de
-              tus episodios.
-            </p>
-          </div>
+      {!hasTriggerData ? (
+        <section
+          className={styles.emptyState}
+        >
+          <p
+            className={styles.emptyEyebrow}
+          >
+            Comparación pendiente
+          </p>
+
+          <h3>
+            Todavía no hay datos para
+            comparar
+          </h3>
+
+          <p>
+            Tus respuestas personales
+            ya están guardadas. La
+            comparación comenzará cuando
+            registres posibles
+            desencadenantes dentro de tus
+            episodios.
+          </p>
 
           {comparison
-            .totalHistoryEpisodes >
-            0 && (
-            <p>
+            .totalHistoryEpisodes > 0 && (
+            <p
+              className={styles.emptyNote}
+            >
               Tenés{' '}
               {
                 comparison
                   .totalHistoryEpisodes
               }{' '}
               {comparison
-                .totalHistoryEpisodes ===
-              1
+                .totalHistoryEpisodes === 1
                 ? 'episodio guardado'
                 : 'episodios guardados'},
-              pero ninguno contiene
+              pero todavía ninguno tiene
               información de
               desencadenantes.
             </p>
           )}
 
-          <p>
-            Los episodios sin esa
-            información no se
-            interpretan como “factor
-            ausente”, porque simplemente
-            podrían no haber sido
-            completados.
+          <p
+            className={styles.clinicalNote}
+          >
+            Un episodio sin esta
+            información no se interpreta
+            como “factor ausente”: puede
+            tratarse de un registro que
+            todavía no fue completado.
           </p>
         </section>
       ) : (
-        <>
-          {comparison
-            .episodesWithTriggerData <
-          comparison
-            .minimumEpisodesRequired ? (
-            <section
-              className={
-                styles.symptomSelector
-              }
-            >
-              <h3>
-                Comparación preliminar
-              </h3>
-
-              <p>
-                Hay{' '}
-                {
-                  comparison
-                    .episodesWithTriggerData
-                }{' '}
-                episodios utilizables.
-                SYNARA mostrará los
-                conteos, pero mantendrá
-                la clasificación “Datos
-                insuficientes” hasta
-                contar con al menos{' '}
-                {
-                  comparison
-                    .minimumEpisodesRequired
-                }.
+        <section
+          className={styles.results}
+          aria-labelledby="comparison-results-title"
+        >
+          <div
+            className={styles.resultsHeader}
+          >
+            <div>
+              <p
+                className={styles.eyebrow}
+              >
+                Resultados
               </p>
-            </section>
-          ) : (
-            <section
-              className={
-                styles.symptomSelector
-              }
-            >
-              <h3>
-                Base disponible
-              </h3>
 
-              <p>
-                Ya existen suficientes
-                episodios con
-                información para
-                describir repeticiones
-                iniciales. Los
-                resultados siguen
-                siendo observaciones,
-                no conclusiones
-                clínicas.
-              </p>
-            </section>
+              <h3 id="comparison-results-title">
+                Factores para seguir
+                observando
+              </h3>
+            </div>
+
+            <span>
+              {relevantItems.length}{' '}
+              {relevantItems.length === 1
+                ? 'factor'
+                : 'factores'}
+            </span>
+          </div>
+
+          {!hasEnoughData && (
+            <p
+              className={styles.preliminary}
+            >
+              Los conteos son
+              preliminares. Hasta reunir
+              al menos{' '}
+              {
+                comparison
+                  .minimumEpisodesRequired
+              }{' '}
+              episodios utilizables,
+              SYNARA los mantendrá como
+              datos insuficientes.
+            </p>
           )}
 
           {relevantItems.length > 0 ? (
-            relevantItems.map(
-              item => (
-                <article
-                  key={
-                    item.questionId
-                  }
-                  className={
-                    styles.symptomSelector
-                  }
-                >
-                  <div>
-                    <p>
-                      <b>
-                        {
-                          item.categoryIcon
-                        }{' '}
-                        {
-                          item.categoryTitle
-                        }
-                      </b>
-                    </p>
-
-                    <h3>
-                      {item.question}
-                    </h3>
-                  </div>
-
-                  <p>
-                    <b>
-                      Tu percepción:
-                    </b>{' '}
-
-                    {
-                      TRIGGER_ANSWER_LABELS[
-                        item
-                          .perceivedAnswer
-                      ]
+            <div
+              className={styles.list}
+            >
+              {relevantItems.map(
+                (
+                  item,
+                  index,
+                ) => (
+                  <details
+                    key={item.questionId}
+                    className={styles.item}
+                    data-status={
+                      getStatusTone(item)
                     }
-                  </p>
-
-                  <p>
-                    <b>
-                      En tus registros:
-                    </b>{' '}
-
-                    {
-                      item
-                        .matchingEpisodes
-                    }{' '}
-                    de{' '}
-                    {
-                      item
-                        .episodesWithTriggerData
-                    }{' '}
-                    episodios (
-                    {
-                      item
-                        .matchingPercentage
-                    }
-                    %)
-                  </p>
-
-                  <div
-                    className={
-                      styles.selectionSummary
+                    open={
+                      index === 0
+                        ? true
+                        : undefined
                     }
                   >
-                    <strong>
-                      {getStatusLabel(
-                        item,
-                      )}
-                    </strong>
+                    <summary
+                      className={styles.itemSummary}
+                    >
+                      <span
+                        className={styles.itemHeading}
+                      >
+                        <small>
+                          {
+                            item
+                              .categoryTitle
+                          }
+                        </small>
 
-                    <p>
-                      {getComparisonMessage(
-                        item,
-                      )}
-                    </p>
-                  </div>
+                        <strong>
+                          {item.question}
+                        </strong>
+                      </span>
 
-                  {item.mappingKind ===
-                    'related' &&
-                    item.mappingExplanation && (
-                      <p>
+                      <span
+                        className={styles.itemSide}
+                      >
                         <b>
-                          Comparación
-                          aproximada:
-                        </b>{' '}
+                          {
+                            item
+                              .matchingPercentage
+                          }
+                          %
+                        </b>
 
-                        {
-                          item
-                            .mappingExplanation
-                        }
-                      </p>
-                    )}
-                </article>
-              ),
-            )
+                        <span
+                          className={styles.chevron}
+                          aria-hidden="true"
+                        >
+                          ⌄
+                        </span>
+                      </span>
+                    </summary>
+
+                    <div
+                      className={styles.itemContent}
+                    >
+                      <div
+                        className={styles.comparisonGrid}
+                      >
+                        <div>
+                          <span>
+                            Tu percepción
+                          </span>
+
+                          <strong>
+                            {
+                              TRIGGER_ANSWER_LABELS[
+                                item
+                                  .perceivedAnswer
+                              ]
+                            }
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            En tus registros
+                          </span>
+
+                          <strong>
+                            {
+                              item
+                                .matchingEpisodes
+                            }{' '}
+                            de{' '}
+                            {
+                              item
+                                .episodesWithTriggerData
+                            }{' '}
+                            episodios
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div
+                        className={styles.interpretation}
+                      >
+                        <strong>
+                          {getStatusLabel(item)}
+                        </strong>
+
+                        <p>
+                          {getComparisonMessage(item)}
+                        </p>
+                      </div>
+
+                      {item.mappingKind ===
+                        'related' &&
+                        item.mappingExplanation && (
+                          <p
+                            className={styles.mappingNote}
+                          >
+                            <b>
+                              Comparación aproximada:
+                            </b>{' '}
+                            {
+                              item
+                                .mappingExplanation
+                            }
+                          </p>
+                        )}
+                    </div>
+                  </details>
+                ),
+              )}
+            </div>
           ) : (
-            <section
-              className={
-                styles.symptomSelector
-              }
+            <div
+              className={styles.noResults}
             >
+              <h4>
+                No hay factores para
+                comparar por ahora
+              </h4>
+
               <p>
-                No hay factores
-                percibidos para comparar
-                por el momento.
+                A medida que completes
+                la exploración y registres
+                episodios, aparecerán acá
+                las coincidencias que
+                merezcan seguimiento.
               </p>
-            </section>
+            </div>
           )}
-        </>
+        </section>
       )}
     </section>
   );

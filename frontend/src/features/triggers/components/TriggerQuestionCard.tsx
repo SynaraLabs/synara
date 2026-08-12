@@ -11,18 +11,15 @@ import type {
   TriggerQuestionResponse,
 } from '../types/triggerExploration.types';
 
-import styles from '../../migraine/migraine.module.css';
+import styles from './TriggerQuestionCard.module.css';
 
 interface Props {
-  question:
-    TriggerQuestion;
+  question: TriggerQuestion;
 
-  response?:
-    TriggerQuestionResponse;
+  response?: TriggerQuestionResponse;
 
   onAnswer: (
-    answer:
-      TriggerQuestionAnswer,
+    answer: TriggerQuestionAnswer,
   ) => void;
 
   onNotesChange: (
@@ -45,49 +42,59 @@ export function TriggerQuestionCard({
   onNotesChange,
 }: Props) {
   const showNotes =
-    response?.answer ===
-      'often' ||
-    response?.answer ===
-      'sometimes';
+    response?.answer === 'often' ||
+    response?.answer === 'sometimes';
+
+  const isAnswered =
+    Boolean(response?.answer);
 
   return (
     <article
-      className={
-        styles.symptomSelector
+      className={styles.card}
+      data-answered={
+        isAnswered ? 'true' : undefined
       }
       aria-labelledby={`trigger-question-${question.id}`}
     >
-      <div>
-        <h3
-          id={`trigger-question-${question.id}`}
-        >
-          {question.question}
-        </h3>
+      <header className={styles.header}>
+        <div>
+          <h3
+            id={`trigger-question-${question.id}`}
+          >
+            {question.question}
+          </h3>
 
-        <p>
-          {question.explanation}
-        </p>
-      </div>
+          <p>{question.explanation}</p>
+        </div>
+
+        <span
+          className={styles.status}
+          aria-label={
+            isAnswered
+              ? 'Pregunta respondida'
+              : 'Pregunta pendiente'
+          }
+        >
+          {isAnswered
+            ? 'Respondida'
+            : 'Pendiente'}
+        </span>
+      </header>
 
       <div
-        className={
-          styles.compactChoiceGrid
-        }
+        className={styles.answers}
         role="group"
-        aria-label="Respuesta"
+        aria-label={`Respuesta a: ${question.question}`}
       >
-        {ANSWER_ORDER.map(
-          answer => (
+        {ANSWER_ORDER.map(answer => {
+          const isSelected =
+            response?.answer === answer;
+
+          return (
             <button
               key={answer}
               type="button"
-              className={
-                styles.compactChoice
-              }
-              aria-pressed={
-                response?.answer ===
-                answer
-              }
+              aria-pressed={isSelected}
               onClick={() =>
                 onAnswer(answer)
               }
@@ -98,19 +105,24 @@ export function TriggerQuestionCard({
                 ]
               }
             </button>
-          ),
-        )}
+          );
+        })}
       </div>
 
       {showNotes && (
-        <label>
-          ¿Qué observaste?
+        <label className={styles.notes}>
+          <span>
+            ¿Qué observaste?
+          </span>
+
+          <small>
+            Opcional. Podés anotar un
+            momento, situación o detalle
+            que quieras recordar.
+          </small>
 
           <textarea
-            value={
-              response?.notes ??
-              ''
-            }
+            value={response?.notes ?? ''}
             rows={3}
             placeholder="Ej.: suele ocurrir los domingos cuando duermo más y desayuno tarde"
             onChange={event =>

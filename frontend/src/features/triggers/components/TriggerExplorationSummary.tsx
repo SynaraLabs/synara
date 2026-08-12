@@ -7,27 +7,20 @@ import type {
   TriggerSummaryItem,
 } from '../utils/triggerExplorationSummary';
 
-import styles from '../../migraine/migraine.module.css';
+import styles from './TriggerExplorationSummary.module.css';
 
 interface Props {
-  summary:
-    TriggerExplorationSummaryData;
-
+  summary: TriggerExplorationSummaryData;
   completedAt?: string;
-
-  onReturnToQuestions:
-    () => void;
+  onReturnToQuestions: () => void;
 }
 
 interface SummaryGroupProps {
   title: string;
-
   description: string;
-
-  items:
-    TriggerSummaryItem[];
-
+  items: TriggerSummaryItem[];
   emptyMessage: string;
+  defaultOpen?: boolean;
 }
 
 const formatCompletedDate = (
@@ -37,27 +30,19 @@ const formatCompletedDate = (
     return null;
   }
 
-  const date =
-    new Date(value);
+  const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime(),
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return null;
   }
 
-  return date.toLocaleString(
-    'es-AR',
-    {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    },
-  );
+  return date.toLocaleString('es-AR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 };
 
 const formatCount = (
@@ -66,9 +51,7 @@ const formatCount = (
   plural: string,
 ): string => {
   return `${count} ${
-    count === 1
-      ? singular
-      : plural
+    count === 1 ? singular : plural
   }`;
 };
 
@@ -77,71 +60,61 @@ function SummaryGroup({
   description,
   items,
   emptyMessage,
+  defaultOpen = false,
 }: SummaryGroupProps) {
   return (
-    <section
-      className={
-        styles.symptomSelector
-      }
+    <details
+      className={styles.group}
+      open={defaultOpen}
     >
-      <div>
-        <h3>
-          {title}
-        </h3>
+      <summary>
+        <span>
+          <strong>{title}</strong>
+          <small>{description}</small>
+        </span>
 
-        <p>
-          {description}
-        </p>
-      </div>
+        <b>{items.length}</b>
+      </summary>
 
-      {items.length > 0 ? (
-        <ul>
-          {items.map(
-            item => (
-              <li
-                key={
-                  item.questionId
-                }
-              >
-                <p>
-                  <b>
-                    {item.categoryIcon}{' '}
+      <div className={styles.groupContent}>
+        {items.length > 0 ? (
+          <ul className={styles.itemList}>
+            {items.map(item => (
+              <li key={item.questionId}>
+                <div
+                  className={styles.itemHeader}
+                >
+                  <span>
+                    {item.categoryTitle}
+                  </span>
+
+                  <small>
                     {
-                      item.categoryTitle
+                      TRIGGER_ANSWER_LABELS[
+                        item.answer
+                      ]
                     }
-                  </b>
-                </p>
+                  </small>
+                </div>
 
-                <p>
-                  {item.question}
-                </p>
-
-                <small>
-                  {
-                    TRIGGER_ANSWER_LABELS[
-                      item.answer
-                    ]
-                  }
-                </small>
+                <p>{item.question}</p>
 
                 {item.notes && (
-                  <p>
-                    <b>
-                      Observación:
-                    </b>{' '}
+                  <blockquote>
+                    <b>Tu observación</b>
                     {item.notes}
-                  </p>
+                  </blockquote>
                 )}
               </li>
-            ),
-          )}
-        </ul>
-      ) : (
-        <p>
-          {emptyMessage}
-        </p>
-      )}
-    </section>
+            ))}
+          </ul>
+        ) : (
+          <p className={styles.empty}>
+            {emptyMessage}
+          </p>
+        )}
+      </div>
+    </details>
   );
 }
 
@@ -151,202 +124,185 @@ export function TriggerExplorationSummary({
   onReturnToQuestions,
 }: Props) {
   const completedDate =
-    formatCompletedDate(
-      completedAt,
-    );
+    formatCompletedDate(completedAt);
 
   const observedCategories =
     summary.categories.filter(
       category =>
-        category.observedCount >
-        0,
+        category.observedCount > 0,
     );
+
+  const isComplete =
+    summary.answeredCount ===
+    summary.totalCount;
 
   return (
     <section
-      className={
-        styles.phaseFlow
-      }
+      className={styles.summary}
       aria-labelledby="trigger-summary-title"
     >
-      <header
-        className={
-          styles.symptomSelector
-        }
-      >
-        <div>
-          <p>
-            Exploración personal
-          </p>
+      <header className={styles.header}>
+        <p className={styles.eyebrow}>
+          Exploración personal
+        </p>
 
-          <h2 id="trigger-summary-title">
-            Resumen de posibles
-            desencadenantes
-          </h2>
+        <h2 id="trigger-summary-title">
+          Lo que observaste hasta ahora
+        </h2>
 
-          <p>
-            Este resumen refleja lo que
-            observaste hasta ahora. No
-            confirma que estos factores
-            sean la causa de tus crisis.
-          </p>
-        </div>
+        <p className={styles.description}>
+          Este resumen organiza tus
+          percepciones. No confirma que
+          estos factores sean la causa de
+          tus crisis.
+        </p>
 
         <div
-          className={
-            styles.selectionSummary
-          }
+          className={styles.completion}
           role="status"
         >
-          <span
-            aria-hidden="true"
-          >
-            {summary.answeredCount ===
-            summary.totalCount
-              ? '✓'
-              : '◷'}
-          </span>
+          <div>
+            <strong>
+              {summary.answeredCount} de{' '}
+              {summary.totalCount}
+            </strong>
 
-          <p>
-            {summary.answeredCount} de{' '}
-            {summary.totalCount}{' '}
-            preguntas respondidas
-          </p>
+            <span>
+              {isComplete
+                ? 'Exploración completa'
+                : 'Preguntas respondidas'}
+            </span>
+          </div>
+
+          {completedDate && (
+            <time dateTime={completedAt}>
+              Finalizada el {completedDate}
+            </time>
+          )}
         </div>
-
-        {completedDate && (
-          <p>
-            Exploración finalizada el{' '}
-            {completedDate}
-          </p>
-        )}
       </header>
 
       <section
-        className={
-          styles.symptomSelector
-        }
+        className={styles.ranking}
+        aria-labelledby="trigger-ranking-title"
       >
-        <div>
-          <h3>
-            Categorías con más
-            asociaciones percibidas
+        <header>
+          <p>Primera lectura</p>
+
+          <h3 id="trigger-ranking-title">
+            Asociaciones que más percibís
           </h3>
 
-          <p>
-            El orden se basa solamente
-            en tus respuestas “con
-            frecuencia” y “algunas
-            veces”. Todavía no se
-            comparó con tus episodios.
-          </p>
-        </div>
+          <span>
+            Ordenadas según tus respuestas
+            “con frecuencia” y “algunas
+            veces”. Todavía no están
+            comparadas con el historial.
+          </span>
+        </header>
 
-        {observedCategories.length >
-        0 ? (
-          <ul>
+        {observedCategories.length > 0 ? (
+          <ol>
             {observedCategories.map(
-              category => (
+              (category, index) => (
                 <li
-                  key={
-                    category.categoryId
-                  }
+                  key={category.categoryId}
                 >
+                  <span
+                    className={styles.position}
+                    aria-hidden="true"
+                  >
+                    {index + 1}
+                  </span>
+
+                  <div>
+                    <strong>
+                      {category.title}
+                    </strong>
+
+                    <small>
+                      {formatCount(
+                        category.frequentCount,
+                        'frecuente',
+                        'frecuentes',
+                      )}
+                      {' · '}
+                      {formatCount(
+                        category.occasionalCount,
+                        'ocasional',
+                        'ocasionales',
+                      )}
+                    </small>
+                  </div>
+
                   <b>
-                    {category.icon}{' '}
-                    {category.title}
+                    {category.observedCount}
                   </b>
-
-                  <p>
-                    {formatCount(
-                      category.observedCount,
-                      'asociación percibida',
-                      'asociaciones percibidas',
-                    )}
-                  </p>
-
-                  <small>
-                    {formatCount(
-                      category.frequentCount,
-                      'frecuente',
-                      'frecuentes',
-                    )}
-                    {' · '}
-                    {formatCount(
-                      category.occasionalCount,
-                      'ocasional',
-                      'ocasionales',
-                    )}
-                  </small>
                 </li>
               ),
             )}
-          </ul>
+          </ol>
         ) : (
-          <p>
+          <p className={styles.emptyRanking}>
             Todavía no registraste
             asociaciones percibidas.
           </p>
         )}
       </section>
 
-      <SummaryGroup
-        title="Factores que observás con frecuencia"
-        description="Son los factores que elegiste observar especialmente. Siguen siendo hipótesis personales."
-        items={summary.frequent}
-        emptyMessage="No marcaste factores frecuentes."
-      />
-
-      <SummaryGroup
-        title="Factores observados algunas veces"
-        description="Pueden haber coincidido con algunos episodios, pero todavía no forman un patrón claro."
-        items={summary.occasional}
-        emptyMessage="No marcaste factores ocasionales."
-      />
-
-      <SummaryGroup
-        title="Factores todavía inciertos"
-        description="Son preguntas que todavía no podés responder. Los futuros registros pueden aportar más información."
-        items={summary.uncertain}
-        emptyMessage="No dejaste factores como inciertos."
-      />
-
       <section
-        className={
-          styles.symptomSelector
-        }
+        className={styles.detailGroups}
+        aria-label="Detalle de respuestas"
       >
-        <div>
-          <h3>
-            Qué hará SYNARA con este
-            resumen
-          </h3>
+        <SummaryGroup
+          title="Con frecuencia"
+          description="Factores que elegiste observar especialmente."
+          items={summary.frequent}
+          emptyMessage="No marcaste factores frecuentes."
+          defaultOpen
+        />
 
-          <p>
-            Comparará estas hipótesis
-            con los factores registrados
-            en tus episodios. Un patrón
-            solo ganará relevancia si se
-            repite en varios registros.
-          </p>
-        </div>
+        <SummaryGroup
+          title="Algunas veces"
+          description="Coincidencias que todavía no forman un patrón claro."
+          items={summary.occasional}
+          emptyMessage="No marcaste factores ocasionales."
+        />
 
-        <p>
-          Algunos factores también
-          pueden ser señales
-          premonitorias. Por eso SYNARA
-          mantendrá separadas tus
-          percepciones personales y las
-          coincidencias observadas en el
-          historial.
-        </p>
+        <SummaryGroup
+          title="Todavía inciertos"
+          description="Los futuros registros pueden aportar más información."
+          items={summary.uncertain}
+          emptyMessage="No dejaste factores como inciertos."
+        />
       </section>
+
+      <aside className={styles.nextStep}>
+        <p>Próximo paso</p>
+
+        <h3>
+          Comparar percepción e historial
+        </h3>
+
+        <span>
+          SYNARA contrastará estas hipótesis
+          con los factores registrados en tus
+          episodios. Una asociación gana
+          relevancia cuando se repite en
+          varios registros.
+        </span>
+
+        <small>
+          Algunos factores también pueden ser
+          señales premonitorias. Por eso ambas
+          observaciones permanecen separadas.
+        </small>
+      </aside>
 
       <button
         type="button"
-        onClick={
-          onReturnToQuestions
-        }
+        className={styles.reviewButton}
+        onClick={onReturnToQuestions}
       >
         Revisar o cambiar respuestas
       </button>
