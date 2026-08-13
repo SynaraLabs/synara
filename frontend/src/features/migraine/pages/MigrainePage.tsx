@@ -15,6 +15,10 @@ import {
 } from '../components/dev/MigraineDevTools';
 
 import {
+  EmptyEpisodeState,
+} from '../components/EmptyEpisodeState';
+
+import {
   RecoveryStage,
 } from '../components/RecoveryStage';
 
@@ -437,36 +441,9 @@ export function MigrainePage() {
       }
     >
       {!episode && (
-        <section>
-          <p
-            className={
-              styles.cardEyebrow
-            }
-          >
-            Nuevo registro
-          </p>
-
-          <h2>
-            No hay un episodio activo
-          </h2>
-
-          <p>
-            Podés comenzar cuando
-            aparezcan señales, aura o
-            dolor. No hace falta saber
-            todavía cómo va a
-            evolucionar.
-          </p>
-
-          <button
-            type="button"
-            onClick={
-              handleNewEpisode
-            }
-          >
-            Comenzar registro
-          </button>
-        </section>
+        <EmptyEpisodeState
+          onStart={handleNewEpisode}
+        />
       )}
 
       {episode &&

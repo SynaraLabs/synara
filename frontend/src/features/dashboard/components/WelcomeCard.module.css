@@ -1,0 +1,64 @@
+.welcome {
+  min-width: 0;
+
+  padding-bottom: var(--space-6);
+
+  border-bottom: 1px solid
+    var(--color-border);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+
+  color: var(--color-accent);
+
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.welcome h1 {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-editorial);
+  font-size: clamp(
+    2rem,
+    5vw,
+    3.2rem
+  );
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+}
+
+.description {
+  max-width: 600px;
+
+  margin: var(--space-3) 0 0;
+
+  color: var(--color-text-soft);
+
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 600px) {
+  .welcome {
+    padding-bottom: var(--space-4);
+  }
+
+  .welcome h1 {
+    font-size: 1.9rem;
+  }
+
+  .description {
+    margin-top: var(--space-2);
+
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+}

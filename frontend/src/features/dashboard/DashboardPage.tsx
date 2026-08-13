@@ -27,14 +27,10 @@ import styles from './dashboard.module.css';
 export function DashboardPage() {
   return (
     <section
-      className={
-        styles.dashboard
-      }
+      className={styles.dashboard}
     >
       <div
-        className={
-          styles.introduction
-        }
+        className={styles.introduction}
       >
         <HealthSummary />
 
@@ -44,9 +40,7 @@ export function DashboardPage() {
       </div>
 
       <div
-        className={
-          styles.dashboardContent
-        }
+        className={styles.dashboardContent}
       >
         <InsightsSummary />
 

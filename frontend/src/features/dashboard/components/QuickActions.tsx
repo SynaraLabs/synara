@@ -9,8 +9,7 @@ import {
 import styles from './QuickActions.module.css';
 
 export function QuickActions() {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
   const activeEpisode =
     useMigraineStore(
@@ -22,122 +21,54 @@ export function QuickActions() {
     return null;
   }
 
-  const handleStart =
-    () => {
-      navigate('/migraine');
-    };
-
   return (
     <section
-      className={
-        styles.section
-      }
+      className={styles.section}
       aria-labelledby="quick-action-title"
     >
-      <div
-        className={
-          styles.header
-        }
-      >
-        <div>
-          <p
-            className={
-              styles.eyebrow
-            }
-          >
-            Registro guiado
-          </p>
-
-          <h2
-            id="quick-action-title"
-          >
-            ¿Qué estás sintiendo ahora?
-          </h2>
-        </div>
-
-        <p
-          className={
-            styles.hint
-          }
-        >
-          Empezá por la señal o fase que
-          puedas reconocer. Podés
-          completar el resto después.
+      <div className={styles.heading}>
+        <p className={styles.eyebrow}>
+          Registro guiado
         </p>
+
+        <h2 id="quick-action-title">
+          Empezá por lo que sentís
+        </h2>
       </div>
 
       <button
         type="button"
-        className={
-          styles.action
+        className={styles.action}
+        onClick={() =>
+          navigate('/migraine')
         }
-        onClick={
-          handleStart
-        }
-        aria-label="Comenzar un registro de migraña"
       >
+        <span className={styles.copy}>
+          <strong>
+            Registrar migraña
+          </strong>
+
+          <span>
+            Señales, aura, dolor o
+            recuperación
+          </span>
+        </span>
+
         <span
-          className={
-            styles.icon
-          }
+          className={styles.cta}
           aria-hidden="true"
         >
-          ◉
-        </span>
+          Comenzar
 
-        <span
-          className={
-            styles.content
-          }
-        >
-          <span
-            className={
-              styles.titleRow
-            }
-          >
-            <h3>
-              Registrar migraña
-            </h3>
-
-            <span
-              className={
-                styles.badge
-              }
-            >
-              Principal
-            </span>
-          </span>
-
-          <span
-            className={
-              styles.description
-            }
-          >
-            Registrá señales
-            premonitorias, aura, dolor,
-            síntomas, tratamiento o
-            recuperación. No hace falta
-            completar todo de una vez.
-          </span>
-        </span>
-
-        <span
-          className={
-            styles.cta
-          }
-        >
-          Comenzar registro
-
-          <span
-            className={
-              styles.arrow
-            }
-            aria-hidden="true"
-          >
-            →
-          </span>
+          <span>→</span>
         </span>
       </button>
+
+      <p className={styles.reassurance}>
+        No necesitás saber cómo va a
+        evolucionar ni completar todo de
+        una vez.
+      </p>
     </section>
   );
 }

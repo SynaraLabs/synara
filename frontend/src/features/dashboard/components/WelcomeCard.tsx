@@ -6,7 +6,7 @@ import {
   useProfileStore,
 } from '../../profile/store/profile.store';
 
-import styles from '../dashboard.module.css';
+import styles from './WelcomeCard.module.css';
 
 export function WelcomeCard() {
   const activeEpisode =
@@ -25,46 +25,31 @@ export function WelcomeCard() {
     return null;
   }
 
-  const greeting =
-    name?.trim()
-      ? `Hola, ${name.trim()}`
-      : 'Tu acompañamiento en migraña';
+  const firstName =
+    name
+      ?.trim()
+      .split(/\s+/)[0];
 
   return (
-    <section
-      className={
-        styles.welcomeCard
-      }
+    <header
+      className={styles.welcome}
       aria-labelledby="welcome-title"
     >
-      <div>
-        <p
-          className={
-            styles.greeting
-          }
-        >
-          {greeting}
-        </p>
+      <p className={styles.eyebrow}>
+        {firstName
+          ? `Hola, ${firstName}`
+          : 'Tu espacio personal'}
+      </p>
 
-        <h1 id="welcome-title">
-          Registrá lo que te pasa.
-          <br />
+      <h1 id="welcome-title">
+        ¿Cómo estás hoy?
+      </h1>
 
-          Comprendé cómo evoluciona.
-        </h1>
-
-        <p
-          className={
-            styles.description
-          }
-        >
-          SYNARA te acompaña a registrar
-          cada fase de la migraña con
-          claridad, a tu ritmo y sin
-          necesidad de completar todo de
-          una vez.
-        </p>
-      </div>
-    </section>
+      <p className={styles.description}>
+        Registrá lo que reconocés ahora.
+        Podés completar o actualizar el
+        episodio después.
+      </p>
+    </header>
   );
 }
