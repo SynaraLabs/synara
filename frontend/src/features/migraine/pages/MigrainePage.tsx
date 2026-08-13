@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useState,
 } from 'react';
 
@@ -130,6 +131,31 @@ export function MigrainePage() {
       state =>
         state.activeEpisode,
     );
+
+  useEffect(() => {
+    if (!episode) {
+      return;
+    }
+
+    const frameId =
+      window.requestAnimationFrame(
+        () => {
+          window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'auto',
+          });
+        },
+      );
+
+    return () => {
+      window.cancelAnimationFrame(
+        frameId,
+      );
+    };
+  }, [
+    episode?.id,
+  ]);
 
   const startEpisode =
     useMigraineStore(

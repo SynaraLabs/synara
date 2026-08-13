@@ -1,14 +1,8 @@
 .root {
   --premonitory-accent: #8977c8;
-
-  --premonitory-accent-strong:
-    #6857a8;
-
-  --premonitory-soft:
-    #f4f0f8;
-
-  --premonitory-soft-strong:
-    #ebe4f3;
+  --premonitory-accent-strong: #6857a8;
+  --premonitory-soft: #f4f0f8;
+  --premonitory-soft-strong: #ebe4f3;
 
   width: 100%;
   min-width: 0;
@@ -28,12 +22,9 @@
   border: 0;
   border-left: 4px solid
     var(--premonitory-accent);
-  border-radius:
-    var(--radius-medium);
+  border-radius: var(--radius-medium);
 
-  background:
-    var(--premonitory-soft);
-
+  background: var(--premonitory-soft);
   box-shadow: none;
 }
 
@@ -47,19 +38,14 @@
 
   margin: 0;
 
-  color:
-    var(--color-text-strong);
+  color: var(--color-text-strong);
 
-  font-family:
-    var(--font-editorial);
-
-  font-size:
-    clamp(
-      1.45rem,
-      3vw,
-      1.9rem
-    );
-
+  font-family: var(--font-editorial);
+  font-size: clamp(
+    1.45rem,
+    3vw,
+    1.9rem
+  );
   font-weight: 700;
   line-height: 1.18;
 }
@@ -69,8 +55,7 @@
 
   margin: 0;
 
-  color:
-    var(--color-text-soft);
+  color: var(--color-text-soft);
 
   font-size: 0.9rem;
   line-height: 1.55;
@@ -88,14 +73,10 @@
       var(--premonitory-accent) 25%,
       var(--color-border)
     );
+  border-radius: var(--radius-medium);
 
-  border-radius:
-    var(--radius-medium);
-
-  color:
-    var(--color-text);
-  background:
-    var(--premonitory-soft);
+  color: var(--color-text);
+  background: var(--premonitory-soft);
 
   font-size: 0.84rem;
   font-weight: 600;
@@ -119,22 +100,16 @@
       var(--color-success) 28%,
       transparent
     );
+  border-radius: var(--radius-pill);
 
-  border-radius:
-    var(--radius-pill);
-
-  color:
-    var(--color-text-soft);
-  background:
-    var(--color-success-soft);
+  color: var(--color-text-soft);
+  background: var(--color-success-soft);
 
   font-size: 0.78rem;
 }
 
 .phaseStatus span {
-  color:
-    var(--color-success);
-
+  color: var(--color-success);
   font-weight: 800;
 }
 
@@ -143,17 +118,12 @@
   gap: var(--space-2);
 
   padding: 0;
-
   border: 0;
-
-  background:
-    transparent;
+  background: transparent;
 }
 
 .searchField > span {
-  color:
-    var(--color-text-strong);
-
+  color: var(--color-text-strong);
   font-size: 0.84rem;
   font-weight: 750;
 }
@@ -161,21 +131,16 @@
 .searchField input {
   min-height: 50px;
 
-  border-color:
-    color-mix(
-      in srgb,
-      var(--premonitory-accent) 22%,
-      var(--color-border-strong)
-    );
-
-  background:
-    var(--color-surface);
+  border-color: color-mix(
+    in srgb,
+    var(--premonitory-accent) 22%,
+    var(--color-border-strong)
+  );
+  background: var(--color-surface);
 }
 
 .searchField input:focus {
-  border-color:
-    var(--premonitory-accent);
-
+  border-color: var(--premonitory-accent);
   box-shadow:
     0 0 0 4px
     color-mix(
@@ -186,8 +151,7 @@
 }
 
 .selectedArea {
-  padding:
-    var(--space-4);
+  padding: var(--space-4);
 
   border: 1px solid
     color-mix(
@@ -195,80 +159,55 @@
       var(--premonitory-accent) 25%,
       var(--color-border)
     );
+  border-radius: var(--radius-medium);
 
-  border-radius:
-    var(--radius-medium);
-
-  background:
-    var(--premonitory-soft);
+  background: var(--premonitory-soft);
 }
 
 .selectedArea h4,
 .resultsArea h4 {
-  color:
-    var(--color-text-strong);
+  color: var(--color-text-strong);
 }
 
 .selectedChips button {
-  border-color:
-    color-mix(
-      in srgb,
-      var(--premonitory-accent) 32%,
-      var(--color-border)
-    );
-
-  color:
-    var(--premonitory-accent-strong);
-  background:
-    var(--color-surface);
+  border-color: color-mix(
+    in srgb,
+    var(--premonitory-accent) 32%,
+    var(--color-border)
+  );
+  color: var(--premonitory-accent-strong);
+  background: var(--color-surface);
 }
 
 .selectedChips button:hover {
-  border-color:
-    var(--premonitory-accent);
-
-  background:
-    var(--premonitory-soft-strong);
+  border-color: var(--premonitory-accent);
+  background: var(--premonitory-soft-strong);
 }
 
 .categoryRail {
-  padding-bottom:
-    var(--space-1);
+  padding-bottom: var(--space-1);
 }
 
 .categoryRail button {
-  border-color:
-    var(--color-border);
-
-  color:
-    var(--color-text-soft);
-  background:
-    var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-soft);
+  background: var(--color-surface);
 }
 
 .categoryRail button:hover {
-  border-color:
-    color-mix(
-      in srgb,
-      var(--premonitory-accent) 45%,
-      var(--color-border)
-    );
-
-  color:
-    var(--premonitory-accent-strong);
-  background:
-    var(--premonitory-soft);
+  border-color: color-mix(
+    in srgb,
+    var(--premonitory-accent) 45%,
+    var(--color-border)
+  );
+  color: var(--premonitory-accent-strong);
+  background: var(--premonitory-soft);
 }
 
 .categoryRail button[aria-pressed='true'] {
-  border-color:
-    var(--premonitory-accent);
-
-  color:
-    var(--premonitory-accent-strong);
-  background:
-    var(--premonitory-soft-strong);
-
+  border-color: var(--premonitory-accent);
+  color: var(--premonitory-accent-strong);
+  background: var(--premonitory-soft-strong);
   box-shadow: none;
 }
 
@@ -276,50 +215,34 @@
   display: grid;
   gap: var(--space-4);
 
-  padding:
-    var(--space-5);
+  padding: var(--space-5);
 
-  border: 1px solid
-    var(--color-border);
-  border-radius:
-    var(--radius-medium);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
 
-  background:
-    color-mix(
-      in srgb,
-      var(--premonitory-soft) 42%,
-      var(--color-surface)
-    );
+  background: color-mix(
+    in srgb,
+    var(--premonitory-soft) 42%,
+    var(--color-surface)
+  );
 }
 
 .choiceButton {
-  border-color:
-    var(--color-border);
-
-  color:
-    var(--color-text);
-  background:
-    var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+  background: var(--color-surface);
 }
 
 .choiceButton:hover {
-  border-color:
-    var(--premonitory-accent);
-
-  color:
-    var(--color-text-strong);
-  background:
-    var(--premonitory-soft);
+  border-color: var(--premonitory-accent);
+  color: var(--color-text-strong);
+  background: var(--premonitory-soft);
 }
 
 .choiceButton[aria-pressed='true'] {
-  border-color:
-    var(--premonitory-accent-strong);
-
+  border-color: var(--premonitory-accent-strong);
   color: #ffffff;
-  background:
-    var(--premonitory-accent);
-
+  background: var(--premonitory-accent);
   box-shadow: none;
 }
 
@@ -327,32 +250,25 @@
   display: grid;
   gap: var(--space-1);
 
-  margin-top:
-    var(--space-2);
-  padding-top:
-    var(--space-5);
+  margin-top: var(--space-2);
+  padding-top: var(--space-5);
 
-  border-top: 1px solid
-    var(--color-border);
+  border-top: 1px solid var(--color-border);
 }
 
 .updateDetailsIntro h4 {
   margin: 0;
 
-  color:
-    var(--color-text-strong);
+  color: var(--color-text-strong);
 
-  font-family:
-    var(--font-editorial);
-
+  font-family: var(--font-editorial);
   font-size: 1.15rem;
 }
 
 .updateDetailsIntro p {
   margin: 0;
 
-  color:
-    var(--color-text-soft);
+  color: var(--color-text-soft);
 
   font-size: 0.8rem;
   line-height: 1.5;
@@ -361,57 +277,51 @@
 .primaryPhaseAction {
   min-height: 50px;
 
-  border-color:
-    var(--color-primary);
+  border-color: var(--premonitory-accent-strong);
 
   color: #ffffff;
-  background:
-    var(--color-primary);
+  background: var(--premonitory-accent);
 
   box-shadow: none;
 }
 
 .primaryPhaseAction:hover {
-  background:
-    var(--color-primary-hover);
+  border-color: var(--premonitory-accent-strong);
+  background: var(--premonitory-accent-strong);
+  transform: translateY(-1px);
+}
 
-  transform:
-    translateY(-1px);
+.primaryPhaseAction:focus-visible {
+  outline: 3px solid
+    color-mix(
+      in srgb,
+      var(--premonitory-accent) 28%,
+      transparent
+    );
+  outline-offset: 3px;
 }
 
 .root > label:not(.searchField) {
   display: grid;
   gap: var(--space-2);
 
-  color:
-    var(--color-text-strong);
+  color: var(--color-text-strong);
 
   font-size: 0.84rem;
   font-weight: 700;
 }
 
-.root > label:not(.searchField)
-input,
-.root > label:not(.searchField)
-select,
-.root > label:not(.searchField)
-textarea {
-  border-color:
-    var(--color-border-strong);
-
-  background:
-    var(--color-surface);
+.root > label:not(.searchField) input,
+.root > label:not(.searchField) select,
+.root > label:not(.searchField) textarea {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
 }
 
-.root > label:not(.searchField)
-input:focus,
-.root > label:not(.searchField)
-select:focus,
-.root > label:not(.searchField)
-textarea:focus {
-  border-color:
-    var(--premonitory-accent);
-
+.root > label:not(.searchField) input:focus,
+.root > label:not(.searchField) select:focus,
+.root > label:not(.searchField) textarea:focus {
+  border-color: var(--premonitory-accent);
   box-shadow:
     0 0 0 4px
     color-mix(
@@ -423,14 +333,11 @@ textarea:focus {
 
 @media (max-width: 600px) {
   .root {
-    gap:
-      var(--space-4);
+    gap: var(--space-4);
   }
 
   .premonitoryIntro {
-    padding:
-      var(--space-4);
-
+    padding: var(--space-4);
     border-left-width: 3px;
   }
 
@@ -444,14 +351,11 @@ textarea:focus {
 
   .phaseStatus {
     width: 100%;
-
-    border-radius:
-      var(--radius-medium);
+    border-radius: var(--radius-medium);
   }
 
   .resultsArea {
-    padding:
-      var(--space-4);
+    padding: var(--space-4);
   }
 
   .primaryPhaseAction {

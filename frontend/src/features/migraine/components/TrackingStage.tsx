@@ -15,7 +15,7 @@ import {
   TrackingPhasePanels,
 } from './TrackingPhasePanels';
 
-import styles from '../migraine.module.css';
+import styles from './TrackingStage.module.css';
 
 export type PremonitoryCrisisOutcome =
   | 'endsWithCrisis'
@@ -89,77 +89,112 @@ export function TrackingStage({
     showPremonitoryEndSelector;
 
   return (
-    <>
+    <section className={styles.stage}>
       {!crisisFlowIsOpen && (
-        <div>
+        <>
+          <header className={styles.header}>
+            <p className={styles.eyebrow}>
+              Episodio en curso
+            </p>
+
+            <h1>
+              ¿Qué estás sintiendo ahora?
+            </h1>
+
+            <p>
+              Abrí la fase que quieras
+              registrar. Podés volver y
+              actualizarla cuando lo
+              necesites.
+            </p>
+          </header>
+
           <button
             type="button"
-            onClick={
-              onStartCrisis
-            }
+            className={styles.crisisAction}
+            onClick={onStartCrisis}
           >
-            Estoy entrando en crisis
+            <span className={styles.crisisCopy}>
+              <strong>
+                Crisis o dolor ahora
+              </strong>
+
+              <span>
+                Empezá el modo de registro
+                rápido y de bajo estímulo.
+              </span>
+            </span>
+
+            <span
+              className={styles.crisisCta}
+              aria-hidden="true"
+            >
+              Iniciar
+              <span>→</span>
+            </span>
           </button>
-        </div>
+        </>
       )}
 
       {crisisFlowIsOpen && (
-        <section>
+        <section
+          className={styles.crisisFlow}
+          aria-label="Inicio de crisis"
+        >
           {showPremonitoryCrisisQuestion && (
-            <section>
-              <h3>
-                ¿Qué pasó con las señales
-                previas?
-              </h3>
+            <section className={styles.step}>
+              <header>
+                <p className={styles.eyebrow}>
+                  Antes de iniciar la crisis
+                </p>
 
-              <p>
-                Elegí la opción que mejor
-                describa lo que recordás.
-              </p>
+                <h2>
+                  ¿Qué pasó con las señales
+                  previas?
+                </h2>
+
+                <p>
+                  Elegí la opción que mejor
+                  describa lo que recordás.
+                </p>
+              </header>
+
+              <div className={styles.options}>
+                <button
+                  type="button"
+                  onClick={onEndsWithCrisis}
+                >
+                  Terminaron cuando empezó
+                  la crisis
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onEndedAtAnotherTime}
+                >
+                  Terminaron en otro momento
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onContinuesWithCrisis}
+                >
+                  Continúan durante la crisis
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onUnknownEnd}
+                >
+                  No recuerdo cuándo
+                  terminaron
+                </button>
+              </div>
 
               <button
                 type="button"
-                onClick={
-                  onEndsWithCrisis
-                }
-              >
-                Terminaron cuando empezó
-                la crisis
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  onEndedAtAnotherTime
-                }
-              >
-                Terminaron en otro momento
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  onContinuesWithCrisis
-                }
-              >
-                Continúan durante la crisis
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  onUnknownEnd
-                }
-              >
-                No recuerdo cuándo
-                terminaron
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  onCancelCrisisStart
-                }
+                className={styles.cancelButton}
+                onClick={onCancelCrisisStart}
               >
                 Cancelar
               </button>
@@ -167,25 +202,18 @@ export function TrackingStage({
           )}
 
           {showPremonitoryEndSelector && (
-            <section>
+            <section className={styles.step}>
               <PhaseEndSelector
                 title="¿Cuándo terminaron las señales previas?"
-                startTime={
-                  premonitoryStart
-                }
-                onConfirm={
-                  onPremonitoryEnd
-                }
-                onContinue={
-                  onContinuesWithCrisis
-                }
+                startTime={premonitoryStart}
+                onConfirm={onPremonitoryEnd}
+                onContinue={onContinuesWithCrisis}
               />
 
               <button
                 type="button"
-                onClick={
-                  onCancelCrisisStart
-                }
+                className={styles.cancelButton}
+                onClick={onCancelCrisisStart}
               >
                 Cancelar inicio de crisis
               </button>
@@ -193,29 +221,19 @@ export function TrackingStage({
           )}
 
           {showCrisisDate && (
-            <section>
+            <section className={styles.step}>
               <PhaseDateSelector
                 title="¿Cuándo empezó el dolor?"
-                value={
-                  episode.crisis
-                    .startTime
-                }
-                onChange={
-                  onCrisisDate
-                }
+                value={episode.crisis.startTime}
+                onChange={onCrisisDate}
               />
 
               {hasOpenPremonitory &&
                 premonitoryCrisisOutcome ===
                   'endsWithCrisis' && (
-                  <p
-                    className={
-                      styles.helperText
-                    }
-                  >
+                  <p className={styles.helperText}>
                     Las señales se cerrarán
-                    cuando comience la
-                    crisis.
+                    cuando comience la crisis.
                   </p>
                 )}
 
@@ -223,51 +241,36 @@ export function TrackingStage({
                 premonitoryCrisisOutcome ===
                   'endedAtAnotherTime' &&
                 premonitoryEndSelection && (
-                  <p
-                    className={
-                      styles.helperText
-                    }
-                  >
-                    Se conservará la hora
-                    de finalización que
-                    acabás de registrar.
+                  <p className={styles.helperText}>
+                    Se conservará la hora de
+                    finalización que acabás de
+                    registrar.
                   </p>
                 )}
 
               {hasOpenPremonitory &&
                 premonitoryCrisisOutcome ===
                   'continuesWithCrisis' && (
-                  <p
-                    className={
-                      styles.helperText
-                    }
-                  >
-                    Las señales
-                    permanecerán abiertas
-                    durante la crisis.
+                  <p className={styles.helperText}>
+                    Las señales permanecerán
+                    abiertas durante la crisis.
                   </p>
                 )}
 
               {hasOpenPremonitory &&
                 premonitoryCrisisOutcome ===
                   'unknownEnd' && (
-                  <p
-                    className={
-                      styles.helperText
-                    }
-                  >
-                    Las señales quedarán
-                    con hora de
-                    finalización
+                  <p className={styles.helperText}>
+                    Las señales quedarán con
+                    hora de finalización
                     desconocida.
                   </p>
                 )}
 
               <button
                 type="button"
-                onClick={
-                  onCancelCrisisStart
-                }
+                className={styles.cancelButton}
+                onClick={onCancelCrisisStart}
               >
                 Cancelar
               </button>
@@ -276,9 +279,17 @@ export function TrackingStage({
         </section>
       )}
 
-      <TrackingPhasePanels
-        episode={episode}
-      />
-    </>
+      {!crisisFlowIsOpen && (
+        <div className={styles.phaseArea}>
+          <p className={styles.phaseLabel}>
+            Otras fases
+          </p>
+
+          <TrackingPhasePanels
+            episode={episode}
+          />
+        </div>
+      )}
+    </section>
   );
 }

@@ -1,0 +1,300 @@
+.stage {
+  width: 100%;
+  min-width: 0;
+
+  display: grid;
+  gap: var(--space-5);
+}
+
+.header {
+  max-width: 680px;
+}
+
+.eyebrow,
+.phaseLabel {
+  margin: 0 0 var(--space-1);
+
+  color: var(--color-primary);
+
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.header h1,
+.step h2 {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-editorial);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.header h1 {
+  font-size: clamp(
+    1.8rem,
+    4vw,
+    2.5rem
+  );
+}
+
+.header > p:last-child,
+.step header > p:last-child {
+  max-width: 600px;
+
+  margin: var(--space-2) 0 0;
+
+  color: var(--color-text-soft);
+
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.crisisAction {
+  width: 100%;
+  min-width: 0;
+  min-height: 86px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+
+  padding:
+    var(--space-4)
+    var(--space-5);
+
+  border: 1px solid
+    var(--color-crisis-phase-border);
+  border-radius: var(--radius-medium);
+
+  color: #ffffff;
+  background: var(--color-crisis);
+
+  text-align: left;
+  cursor: pointer;
+
+  box-shadow: var(--shadow-small);
+
+  transition:
+    transform var(--transition),
+    filter var(--transition);
+}
+
+.crisisAction:hover {
+  filter: brightness(1.08);
+}
+
+.crisisAction:active {
+  transform: translateY(1px);
+}
+
+.crisisAction:focus-visible {
+  outline: 3px solid
+    var(--color-focus);
+  outline-offset: 3px;
+}
+
+.crisisCopy {
+  min-width: 0;
+
+  display: grid;
+  gap: var(--space-1);
+}
+
+.crisisCopy strong {
+  color: inherit;
+
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.crisisCopy > span {
+  color: rgb(255 255 255 / 76%);
+
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.crisisCta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  flex-shrink: 0;
+
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.crisisCta span {
+  font-size: 1.05rem;
+}
+
+.phaseArea {
+  min-width: 0;
+}
+
+.phaseLabel {
+  margin-bottom: var(--space-3);
+}
+
+.crisisFlow,
+.step {
+  min-width: 0;
+}
+
+.step {
+  display: grid;
+  gap: var(--space-4);
+
+  padding: var(--space-5);
+
+  border: 1px solid
+    var(--color-crisis-phase-border);
+  border-radius: var(--radius-medium);
+
+  background: var(--color-surface);
+}
+
+.step h2 {
+  font-size: 1.45rem;
+}
+
+.options {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.options button {
+  min-height: 48px;
+
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border: 1px solid
+    var(--color-border-strong);
+  border-radius: var(--radius-medium);
+
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+}
+
+.options button:hover {
+  border-color:
+    var(--color-crisis-phase-border);
+  background:
+    var(--color-crisis-soft);
+}
+
+.cancelButton {
+  justify-self: start;
+
+  min-height: 42px;
+
+  padding:
+    var(--space-2)
+    var(--space-4);
+
+  border: 1px solid
+    var(--color-border-strong);
+  border-radius: var(--radius-medium);
+
+  color: var(--color-text);
+  background: transparent;
+
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.helperText {
+  margin: 0;
+
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border-left: 3px solid
+    var(--color-crisis);
+
+  color: var(--color-text-soft);
+  background: var(--color-crisis-soft);
+
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .stage {
+    gap: var(--space-4);
+  }
+
+  .header h1 {
+    font-size: 1.65rem;
+  }
+
+  .header > p:last-child {
+    font-size: 0.82rem;
+  }
+
+  .crisisAction {
+    min-height: 78px;
+
+    gap: var(--space-3);
+
+    padding: var(--space-4);
+  }
+
+  .crisisCopy > span {
+    font-size: 0.72rem;
+  }
+
+  .step {
+    padding: var(--space-4);
+  }
+
+  .step h2 {
+    font-size: 1.3rem;
+  }
+
+  .options {
+    grid-template-columns: 1fr;
+  }
+
+  .options button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .crisisCta {
+    font-size: 0;
+  }
+
+  .crisisCta span {
+    font-size: 1.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crisisAction {
+    transition: none;
+  }
+}
