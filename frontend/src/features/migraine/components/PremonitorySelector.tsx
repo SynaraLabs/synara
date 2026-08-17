@@ -9,22 +9,18 @@ import styles from '../migraine.module.css';
 import premonitoryStyles from './premonitory-selector.module.css';
 
 import type {
-  ClinicalSymptomCategory,
   ExtendedPremonitorySymptom,
   PainIntensity,
   PhaseTime,
   PremonitorySymptom,
   PremonitoryUpdateData,
   RecordMode,
-  SymptomDefinition,
   SymptomSelection,
   TimePrecision,
 } from '../types/migraine.types';
 
 import {
-  clinicalSymptomCategoryLabels,
   getSymptomDefinition,
-  getSymptomsForPhase,
 } from '../data/clinicalSymptomCatalog';
 
 import {
@@ -36,6 +32,14 @@ import {
   PhaseEndSelector,
   type PhaseEndSelection,
 } from './common/PhaseEndSelector';
+
+import {
+  PremonitoryInitialFlow,
+} from './premonitory/PremonitoryInitialFlow';
+
+import {
+  PremonitoryUpdateFlow,
+} from './premonitory/PremonitoryUpdateFlow';
 
 
 interface PremonitorySelectorProps {
@@ -54,44 +58,6 @@ type EndedPremonitoryOutcome =
     | 'endedWithoutCrisis'
     | 'evolvedToAura'
   >;
-
-
-const CATEGORY_ORDER:
-  ClinicalSymptomCategory[] = [
-  'cognitive',
-  'language',
-  'emotional',
-  'energy',
-  'sleep',
-  'appetite',
-  'digestive',
-  'musculoskeletal',
-  'sensory',
-  'visual',
-  'vestibular',
-  'motor',
-  'autonomic',
-  'pain',
-  'general',
-  'other',
-];
-
-type PremonitoryCategory =
-  (typeof CATEGORY_ORDER)[number];
-
-const FREQUENT_PREMONITORY_SYMPTOMS =
-  new Set<
-    ExtendedPremonitorySymptom
-  >([
-    'yawning',
-    'neckStiffness',
-    'fatigue',
-    'irritability',
-    'concentrationDifficulty',
-    'lightSensitivity',
-    'foodCraving',
-    'sleepiness',
-  ]);
 
 
 const LEGACY_PREMONITORY_SYMPTOMS:
@@ -163,20 +129,6 @@ const legacyPremonitorySymptomSet =
   new Set<string>(
     LEGACY_PREMONITORY_SYMPTOMS,
   );
-
-
-const premonitoryCatalog:
-  SymptomDefinition<
-    ExtendedPremonitorySymptom
-  >[] = getSymptomsForPhase(
-  'premonitory',
-).map(definition => ({
-  ...definition,
-
-  value:
-    definition.value as
-      ExtendedPremonitorySymptom,
-}));
 
 
 const generateId = (): string => {
@@ -426,21 +378,6 @@ const formatDateTime = (
 };
 
 
-const normalizeText = (
-  value: string,
-): string => {
-  return value
-    .normalize('NFD')
-    .replace(
-      /[\u0300-\u036f]/g,
-      '',
-    )
-    .toLocaleLowerCase(
-      'es-AR',
-    );
-};
-
-
 const isLegacyPremonitorySymptom = (
   symptom:
     ExtendedPremonitorySymptom,
@@ -570,18 +507,6 @@ export function PremonitorySelector({
   >([]);
 
   const [
-    symptomSearch,
-    setSymptomSearch,
-  ] = useState('');
-
-  const [
-    activeCategory,
-    setActiveCategory,
-  ] = useState<
-    PremonitoryCategory | null
-  >(null);
-
-  const [
     draftIntensity,
     setDraftIntensity,
   ] = useState('');
@@ -602,6 +527,11 @@ export function PremonitorySelector({
     feedback,
     setFeedback,
   ] = useState('');
+
+  const [
+    showEvolution,
+    setShowEvolution,
+  ] = useState(false);
 
   const [
     showResolutionOptions,
@@ -741,65 +671,6 @@ export function PremonitorySelector({
   }, [
     isTrackingContext,
   ]);
-
-
-  const normalizedSymptomSearch =
-    normalizeText(
-      symptomSearch.trim(),
-    );
-
-
-  const visibleDefinitions =
-    useMemo(() => {
-      const definitions =
-        premonitoryCatalog.filter(
-        definition => {
-          if (
-            activeCategory &&
-            !normalizedSymptomSearch
-          ) {
-            return (
-              definition.category ===
-              activeCategory
-            );
-          }
-
-          if (
-            !normalizedSymptomSearch
-          ) {
-            return FREQUENT_PREMONITORY_SYMPTOMS.has(
-              definition.value,
-            );
-          }
-
-          const searchableText =
-            normalizeText(
-              [
-                definition.label,
-                definition.value,
-                definition.description ??
-                  '',
-                ...(
-                  definition.searchTerms ??
-                  []
-                ),
-              ].join(' '),
-            );
-
-          return searchableText.includes(
-            normalizedSymptomSearch,
-          );
-        },
-      );
-
-      return activeCategory ||
-        normalizedSymptomSearch
-        ? definitions
-        : definitions.slice(0, 8);
-    }, [
-      activeCategory,
-      normalizedSymptomSearch,
-    ]);
 
 
   const visibleUpdates =
@@ -1206,29 +1077,6 @@ export function PremonitorySelector({
     <section
       className={`${styles.symptomSelector} ${premonitoryStyles.root}`}
     >
-      <header
-        className={
-          premonitoryStyles.premonitoryIntro
-        }
-      >
-        <h3>
-          {isFirstUpdate
-            ? '¿Qué estás sintiendo ahora?'
-            : '¿Qué cambió desde la última vez?'}
-        </h3>
-
-        <p
-          className={
-            premonitoryStyles.phaseLead
-          }
-        >
-          {isFirstUpdate
-            ? 'Elegí todas las señales que reconozcas. Podrás actualizarlas después.'
-            : 'Marcá cómo están tus señales ahora. Guardaremos una nueva actualización sin borrar las anteriores.'}
-        </p>
-      </header>
-
-
       {context === 'crisis' &&
         !isEnded && (
           <p
@@ -1279,325 +1127,85 @@ export function PremonitorySelector({
 
       {!isEnded && (
         <>
-          <label
-            className={
-              premonitoryStyles.searchField
-            }
-          >
-            <span>
-              Buscar una señal
-            </span>
-
-            <input
-              type="search"
-              value={
-                symptomSearch
-              }
-              onChange={event => {
-                setSymptomSearch(
-                  event.target
-                    .value,
-                );
-
-                if (
-                  event.target.value
-                ) {
-                  setActiveCategory(
-                    null,
-                  );
-                }
-              }}
-              placeholder="Ej.: rigidez, mareo, hambre…"
-            />
-          </label>
-
-
-          {draftSymptoms.length > 0 && (
-            <section
-              className={
-                `${styles.compactSelected} ${premonitoryStyles.selectedArea}`
-              }
-              aria-labelledby="selected-premonitory-symptoms"
-            >
-              <h4 id="selected-premonitory-symptoms">
-                Seleccionadas
-              </h4>
-
-              <div
-                className={
-                  `${styles.compactChips} ${premonitoryStyles.selectedChips}`
-                }
-              >
-                {draftSymptoms.map(
-                  symptom => (
-                    <button
-                      key={symptom}
-                      type="button"
-                      onClick={() =>
-                        toggleDraftSymptom(
-                          symptom,
-                        )
-                      }
-                      aria-label={`Quitar ${getSymptomLabel(symptom)}`}
-                    >
-                      {getSymptomLabel(
-                        symptom,
-                      )}
-
-                      <span aria-hidden="true">
-                        ×
-                      </span>
-                    </button>
-                  ),
-                )}
-              </div>
-            </section>
-          )}
-
-
-          {!normalizedSymptomSearch && (
-            <div
-              className={
-                `${styles.compactCategories} ${premonitoryStyles.categoryRail}`
-              }
-              aria-label="Categorías de señales premonitorias"
-            >
-              <button
-                type="button"
-                aria-pressed={
-                  activeCategory ===
-                  null
-                }
-                onClick={() =>
-                  setActiveCategory(
-                    null,
-                  )
-                }
-              >
-                Frecuentes
-              </button>
-
-              {CATEGORY_ORDER.map(
-                category => (
-                  <button
-                    key={category}
-                    type="button"
-                    aria-pressed={
-                      activeCategory ===
-                      category
-                    }
-                    onClick={() =>
-                      setActiveCategory(
-                        category,
-                      )
-                    }
-                  >
-                    {
-                      clinicalSymptomCategoryLabels[
-                        category
-                      ]
-                    }
-                  </button>
-                ),
-              )}
-            </div>
-          )}
-
-
-          <section
-            className={
-              `${styles.compactResults} ${premonitoryStyles.resultsArea}`
-            }
-          >
-            <h4>
-              {normalizedSymptomSearch
-                ? 'Resultados'
-                : activeCategory
-                  ? clinicalSymptomCategoryLabels[
-                      activeCategory
-                    ]
-                  : 'Más frecuentes'}
-            </h4>
-
-            {visibleDefinitions.length ===
-            0 ? (
-              <p
-                className={
-                  styles.helperText
-                }
-              >
-                No encontramos señales
-                con ese nombre.
-              </p>
-            ) : (
-              <div
-                className={
-                  styles.compactChoiceGrid
-                }
-              >
-                {visibleDefinitions.map(
-                  definition => (
-                    <button
-                      key={
-                        definition.value
-                      }
-                      type="button"
-                      className={
-                        `${styles.compactChoice} ${premonitoryStyles.choiceButton}`
-                      }
-                      aria-pressed={
-                        draftSymptoms.includes(
-                          definition.value,
-                        )
-                      }
-                      onClick={() =>
-                        toggleDraftSymptom(
-                          definition.value,
-                        )
-                      }
-                    >
-                      {definition.label}
-
-                      {definition.uncommon
-                        ? ' · Menos frecuente'
-                        : ''}
-                    </button>
-                  ),
-                )}
-              </div>
-            )}
-          </section>
-
-
-          <div
-            className={
-              premonitoryStyles.updateDetailsIntro
-            }
-          >
-            <h4>
-              Completá la actualización
-            </h4>
-
-            <p>
-              La fecha es necesaria. La
-              intensidad y la nota son
-              opcionales.
-            </p>
-          </div>
-
-
-          <label>
-            {isFirstUpdate
-              ? '¿Cuándo aparecieron estas señales?'
-              : '¿Cuándo ocurrió esta actualización?'}
-
-            <input
-              type="datetime-local"
-              value={
-                updateDateTime
-              }
-              max={
+          {isFirstUpdate ? (
+            <PremonitoryInitialFlow
+              dateTime={updateDateTime}
+              maxDateTime={
                 getCurrentLocalDateTimeValue()
               }
-              onChange={event => {
-                setUpdateDateTime(
-                  event.target
-                    .value,
-                );
-
-                setFeedback('');
-              }}
-            />
-          </label>
-
-
-          <label>
-            Intensidad general de las
-            señales
-
-            <select
-              value={
+              selectedSymptoms={
+                draftSymptoms
+              }
+              intensity={
                 draftIntensity
               }
-              onChange={event => {
-                setDraftIntensity(
-                  event.target
-                    .value,
-                );
-
+              notes={draftNotes}
+              onDateTimeChange={value => {
+                setUpdateDateTime(value);
                 setFeedback('');
               }}
-            >
-              <option value="">
-                Sin indicar
-              </option>
-
-              {Array.from(
-                {
-                  length: 11,
-                },
-                (_, index) => (
-                  <option
-                    key={index}
-                    value={index}
-                  >
-                    {index}/10
-                  </option>
-                ),
-              )}
-            </select>
-          </label>
-
-
-          <label>
-            Nota de esta actualización
-
-            <textarea
-              value={
-                draftNotes
+              onToggleSymptom={
+                toggleDraftSymptom
               }
-              onChange={event => {
-                setDraftNotes(
-                  event.target
-                    .value,
-                );
-
+              onIntensityChange={value => {
+                setDraftIntensity(value);
                 setFeedback('');
               }}
-              placeholder="Ejemplo: ayer tenía rigidez cervical y hoy aparecieron bostezos"
-              rows={3}
+              onNotesChange={value => {
+                setDraftNotes(value);
+                setFeedback('');
+              }}
+              onSave={
+                handleRegisterUpdate
+              }
             />
-          </label>
-
-
-          <button
-            type="button"
-            className={
-              premonitoryStyles.primaryPhaseAction
-            }
-            onClick={
-              handleRegisterUpdate
-            }
-          >
-            {isFirstUpdate
-              ? 'Iniciar señales'
-              : 'Registrar actualización'}
-          </button>
-
-
-          {isTrackingContext &&
-            premonitory.present &&
-            !showResolutionOptions && (
-              <button
-                type="button"
-                onClick={
-                  handleOpenResolution
-                }
-              >
-                Indicar qué pasó con
-                estas señales
-              </button>
-            )}
+          ) : !showResolutionOptions ? (
+            <PremonitoryUpdateFlow
+              currentSymptoms={
+                currentClinicalSymptoms
+              }
+              selectedSymptoms={
+                draftSymptoms
+              }
+              dateTime={
+                updateDateTime
+              }
+              maxDateTime={
+                getCurrentLocalDateTimeValue()
+              }
+              intensity={
+                draftIntensity
+              }
+              notes={draftNotes}
+              onToggleSymptom={
+                toggleDraftSymptom
+              }
+              onResetSymptoms={() => {
+                setDraftSymptoms(
+                  currentClinicalSymptoms,
+                );
+                setFeedback('');
+              }}
+              onDateTimeChange={value => {
+                setUpdateDateTime(value);
+                setFeedback('');
+              }}
+              onIntensityChange={value => {
+                setDraftIntensity(value);
+                setFeedback('');
+              }}
+              onNotesChange={value => {
+                setDraftNotes(value);
+                setFeedback('');
+              }}
+              onSave={
+                handleRegisterUpdate
+              }
+              onOpenResolution={
+                handleOpenResolution
+              }
+            />
+          ) : null}
         </>
       )}
 
@@ -1746,12 +1354,51 @@ export function PremonitorySelector({
         )}
 
 
-      {visibleUpdates.length >
-        0 && (
-        <section>
-          <h4>
-            Evolución de las señales
-          </h4>
+      {visibleUpdates.length > 0 && (
+        <section
+          className={
+            premonitoryStyles.evolutionSection
+          }
+        >
+          <button
+            type="button"
+            className={
+              premonitoryStyles.evolutionToggle
+            }
+            aria-expanded={
+              showEvolution
+            }
+            onClick={() =>
+              setShowEvolution(
+                current =>
+                  !current,
+              )
+            }
+          >
+            <span>
+              {showEvolution
+                ? 'Ocultar evolución'
+                : 'Ver evolución'}
+            </span>
+
+            <span
+              aria-hidden="true"
+            >
+              {showEvolution
+                ? '−'
+                : '+'}
+            </span>
+          </button>
+
+          {showEvolution && (
+            <div
+              className={
+                premonitoryStyles.evolutionContent
+              }
+            >
+              <h4>
+                Evolución de las señales
+              </h4>
 
           <ul>
             {visibleUpdates.map(
@@ -1830,6 +1477,8 @@ export function PremonitorySelector({
               },
             )}
           </ul>
+            </div>
+          )}
         </section>
       )}
 
