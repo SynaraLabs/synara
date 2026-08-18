@@ -1227,7 +1227,11 @@ export function PremonitorySelector({
         !isEnded &&
         showResolutionOptions &&
         !endingOutcome && (
-          <section>
+          <section
+            className={
+              premonitoryStyles.resolutionOptions
+            }
+          >
             <h4>
               ¿Qué pasó con estas
               señales?
@@ -1235,6 +1239,9 @@ export function PremonitorySelector({
 
             <button
               type="button"
+              className={
+                premonitoryStyles.resolutionAction
+              }
               onClick={
                 handleContinueSignals
               }
@@ -1244,6 +1251,9 @@ export function PremonitorySelector({
 
             <button
               type="button"
+              className={
+                premonitoryStyles.resolutionAction
+              }
               onClick={() =>
                 setEndingOutcome(
                   'endedWithoutCrisis',
@@ -1256,6 +1266,9 @@ export function PremonitorySelector({
 
             <button
               type="button"
+              className={
+                premonitoryStyles.resolutionAction
+              }
               onClick={() =>
                 setEndingOutcome(
                   'evolvedToAura',
@@ -1267,6 +1280,9 @@ export function PremonitorySelector({
 
             <button
               type="button"
+              className={
+                premonitoryStyles.resolutionAction
+              }
               onClick={
                 handleContinueWithAura
               }
@@ -1276,6 +1292,9 @@ export function PremonitorySelector({
 
             <button
               type="button"
+              className={
+                premonitoryStyles.resolutionAction
+              }
               onClick={() =>
                 setShowUncertainConfirmation(
                   true,
@@ -1288,6 +1307,9 @@ export function PremonitorySelector({
 
             <button
               type="button"
+              className={
+                premonitoryStyles.resolutionCancel
+              }
               onClick={
                 handleCancelResolution
               }
