@@ -398,13 +398,6 @@ export function RecoveryStage({
   return (
     <section className={styles.root}>
       <header className={styles.intro}>
-        <span
-          className={styles.introIcon}
-          aria-hidden="true"
-        >
-          ◇
-        </span>
-
         <div className={styles.introContent}>
           <p className={styles.eyebrow}>
             Después de la crisis

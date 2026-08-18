@@ -17,15 +17,6 @@ import type {
 
 import { useMigraineStore } from '../store/migraine.store';
 
-import {
-  FREQUENT_POSTDROME_SYMPTOMS,
-  POSTDROME_CATEGORY_LABELS,
-  POSTDROME_CATEGORY_ORDER,
-  POSTDROME_SYMPTOM_CATALOG,
-  normalizePostdromeSearch,
-  type PostdromeSymptomDefinition,
-} from '../data/postdromeSymptomCatalog';
-
 import { postdromeSymptomLabels } from '../../history/utils/migraineLabels';
 
 import {
@@ -33,14 +24,15 @@ import {
   type PhaseEndSelection,
 } from './common/PhaseEndSelector';
 
+import {
+  PostdromeInitialFlow,
+} from './postdrome/PostdromeInitialFlow';
 
-const frequentSymptoms =
-  new Set<PostdromeSymptom>(
-    FREQUENT_POSTDROME_SYMPTOMS,
-  );
+import {
+  PostdromeUpdateFlow,
+} from './postdrome/PostdromeUpdateFlow';
 
-type PostdromeCategory =
-  (typeof POSTDROME_CATEGORY_ORDER)[number];
+import evolutionStyles from './postdrome/PostdromeEvolution.module.css';
 
 
 const recoveryLevelLabels:
@@ -295,18 +287,6 @@ export function PostdromeSelector({
   onComplete,
 }: PostdromeSelectorProps) {
   const [
-    searchQuery,
-    setSearchQuery,
-  ] = useState('');
-
-  const [
-    activeCategory,
-    setActiveCategory,
-  ] = useState<
-    PostdromeCategory | null
-  >(null);
-
-  const [
     showEndSelector,
     setShowEndSelector,
   ] = useState(false);
@@ -341,6 +321,11 @@ export function PostdromeSelector({
     feedback,
     setFeedback,
   ] = useState('');
+
+  const [
+    showEvolution,
+    setShowEvolution,
+  ] = useState(false);
 
 
   const postdrome =
@@ -415,6 +400,11 @@ export function PostdromeSelector({
       'ended' ||
     Boolean(postdromeEnd);
 
+  const isFirstUpdate =
+    updates.length === 0 &&
+    postdrome.present &&
+    !isEnded;
+
 
   useEffect(() => {
     setDraftSymptoms(
@@ -429,139 +419,6 @@ export function PostdromeSelector({
     currentSymptoms,
     postdrome.recoveryLevel,
   ]);
-
-
-  const allDefinitions =
-    useMemo(() => {
-      const knownSymptoms =
-        new Set<PostdromeSymptom>(
-          POSTDROME_SYMPTOM_CATALOG.map(
-            definition =>
-              definition.value,
-          ),
-        );
-
-      const legacySymptoms =
-        Array.from(
-          new Set<PostdromeSymptom>([
-            ...currentSymptoms,
-
-            ...draftSymptoms,
-
-            ...updates.flatMap(
-              update =>
-                update.data
-                  .symptoms ?? [],
-            ),
-          ]),
-        ).filter(
-          symptom =>
-            !knownSymptoms.has(
-              symptom,
-            ),
-        );
-
-      const legacyDefinitions:
-        PostdromeSymptomDefinition[] =
-        legacySymptoms.map(
-          symptom => ({
-            value: symptom,
-
-            category: 'other',
-
-            searchTerms: [],
-          }),
-        );
-
-      return [
-        ...POSTDROME_SYMPTOM_CATALOG,
-        ...legacyDefinitions,
-      ];
-    }, [
-      currentSymptoms,
-      draftSymptoms,
-      updates,
-    ]);
-
-
-  const normalizedSearchQuery =
-    normalizePostdromeSearch(
-      searchQuery,
-    );
-
-
-  const visibleDefinitions =
-    useMemo(() => {
-      const definitions =
-        allDefinitions.filter(
-        definition => {
-          if (
-            normalizedSearchQuery.length >
-            0
-          ) {
-            const searchableText =
-              normalizePostdromeSearch(
-                [
-                  getSymptomLabel(
-                    definition.value,
-                  ),
-
-                  definition.value,
-
-                  ...(
-                    definition
-                      .searchTerms ?? []
-                  ),
-                ].join(' '),
-              );
-
-            return searchableText.includes(
-              normalizedSearchQuery,
-            );
-          }
-
-          if (activeCategory) {
-            return (
-              definition.category ===
-              activeCategory
-            );
-          }
-
-          return frequentSymptoms.has(
-            definition.value,
-          );
-        },
-      );
-
-      return activeCategory ||
-        normalizedSearchQuery
-        ? definitions
-        : definitions.slice(0, 8);
-    }, [
-      activeCategory,
-      allDefinitions,
-      normalizedSearchQuery,
-    ]);
-
-
-  const visibleCategories =
-    useMemo(() => {
-      return POSTDROME_CATEGORY_ORDER
-        .map(category => ({
-          category,
-
-          symptoms:
-            visibleDefinitions.filter(
-              definition =>
-                definition.category ===
-                category,
-            ),
-        }))
-        .filter(
-          group =>
-            group.symptoms.length > 0,
-        );
-    }, [visibleDefinitions]);
 
 
   const visibleUpdates =
@@ -989,17 +846,19 @@ export function PostdromeSelector({
 
   return (
     <section className={styles.root}>
-      <div className={styles.introduction}>
-        <h3>
-          Después de la crisis
-        </h3>
+      {isEnded && (
+        <div className={styles.introduction}>
+          <h3>
+            Después de la crisis
+          </h3>
 
-        <p>
-          El postdromo comenzó cuando
-          terminó la crisis. Puede cambiar
-          durante varias horas o días.
-        </p>
-      </div>
+          <p>
+            El postdromo comenzó cuando
+            terminó la crisis. Puede cambiar
+            durante varias horas o días.
+          </p>
+        </div>
+      )}
 
       <p className={styles.startInfo}>
         Inicio del postdromo:{' '}
@@ -1016,311 +875,109 @@ export function PostdromeSelector({
 
       {!isEnded && (
         <>
-          <div className={styles.updateIntro}>
-            <h4>
-              ¿Cómo te sentís en esta
-              actualización?
-            </h4>
-
-            <p>
-              Seleccioná tu estado actual.
-              Podés registrar cambios
-              diferentes durante todo el
-              postdromo.
-            </p>
-          </div>
-
-
-          {draftSymptoms.length > 0 && (
-            <section
-              className={styles.selectedArea}
-              aria-labelledby="selected-postdrome-symptoms"
-            >
-              <h4 id="selected-postdrome-symptoms">
-                Seleccionados
-              </h4>
-
-              <div
-                className={styles.selectedChips}
-              >
-                {draftSymptoms.map(
-                  symptom => (
-                    <button
-                      key={symptom}
-                      type="button"
-                      onClick={() =>
-                        toggleDraftSymptom(
-                          symptom,
-                        )
-                      }
-                      aria-label={`Quitar ${getSymptomLabel(symptom)}`}
-                    >
-                      {getSymptomLabel(
-                        symptom,
-                      )}
-
-                      <span aria-hidden="true">
-                        ×
-                      </span>
-                    </button>
-                  ),
-                )}
-              </div>
-            </section>
-          )}
-
-
-          <label className={styles.searchField}>
-            <span>
-              Buscar síntomas del
-              postdromo
-            </span>
-
-            <input
-              type="search"
-              value={
-                searchQuery
+          {isFirstUpdate ? (
+            <PostdromeInitialFlow
+              selectedSymptoms={
+                draftSymptoms
               }
-              placeholder="Ej.: agotamiento, niebla mental o sensibilidad a la luz"
-              onChange={event => {
-                setSearchQuery(
-                  event.target.value,
+              recoveryLevel={
+                draftRecoveryLevel
+              }
+              dateTime={
+                updateDateTime
+              }
+              minDateTime={
+                toLocalDateTimeValue(
+                  postdromeStart,
+                )
+              }
+              maxDateTime={
+                getCurrentLocalDateTimeValue()
+              }
+              notes={draftNotes}
+              onToggleSymptom={
+                toggleDraftSymptom
+              }
+              onRecoveryLevelChange={value => {
+                setDraftRecoveryLevel(value);
+                setFeedback('');
+              }}
+              onDateTimeChange={value => {
+                setUpdateDateTime(value);
+                setFeedback('');
+              }}
+              onNotesChange={value => {
+                setDraftNotes(value);
+                setFeedback('');
+              }}
+              onSave={
+                handleRegisterUpdate
+              }
+            />
+          ) : !showEndSelector ? (
+            <PostdromeUpdateFlow
+              currentSymptoms={
+                currentSymptoms
+              }
+              selectedSymptoms={
+                draftSymptoms
+              }
+              currentRecoveryLevel={
+                postdrome.recoveryLevel ??
+                ''
+              }
+              recoveryLevel={
+                draftRecoveryLevel
+              }
+              dateTime={
+                updateDateTime
+              }
+              minDateTime={
+                toLocalDateTimeValue(
+                  postdromeStart,
+                )
+              }
+              maxDateTime={
+                getCurrentLocalDateTimeValue()
+              }
+              notes={draftNotes}
+              onToggleSymptom={
+                toggleDraftSymptom
+              }
+              onResetDraft={() => {
+                setDraftSymptoms(
+                  currentSymptoms,
                 );
-
-                if (
-                  event.target.value
-                ) {
-                  setActiveCategory(
-                    null,
-                  );
-                }
-
+                setDraftRecoveryLevel(
+                  postdrome.recoveryLevel ??
+                  '',
+                );
+                setDraftNotes('');
+                setFeedback('');
+              }}
+              onRecoveryLevelChange={value => {
+                setDraftRecoveryLevel(value);
+                setFeedback('');
+              }}
+              onDateTimeChange={value => {
+                setUpdateDateTime(value);
+                setFeedback('');
+              }}
+              onNotesChange={value => {
+                setDraftNotes(value);
+                setFeedback('');
+              }}
+              onSave={
+                handleRegisterUpdate
+              }
+              onOpenEnd={() => {
+                setShowEndSelector(
+                  true,
+                );
                 setFeedback('');
               }}
             />
-          </label>
-
-
-          {!normalizedSearchQuery && (
-            <div
-              className={styles.categoryRail}
-              aria-label="Categorías de síntomas del postdromo"
-            >
-              <button
-                type="button"
-                aria-pressed={
-                  activeCategory ===
-                  null
-                }
-                onClick={() =>
-                  setActiveCategory(
-                    null,
-                  )
-                }
-              >
-                Frecuentes
-              </button>
-
-              {POSTDROME_CATEGORY_ORDER.map(
-                category => (
-                  <button
-                    key={category}
-                    type="button"
-                    aria-pressed={
-                      activeCategory ===
-                      category
-                    }
-                    onClick={() =>
-                      setActiveCategory(
-                        category,
-                      )
-                    }
-                  >
-                    {
-                      POSTDROME_CATEGORY_LABELS[
-                        category
-                      ]
-                    }
-                  </button>
-                ),
-              )}
-            </div>
-          )}
-
-
-          <section
-            className={styles.resultsArea}
-          >
-            <h4>
-              {normalizedSearchQuery
-                ? 'Resultados'
-                : activeCategory
-                  ? POSTDROME_CATEGORY_LABELS[
-                      activeCategory
-                    ]
-                  : 'Más frecuentes'}
-            </h4>
-
-
-            {visibleCategories.map(
-              group => (
-                <div
-                key={
-                  group.category
-                }
-              >
-                <div
-                  className={
-                    styles.choiceGrid
-                  }
-                  role="group"
-                  aria-label={
-                    POSTDROME_CATEGORY_LABELS[
-                      group.category
-                    ]
-                  }
-                >
-                  {group.symptoms.map(
-                    definition => (
-                      <button
-                        key={
-                          definition.value
-                        }
-                        type="button"
-                        className={
-                          styles.choice
-                        }
-                        aria-pressed={
-                          draftSymptoms.includes(
-                            definition.value,
-                          )
-                        }
-                        onClick={() =>
-                          toggleDraftSymptom(
-                            definition.value,
-                          )
-                        }
-                      >
-                        {getSymptomLabel(
-                            definition.value,
-                        )}
-                      </button>
-                    ),
-                  )}
-                </div>
-                </div>
-              ),
-            )}
-
-
-            {visibleDefinitions.length ===
-              0 && (
-              <p
-                className={
-                  styles.helperText
-                }
-              >
-                No encontramos síntomas
-                con esa búsqueda.
-              </p>
-            )}
-          </section>
-
-
-          <section className={styles.formFields}>
-            <label>
-              ¿Cuándo ocurrió esta
-              actualización?
-
-              <input
-                type="datetime-local"
-                value={
-                  updateDateTime
-                }
-                min={
-                  toLocalDateTimeValue(
-                    postdromeStart,
-                  )
-                }
-                max={
-                  getCurrentLocalDateTimeValue()
-                }
-                onChange={event => {
-                  setUpdateDateTime(
-                    event.target.value,
-                  );
-
-                  setFeedback('');
-                }}
-              />
-            </label>
-
-            <label>
-              Nivel de recuperación
-
-              <select
-                value={
-                  draftRecoveryLevel
-                }
-                onChange={event => {
-                  setDraftRecoveryLevel(
-                    event.target.value as
-                      | RecoveryLevel
-                      | '',
-                  );
-
-                  setFeedback('');
-                }}
-              >
-                <option value="">
-                  Sin indicar
-                </option>
-
-                <option value="minimal">
-                  Recuperación mínima
-                </option>
-
-                <option value="partial">
-                  Recuperación parcial
-                </option>
-
-                <option value="mostlyRecovered">
-                  Casi completamente
-                  recuperada
-                </option>
-              </select>
-            </label>
-
-            <label className={styles.notesField}>
-              Nota de esta actualización
-
-              <textarea
-                value={
-                  draftNotes
-                }
-                onChange={event => {
-                  setDraftNotes(
-                    event.target.value,
-                  );
-
-                  setFeedback('');
-                }}
-                placeholder="Ejemplo: dormí dos horas y la niebla mental disminuyó"
-                rows={3}
-              />
-            </label>
-          </section>
-
-
-          <button
-            type="button"
-            className={styles.registerButton}
-            onClick={
-              handleRegisterUpdate
-            }
-          >
-            Registrar actualización
-          </button>
+          ) : null}
         </>
       )}
 
@@ -1335,14 +992,51 @@ export function PostdromeSelector({
       )}
 
 
-      {visibleUpdates.length >
-        0 && (
-        <section className={styles.evolution}>
-          <h4>
-            Evolución del postdromo
-          </h4>
+      {visibleUpdates.length > 0 && (
+        <section
+          className={
+            evolutionStyles.evolutionSection
+          }
+        >
+          <button
+            type="button"
+            className={
+              evolutionStyles.evolutionToggle
+            }
+            aria-expanded={
+              showEvolution
+            }
+            onClick={() =>
+              setShowEvolution(
+                current =>
+                  !current,
+              )
+            }
+          >
+            <span>
+              {showEvolution
+                ? 'Ocultar evolución'
+                : 'Ver evolución'}
+            </span>
 
-          <ul className={styles.updateList}>
+            <span aria-hidden="true">
+              {showEvolution
+                ? '−'
+                : '+'}
+            </span>
+          </button>
+
+          {showEvolution && (
+            <div
+              className={
+                evolutionStyles.evolutionContent
+              }
+            >
+              <h4>
+                Evolución del postdromo
+              </h4>
+
+          <ul className={evolutionStyles.updateList}>
             {visibleUpdates.map(
               update => {
                 const updateTime =
@@ -1360,7 +1054,7 @@ export function PostdromeSelector({
 
                 return (
                   <li
-                    className={styles.updateCard}
+                    className={evolutionStyles.updateCard}
                     key={
                       update.id
                     }
@@ -1430,11 +1124,14 @@ export function PostdromeSelector({
               },
             )}
           </ul>
+            </div>
+          )}
         </section>
       )}
 
 
       {!isEnded &&
+        isFirstUpdate &&
         !showEndSelector && (
           <button
             type="button"

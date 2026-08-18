@@ -8,7 +8,7 @@ import type {
   TimePrecision,
 } from '../../types/migraine.types';
 
-import styles from '../../migraine.module.css';
+import styles from './PhaseEndSelector.module.css';
 
 export interface PhaseEndSelection {
   endTime: string;
@@ -489,23 +489,49 @@ export function PhaseEndSelector({
 
   return (
     <section
-      className={styles.dateSelector}
+      className={styles.root}
+      aria-labelledby="phase-end-title"
     >
-      <h3>{title}</h3>
+      <div className={styles.header}>
+        <p className={styles.eyebrow}>
+          Finalización de fase
+        </p>
 
-      <div>
+        <h3 id="phase-end-title">
+          {title}
+        </h3>
+
+        <p>
+          Elegí la opción que mejor
+          describa cuándo terminó.
+        </p>
+      </div>
+
+      <div
+        className={styles.optionGrid}
+        role="group"
+        aria-label="Momento de finalización"
+      >
         <button
           type="button"
+          className={styles.optionButton}
           aria-pressed={
             option === 'now'
           }
           onClick={handleNow}
         >
-          Terminó ahora
+          <strong>
+            Terminó ahora
+          </strong>
+
+          <span>
+            Usar este momento.
+          </span>
         </button>
 
         <button
           type="button"
+          className={styles.optionButton}
           aria-pressed={
             option === 'custom'
           }
@@ -513,11 +539,18 @@ export function PhaseEndSelector({
             setOption('custom')
           }
         >
-          Terminó en otro momento
+          <strong>
+            Terminó en otro momento
+          </strong>
+
+          <span>
+            Elegir fecha y hora.
+          </span>
         </button>
 
         <button
           type="button"
+          className={styles.optionButton}
           aria-pressed={
             option === 'dateOnly'
           }
@@ -525,20 +558,39 @@ export function PhaseEndSelector({
             setOption('dateOnly')
           }
         >
-          No recuerdo la hora exacta
+          <strong>
+            No recuerdo la hora exacta
+          </strong>
+
+          <span>
+            Registrar solo la fecha.
+          </span>
         </button>
 
         <button
           type="button"
+          className={
+            styles.continueButton
+          }
           onClick={handleContinue}
         >
-          Todavía continúa
+          <strong>
+            Todavía continúa
+          </strong>
+
+          <span>
+            Mantener la fase abierta.
+          </span>
         </button>
       </div>
 
       {option === 'custom' && (
-        <label>
-          Fecha y hora de finalización
+        <label
+          className={styles.field}
+        >
+          <span>
+            Fecha y hora de finalización
+          </span>
 
           <input
             type="datetime-local"
@@ -555,8 +607,12 @@ export function PhaseEndSelector({
 
       {option ===
         'dateOnly' && (
-        <label>
-          Fecha de finalización
+        <label
+          className={styles.field}
+        >
+          <span>
+            Fecha de finalización
+          </span>
 
           <input
             type="date"
@@ -572,35 +628,57 @@ export function PhaseEndSelector({
       )}
 
       {selection && (
-        <div>
-          <h4>
+        <section
+          className={
+            styles.review
+          }
+          aria-labelledby="phase-end-review-title"
+        >
+          <h4
+            id="phase-end-review-title"
+          >
             Revisá antes de confirmar
           </h4>
 
-          <p>
-            <b>Inicio:</b>{' '}
-            {formatDateTime(
-              startTime,
-            )}
-          </p>
+          <div
+            className={
+              styles.reviewGrid
+            }
+          >
+            <div>
+              <span>Inicio</span>
 
-          <p>
-            <b>Final:</b>{' '}
-            {formatDateTime(
-              selection.endTime,
-              selection.precision,
-            )}
-          </p>
+              <strong>
+                {formatDateTime(
+                  startTime,
+                )}
+              </strong>
+            </div>
 
-          <p>
-            <b>Duración:</b>{' '}
-            {formatDuration(
-              startTime,
-              selection.endTime,
-              selection.precision ===
-                'dateOnly',
-            )}
-          </p>
+            <div>
+              <span>Final</span>
+
+              <strong>
+                {formatDateTime(
+                  selection.endTime,
+                  selection.precision,
+                )}
+              </strong>
+            </div>
+
+            <div>
+              <span>Duración</span>
+
+              <strong>
+                {formatDuration(
+                  startTime,
+                  selection.endTime,
+                  selection.precision ===
+                    'dateOnly',
+                )}
+              </strong>
+            </div>
+          </div>
 
           {selection.precision ===
             'dateOnly' && (
@@ -616,24 +694,37 @@ export function PhaseEndSelector({
           )}
 
           {endIsBeforeStart && (
-            <p role="alert">
+            <p
+              className={
+                styles.alert
+              }
+              role="alert"
+            >
               La finalización no puede
               ser anterior al inicio.
             </p>
           )}
 
           {endIsFuture && (
-            <p role="alert">
+            <p
+              className={
+                styles.alert
+              }
+              role="alert"
+            >
               La finalización no puede
               estar en el futuro.
             </p>
           )}
-        </div>
+        </section>
       )}
 
-      <div>
+      <div className={styles.actions}>
         <button
           type="button"
+          className={
+            styles.primaryAction
+          }
           disabled={!canConfirm}
           onClick={handleConfirm}
         >
@@ -642,6 +733,9 @@ export function PhaseEndSelector({
 
         <button
           type="button"
+          className={
+            styles.cancelButton
+          }
           onClick={reset}
         >
           Cancelar

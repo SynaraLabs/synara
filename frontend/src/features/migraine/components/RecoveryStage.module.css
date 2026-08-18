@@ -1,10 +1,11 @@
 .root {
-  --recovery-ink: #21372f;
-  --recovery-accent: #7eaa67;
-  --recovery-accent-strong: #527943;
-  --recovery-soft: #f1f6e9;
-  --recovery-border: #cad8bd;
-  --recovery-muted: #66766d;
+  --recovery-ink: #2f3f35;
+  --recovery-accent: #93ad78;
+  --recovery-accent-strong: #667f5b;
+  --recovery-soft: #f3f6ed;
+  --recovery-soft-strong: #e6ecd9;
+  --recovery-border: #ccd7bd;
+  --recovery-muted: #6b766c;
 
   display: grid;
   gap: var(--space-6);
@@ -14,10 +15,8 @@
   position: relative;
 
   display: grid;
-  grid-template-columns:
-    auto minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-5);
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
 
   overflow: hidden;
 
@@ -34,15 +33,9 @@
     var(--radius-large);
 
   background:
-    linear-gradient(
-      135deg,
-      #f8faef,
-      var(--recovery-soft)
-    );
+    var(--recovery-soft);
 
-  box-shadow:
-    0 12px 30px
-      rgba(59, 91, 67, 0.09);
+  box-shadow: none;
 }
 
 .intro::before {
@@ -55,28 +48,6 @@
 
   background:
     var(--recovery-accent);
-}
-
-.introIcon {
-  width: 58px;
-  height: 58px;
-
-  display: grid;
-  place-items: center;
-
-  flex-shrink: 0;
-
-  border: 1px solid
-    var(--recovery-border);
-  border-radius: 50%;
-
-  color:
-    var(--recovery-accent-strong);
-  background:
-    rgba(255, 255, 255, 0.72);
-
-  font-size: 1.25rem;
-  font-weight: 850;
 }
 
 .introContent {
@@ -148,9 +119,7 @@
   color: #ffffff;
   background: #8977c8;
 
-  box-shadow:
-    0 8px 20px
-      rgba(137, 119, 200, 0.2);
+  box-shadow: none;
 }
 
 .resolutionAction:hover {
@@ -251,7 +220,8 @@
 
   color:
     var(--recovery-muted);
-  background: #f8faef;
+  background:
+    var(--recovery-soft);
 
   font-size: 0.86rem;
   line-height: 1.55;
@@ -276,11 +246,7 @@
     var(--radius-large);
 
   background:
-    linear-gradient(
-      135deg,
-      var(--recovery-soft),
-      #fffdf8
-    );
+    var(--recovery-soft);
 }
 
 .completionText {
@@ -325,13 +291,11 @@
   background:
     var(--recovery-accent-strong);
 
-  box-shadow:
-    0 10px 24px
-      rgba(82, 121, 67, 0.2);
+  box-shadow: none;
 }
 
 .completeButton:hover {
-  background: #426537;
+  background: #576e4f;
 }
 
 .completeButton:disabled {
@@ -348,14 +312,7 @@
 
 @media (max-width: 700px) {
   .intro {
-    grid-template-columns: 1fr;
-
-    gap: var(--space-4);
-  }
-
-  .introIcon {
-    width: 50px;
-    height: 50px;
+    gap: var(--space-3);
   }
 
   .resolutionOptions {

@@ -1,0 +1,452 @@
+.root {
+  --phase-end-accent:
+    var(
+      --premonitory-accent,
+      var(
+        --aura-accent,
+        var(
+          --postdrome-accent-strong,
+          var(
+            --recovery-accent-strong,
+            var(--color-primary)
+          )
+        )
+      )
+    );
+
+  --phase-end-accent-soft:
+    var(
+      --premonitory-soft,
+      var(
+        --aura-soft,
+        var(
+          --postdrome-soft,
+          var(
+            --recovery-soft,
+            var(--color-primary-soft)
+          )
+        )
+      )
+    );
+
+  --phase-end-border:
+    var(
+      --postdrome-border,
+      var(
+        --recovery-border,
+        var(--color-border)
+      )
+    );
+
+  width: 100%;
+  min-width: 0;
+
+  display: grid;
+  gap: var(--space-5);
+
+  padding: var(--space-5);
+
+  border: 1px solid
+    var(--phase-end-border);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--color-surface);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.eyebrow {
+  margin: 0;
+
+  color:
+    var(--phase-end-accent);
+
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.header h3 {
+  margin: 0;
+
+  color:
+    var(--color-text-strong);
+
+  font-family:
+    var(--font-editorial);
+
+  font-size:
+    clamp(
+      1.25rem,
+      3vw,
+      1.55rem
+    );
+
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.header > p:last-child {
+  margin: 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.optionGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.optionButton,
+.continueButton {
+  width: 100%;
+  min-width: 0;
+  min-height: 64px;
+
+  display: grid;
+  align-content: center;
+  gap: 3px;
+
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border: 1px solid
+    var(--phase-end-border);
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--color-text);
+  background:
+    var(--color-surface);
+
+  text-align: left;
+
+  box-shadow: none;
+}
+
+.optionButton strong,
+.continueButton strong {
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.84rem;
+  line-height: 1.3;
+}
+
+.optionButton span,
+.continueButton span {
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.optionButton:hover,
+.continueButton:hover {
+  border-color:
+    var(--phase-end-accent);
+
+  background:
+    var(--phase-end-accent-soft);
+}
+
+.optionButton[aria-pressed='true'] {
+  border-color:
+    var(--phase-end-accent);
+
+  background:
+    var(--phase-end-accent-soft);
+}
+
+.optionButton[aria-pressed='true']
+  strong {
+  color:
+    var(--phase-end-accent);
+}
+
+.continueButton {
+  border-style: dashed;
+}
+
+.field {
+  min-width: 0;
+
+  display: grid;
+  gap: var(--space-2);
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.field input {
+  width: 100%;
+  max-width: 420px;
+  min-height: 50px;
+
+  border-color:
+    var(--phase-end-border);
+
+  background:
+    var(--color-surface);
+}
+
+.field input:focus {
+  border-color:
+    var(--phase-end-accent);
+
+  box-shadow:
+    0 0 0 4px
+    color-mix(
+      in srgb,
+      var(--phase-end-accent) 16%,
+      transparent
+    );
+}
+
+.review {
+  display: grid;
+  gap: var(--space-3);
+
+  padding: var(--space-4);
+
+  border: 1px solid
+    var(--phase-end-border);
+  border-radius:
+    var(--radius-medium);
+
+  background:
+    var(--phase-end-accent-soft);
+}
+
+.review h4 {
+  margin: 0;
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.9rem;
+}
+
+.reviewGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.reviewGrid > div {
+  min-width: 0;
+
+  display: grid;
+  gap: 4px;
+
+  padding:
+    var(--space-3);
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--phase-end-border) 80%,
+      transparent
+    );
+  border-radius:
+    var(--radius-small);
+
+  background:
+    var(--color-surface);
+}
+
+.reviewGrid span {
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.reviewGrid strong {
+  min-width: 0;
+
+  color:
+    var(--color-text-strong);
+
+  font-size: 0.8rem;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
+}
+
+.helperText {
+  margin: 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.alert {
+  margin: 0;
+
+  padding:
+    var(--space-3);
+
+  border: 1px solid
+    rgba(162, 79, 85, 0.28);
+  border-radius:
+    var(--radius-small);
+
+  color:
+    var(--color-danger);
+  background:
+    var(--color-danger-soft);
+
+  font-size: 0.8rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+
+  padding-top: var(--space-1);
+}
+
+.primaryAction,
+.cancelButton {
+  min-height: 48px;
+
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border-radius:
+    var(--radius-medium);
+
+  box-shadow: none;
+}
+
+.primaryAction {
+  border-color:
+    var(--phase-end-accent);
+
+  color: #ffffff;
+  background:
+    var(--phase-end-accent);
+}
+
+.primaryAction:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.primaryAction:disabled {
+  border-color:
+    var(--color-border);
+
+  color:
+    var(--color-text-disabled);
+  background:
+    var(--color-surface-muted);
+
+  opacity: 1;
+}
+
+.cancelButton {
+  border: 1px solid
+    var(--phase-end-border);
+
+  color:
+    var(--color-text-soft);
+  background:
+    var(--color-surface);
+}
+
+.cancelButton:hover {
+  border-color:
+    var(--phase-end-accent);
+
+  color:
+    var(--phase-end-accent);
+
+  background:
+    var(--phase-end-accent-soft);
+}
+
+.optionButton:focus-visible,
+.continueButton:focus-visible,
+.primaryAction:focus-visible,
+.cancelButton:focus-visible {
+  outline: 3px solid
+    color-mix(
+      in srgb,
+      var(--phase-end-accent) 26%,
+      transparent
+    );
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .root {
+    gap: var(--space-4);
+
+    padding: var(--space-4);
+  }
+
+  .optionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .reviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .field input {
+    max-width: none;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .primaryAction,
+  .cancelButton {
+    width: 100%;
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
+  .optionButton,
+  .continueButton,
+  .primaryAction,
+  .cancelButton {
+    transition: none;
+  }
+}
