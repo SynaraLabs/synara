@@ -93,6 +93,16 @@ export function MedicationCard({
     setNotes,
   ] = useState('');
 
+  const [
+    showNotes,
+    setShowNotes,
+  ] = useState(false);
+
+  const [
+    showHistory,
+    setShowHistory,
+  ] = useState(false);
+
   const handleRegister = () => {
     const normalizedMedication =
       medication.trim();
@@ -120,24 +130,61 @@ export function MedicationCard({
     setMedication('');
     setDose('');
     setNotes('');
+    setShowNotes(false);
     setTakenAt(
       getCurrentLocalDateTime(),
     );
   };
 
-  return (
-    <div className={styles.card}>
-      <h2>
-        Medicación durante la crisis
-      </h2>
+  const lastRecord =
+    records.at(-1);
 
-      <label>
-        Medicamento
+  return (
+    <div
+      className={
+        styles.medicationCard
+      }
+    >
+      <header
+        className={
+          styles.medicationHeader
+        }
+      >
+        <div>
+          <p
+            className={
+              styles.painEyebrow
+            }
+          >
+            Tratamiento
+          </p>
+
+          <h2>
+            Registrar medicación
+          </h2>
+
+          <p>
+            Anotá la toma. Podés dejar
+            dosis y notas vacías.
+          </p>
+        </div>
+      </header>
+
+      <label
+        className={
+          styles.medicationMainField
+        }
+      >
+        <span>
+          Medicamento
+        </span>
+
         <input
           type="text"
           value={medication}
           placeholder="Ej.: ibuprofeno"
           autoComplete="off"
+          autoFocus
           onChange={event =>
             setMedication(
               event.target.value,
@@ -146,50 +193,94 @@ export function MedicationCard({
         />
       </label>
 
-      <label>
-        Dosis
-        <input
-          type="text"
-          value={dose}
-          placeholder="Ej.: 600 mg"
-          autoComplete="off"
-          onChange={event =>
-            setDose(
-              event.target.value,
-            )
-          }
-        />
-      </label>
+      <div
+        className={
+          styles.medicationMetaGrid
+        }
+      >
+        <label>
+          <span>
+            Dosis
+            <small>
+              Opcional
+            </small>
+          </span>
 
-      <label>
-        Fecha y hora de la toma
-        <input
-          type="datetime-local"
-          value={takenAt}
-          onChange={event =>
-            setTakenAt(
-              event.target.value,
-            )
-          }
-        />
-      </label>
+          <input
+            type="text"
+            value={dose}
+            placeholder="Ej.: 600 mg"
+            autoComplete="off"
+            onChange={event =>
+              setDose(
+                event.target.value,
+              )
+            }
+          />
+        </label>
 
-      <label>
-        Notas opcionales
-        <textarea
-          value={notes}
-          placeholder="Ej.: lo tomé después de comer"
-          rows={3}
-          onChange={event =>
-            setNotes(
-              event.target.value,
-            )
-          }
-        />
-      </label>
+        <label>
+          <span>
+            Fecha y hora
+          </span>
+
+          <input
+            type="datetime-local"
+            value={takenAt}
+            onChange={event =>
+              setTakenAt(
+                event.target.value,
+              )
+            }
+          />
+        </label>
+      </div>
 
       <button
         type="button"
+        className={
+          styles.medicationSecondaryAction
+        }
+        aria-expanded={showNotes}
+        onClick={() =>
+          setShowNotes(
+            current => !current,
+          )
+        }
+      >
+        {showNotes
+          ? 'Ocultar nota'
+          : 'Agregar nota'}
+      </button>
+
+      {showNotes && (
+        <label
+          className={
+            styles.medicationNotes
+          }
+        >
+          <span>
+            Nota opcional
+          </span>
+
+          <textarea
+            value={notes}
+            placeholder="Ej.: lo tomé después de comer"
+            rows={3}
+            onChange={event =>
+              setNotes(
+                event.target.value,
+              )
+            }
+          />
+        </label>
+      )}
+
+      <button
+        type="button"
+        className={
+          styles.medicationPrimaryAction
+        }
         onClick={handleRegister}
         disabled={
           !medication.trim() ||
@@ -199,47 +290,88 @@ export function MedicationCard({
         Registrar medicación
       </button>
 
-      {records.length > 0 && (
-        <section>
-          <h3>
-            Medicación registrada
-          </h3>
+      {lastRecord && (
+        <section
+          className={
+            styles.medicationHistory
+          }
+        >
+          <button
+            type="button"
+            className={
+              styles.medicationHistoryToggle
+            }
+            aria-expanded={
+              showHistory
+            }
+            onClick={() =>
+              setShowHistory(
+                current => !current,
+              )
+            }
+          >
+            <span>
+              <small>
+                Última toma
+              </small>
 
-          <p>
-            {records.length}{' '}
-            {records.length === 1
-              ? 'toma registrada'
-              : 'tomas registradas'}
-          </p>
+              <strong>
+                {lastRecord.medication}
+                {lastRecord.dose
+                  ? ` · ${lastRecord.dose}`
+                  : ''}
+              </strong>
+            </span>
 
-          <ul>
-            {records.map(record => (
-              <li key={record.id}>
-                <strong>
-                  {record.medication}
-                </strong>
+            <span>
+              {formatMedicationTime(
+                lastRecord.takenAt,
+              )}
+            </span>
+          </button>
 
-                {record.dose && (
-                  <>
-                    {' — '}
-                    {record.dose}
-                  </>
-                )}
+          {showHistory && (
+            <div
+              className={
+                styles.medicationHistoryList
+              }
+            >
+              <p>
+                {records.length}{' '}
+                {records.length === 1
+                  ? 'toma registrada'
+                  : 'tomas registradas'}
+              </p>
 
-                <div>
-                  {formatMedicationTime(
-                    record.takenAt,
-                  )}
-                </div>
+              <ul>
+                {records.map(record => (
+                  <li key={record.id}>
+                    <strong>
+                      {record.medication}
+                    </strong>
 
-                {record.notes && (
-                  <div>
-                    {record.notes}
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
+                    {record.dose && (
+                      <span>
+                        {record.dose}
+                      </span>
+                    )}
+
+                    <small>
+                      {formatMedicationTime(
+                        record.takenAt,
+                      )}
+                    </small>
+
+                    {record.notes && (
+                      <p>
+                        {record.notes}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       )}
     </div>

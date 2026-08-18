@@ -235,6 +235,16 @@ export function FunctionalCapacityCard({
     setNotes,
   ] = useState('');
 
+  const [
+    showNotes,
+    setShowNotes,
+  ] = useState(false);
+
+  const [
+    showHistory,
+    setShowHistory,
+  ] = useState(false);
+
   const handleActivityToggle = (
     activity: AffectedActivity,
   ) => {
@@ -284,67 +294,123 @@ export function FunctionalCapacityCard({
     setLevel(null);
     setAffectedActivities([]);
     setNotes('');
+    setShowNotes(false);
     setOccurredAt(
       getCurrentLocalDateTime(),
     );
   };
 
+  const lastRecord =
+    records.at(-1);
+
   return (
-    <div className={styles.card}>
-      <h2>
-        Capacidad funcional
-      </h2>
+    <div
+      className={
+        styles.capacityCard
+      }
+    >
+      <header
+        className={
+          styles.capacityHeader
+        }
+      >
+        <div>
+          <p
+            className={
+              styles.painEyebrow
+            }
+          >
+            Impacto
+          </p>
 
-      <p>
-        ¿Cuánto está afectando esta
-        crisis tus actividades?
-      </p>
+          <h2>
+            Capacidad funcional
+          </h2>
 
-      <div className={styles.grid}>
-        {LEVEL_OPTIONS.map(
-          option => {
-            const isActive =
-              level ===
-              option.value;
+          <p>
+            ¿Cuánto está limitando
+            esta crisis lo que podés
+            hacer ahora?
+          </p>
+        </div>
+      </header>
 
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className={
-                  isActive
-                    ? styles.active
-                    : ''
-                }
-                aria-pressed={
-                  isActive
-                }
-                title={
-                  option.description
-                }
-                onClick={() =>
-                  handleLevelChange(
-                    option.value,
-                  )
-                }
-              >
-                {option.label}
-              </button>
-            );
-          },
-        )}
-      </div>
+      <section
+        className={
+          styles.capacityLevels
+        }
+      >
+        <h3>
+          Elegí una opción
+        </h3>
+
+        <div
+          className={
+            styles.capacityLevelGrid
+          }
+        >
+          {LEVEL_OPTIONS.map(
+            option => {
+              const isActive =
+                level ===
+                option.value;
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={
+                    isActive
+                      ? styles.active
+                      : ''
+                  }
+                  aria-pressed={
+                    isActive
+                  }
+                  onClick={() =>
+                    handleLevelChange(
+                      option.value,
+                    )
+                  }
+                >
+                  <strong>
+                    {option.label}
+                  </strong>
+
+                  <span>
+                    {
+                      option.description
+                    }
+                  </span>
+                </button>
+              );
+            },
+          )}
+        </div>
+      </section>
 
       {level &&
         level !== 'normal' && (
-          <section>
-            <h3>
-              ¿Qué actividades están
-              afectadas?
-            </h3>
+          <section
+            className={
+              styles.capacityActivities
+            }
+          >
+            <header>
+              <h3>
+                ¿Qué actividades están
+                afectadas?
+              </h3>
+
+              <p>
+                Podés marcar más de una.
+              </p>
+            </header>
 
             <div
-              className={styles.grid}
+              className={
+                styles.capacityActivityGrid
+              }
             >
               {ACTIVITY_OPTIONS.map(
                 activity => {
@@ -384,8 +450,15 @@ export function FunctionalCapacityCard({
           </section>
         )}
 
-      <label>
-        Fecha y hora
+      <label
+        className={
+          styles.capacityDateField
+        }
+      >
+        <span>
+          Fecha y hora
+        </span>
+
         <input
           type="datetime-local"
           value={occurredAt}
@@ -397,22 +470,51 @@ export function FunctionalCapacityCard({
         />
       </label>
 
-      <label>
-        Notas opcionales
-        <textarea
-          value={notes}
-          placeholder="Ej.: tuve que dejar de trabajar y acostarme"
-          rows={3}
-          onChange={event =>
-            setNotes(
-              event.target.value,
-            )
+      <button
+        type="button"
+        className={
+          styles.capacitySecondaryAction
+        }
+        aria-expanded={showNotes}
+        onClick={() =>
+          setShowNotes(
+            current => !current,
+          )
+        }
+      >
+        {showNotes
+          ? 'Ocultar nota'
+          : 'Agregar nota'}
+      </button>
+
+      {showNotes && (
+        <label
+          className={
+            styles.capacityNotes
           }
-        />
-      </label>
+        >
+          <span>
+            Nota opcional
+          </span>
+
+          <textarea
+            value={notes}
+            placeholder="Ej.: tuve que dejar de trabajar y acostarme"
+            rows={3}
+            onChange={event =>
+              setNotes(
+                event.target.value,
+              )
+            }
+          />
+        </label>
+      )}
 
       <button
         type="button"
+        className={
+          styles.capacityPrimaryAction
+        }
         disabled={
           !level ||
           !occurredAt
@@ -422,61 +524,104 @@ export function FunctionalCapacityCard({
         Registrar capacidad
       </button>
 
-      {records.length > 0 && (
-        <section>
-          <h3>
-            Evolución funcional
-          </h3>
+      {lastRecord && (
+        <section
+          className={
+            styles.capacityHistory
+          }
+        >
+          <button
+            type="button"
+            className={
+              styles.capacityHistoryToggle
+            }
+            aria-expanded={
+              showHistory
+            }
+            onClick={() =>
+              setShowHistory(
+                current => !current,
+              )
+            }
+          >
+            <span>
+              <small>
+                Última actualización
+              </small>
 
-          <p>
-            {records.length}{' '}
-            {records.length === 1
-              ? 'actualización'
-              : 'actualizaciones'}
-          </p>
+              <strong>
+                {
+                  LEVEL_LABELS[
+                    lastRecord.level
+                  ]
+                }
+              </strong>
+            </span>
 
-          <ul>
-            {records.map(record => (
-              <li key={record.id}>
-                <strong>
-                  {
-                    LEVEL_LABELS[
-                      record.level
-                    ]
-                  }
-                </strong>
+            <span>
+              {formatOccurredAt(
+                lastRecord.occurredAt,
+              )}
+            </span>
+          </button>
 
-                <div>
-                  {formatOccurredAt(
-                    record.occurredAt,
-                  )}
-                </div>
+          {showHistory && (
+            <div
+              className={
+                styles.capacityHistoryList
+              }
+            >
+              <p>
+                {records.length}{' '}
+                {records.length === 1
+                  ? 'actualización'
+                  : 'actualizaciones'}
+              </p>
 
-                {record
-                  .affectedActivities
-                  .length > 0 && (
-                  <div>
-                    Afecta:{' '}
+              <ul>
+                {records.map(record => (
+                  <li key={record.id}>
+                    <strong>
+                      {
+                        LEVEL_LABELS[
+                          record.level
+                        ]
+                      }
+                    </strong>
+
+                    <small>
+                      {formatOccurredAt(
+                        record.occurredAt,
+                      )}
+                    </small>
+
                     {record
                       .affectedActivities
-                      .map(
-                        activity =>
-                          ACTIVITY_LABELS[
-                            activity
-                          ],
-                      )
-                      .join(', ')}
-                  </div>
-                )}
+                      .length > 0 && (
+                      <p>
+                        Afecta:{' '}
+                        {record
+                          .affectedActivities
+                          .map(
+                            activity =>
+                              ACTIVITY_LABELS[
+                                activity
+                              ],
+                          )
+                          .join(', ')}
+                      </p>
+                    )}
 
-                {record.notes && (
-                  <div>
-                    {record.notes}
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
+                    {record.notes && (
+                      <p>
+                        {record.notes}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       )}
     </div>

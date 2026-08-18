@@ -50,6 +50,11 @@ export function SymptomsCard({
     CrisisSymptomCategory | null
   >(null);
 
+  const [
+    showAllSymptoms,
+    setShowAllSymptoms,
+  ] = useState(false);
+
   const normalizedSearch =
     normalizeCrisisSymptomSearch(
       searchTerm.trim(),
@@ -165,6 +170,15 @@ export function SymptomsCard({
   const isSearching =
     normalizedSearch.length > 0;
 
+  const handleToggleAll = () => {
+    setShowAllSymptoms(
+      current => !current,
+    );
+
+    setSearchTerm('');
+    setActiveCategory(null);
+  };
+
   return (
     <div
       className={styles.symptomsCard}
@@ -231,183 +245,201 @@ export function SymptomsCard({
         </section>
       )}
 
-      <label
+      <section
         className={
-          styles.symptomSearch
+          styles.quickSymptoms
         }
       >
-        <span>
-          Buscar síntomas
-        </span>
+        <h3>
+          Frecuentes
+        </h3>
 
-        <input
-          type="search"
-          value={searchTerm}
-          placeholder="Ej.: náuseas, cuello, mareo"
-          autoComplete="off"
-          onChange={event =>
-            setSearchTerm(
-              event.target.value,
-            )
-          }
-        />
-      </label>
-
-      {isSearching ? (
-        <section
+        <div
           className={
-            styles.symptomResults
+            styles.symptomGrid
           }
-          aria-live="polite"
         >
-          <h3>
-            Resultados
-          </h3>
-
-          {searchResults.length > 0 ? (
-            <div
-              className={
-                styles.symptomGrid
-              }
-            >
-              {searchResults.map(
-                renderSymptomButton,
-              )}
-            </div>
-          ) : (
-            <p
-              className={
-                styles.symptomEmpty
-              }
-            >
-              No encontramos síntomas
-              con ese nombre.
-            </p>
+          {frequentSymptoms.map(
+            renderSymptomButton,
           )}
-        </section>
-      ) : (
+        </div>
+      </section>
+
+      <button
+        type="button"
+        className={styles.secondary}
+        aria-expanded={
+          showAllSymptoms
+        }
+        onClick={
+          handleToggleAll
+        }
+      >
+        {showAllSymptoms
+          ? 'Ocultar todos los síntomas'
+          : 'Ver todos los síntomas'}
+      </button>
+
+      {showAllSymptoms && (
         <>
-          <section
+          <label
             className={
-              styles.quickSymptoms
+              styles.symptomSearch
             }
           >
-            <h3>
-              Frecuentes
-            </h3>
+            <span>
+              Buscar síntomas
+            </span>
 
-            <div
-              className={
-                styles.symptomGrid
+            <input
+              type="search"
+              value={searchTerm}
+              placeholder="Ej.: náuseas, cuello, mareo"
+              autoComplete="off"
+              onChange={event =>
+                setSearchTerm(
+                  event.target.value,
+                )
               }
-            >
-              {frequentSymptoms.map(
-                renderSymptomButton,
-              )}
-            </div>
-          </section>
+            />
+          </label>
 
-          <section
-            className={
-              styles.symptomCategories
-            }
-            aria-labelledby="crisis-symptom-categories"
-          >
-            <h3
-              id="crisis-symptom-categories"
-            >
-              Buscar por categoría
-            </h3>
-
-            <div
+          {isSearching ? (
+            <section
               className={
-                styles.categoryScroller
+                styles.symptomResults
               }
-              role="list"
+              aria-live="polite"
             >
-              {CRISIS_CATEGORY_ORDER.map(
-                category => (
-                  <button
-                    key={category}
-                    type="button"
-                    role="listitem"
-                    aria-pressed={
-                      activeCategory ===
-                      category
-                    }
-                    onClick={() =>
-                      setActiveCategory(
-                        current =>
-                          current ===
-                          category
-                            ? null
-                            : category,
-                      )
-                    }
-                  >
-                    <span>
-                      {
-                        CRISIS_CATEGORY_LABELS[
-                          category
-                        ]
-                      }
-                    </span>
+              <h3>
+                Resultados
+              </h3>
 
-                    <small>
-                      {
-                        categoryCounts.get(
-                          category,
-                        ) ?? 0
-                      }
-                    </small>
-                  </button>
-                ),
-              )}
-            </div>
-
-            {activeCategory && (
-              <div
-                className={
-                  styles.categoryPanel
-                }
-              >
-                <div
-                  className={
-                    styles.categoryPanelHeader
-                  }
-                >
-                  <h4>
-                    {
-                      CRISIS_CATEGORY_LABELS[
-                        activeCategory
-                      ]
-                    }
-                  </h4>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActiveCategory(
-                        null,
-                      )
-                    }
-                  >
-                    Cerrar
-                  </button>
-                </div>
-
+              {searchResults.length >
+              0 ? (
                 <div
                   className={
                     styles.symptomGrid
                   }
                 >
-                  {categorySymptoms.map(
+                  {searchResults.map(
                     renderSymptomButton,
                   )}
                 </div>
+              ) : (
+                <p
+                  className={
+                    styles.symptomEmpty
+                  }
+                >
+                  No encontramos síntomas
+                  con ese nombre.
+                </p>
+              )}
+            </section>
+          ) : (
+            <section
+              className={
+                styles.symptomCategories
+              }
+              aria-labelledby="crisis-symptom-categories"
+            >
+              <h3
+                id="crisis-symptom-categories"
+              >
+                Buscar por categoría
+              </h3>
+
+              <div
+                className={
+                  styles.categoryScroller
+                }
+                role="list"
+              >
+                {CRISIS_CATEGORY_ORDER.map(
+                  category => (
+                    <button
+                      key={category}
+                      type="button"
+                      role="listitem"
+                      aria-pressed={
+                        activeCategory ===
+                        category
+                      }
+                      onClick={() =>
+                        setActiveCategory(
+                          current =>
+                            current ===
+                            category
+                              ? null
+                              : category,
+                        )
+                      }
+                    >
+                      <span>
+                        {
+                          CRISIS_CATEGORY_LABELS[
+                            category
+                          ]
+                        }
+                      </span>
+
+                      <small>
+                        {
+                          categoryCounts.get(
+                            category,
+                          ) ?? 0
+                        }
+                      </small>
+                    </button>
+                  ),
+                )}
               </div>
-            )}
-          </section>
+
+              {activeCategory && (
+                <div
+                  className={
+                    styles.categoryPanel
+                  }
+                >
+                  <div
+                    className={
+                      styles.categoryPanelHeader
+                    }
+                  >
+                    <h4>
+                      {
+                        CRISIS_CATEGORY_LABELS[
+                          activeCategory
+                        ]
+                      }
+                    </h4>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveCategory(
+                          null,
+                        )
+                      }
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+
+                  <div
+                    className={
+                      styles.symptomGrid
+                    }
+                  >
+                    {categorySymptoms.map(
+                      renderSymptomButton,
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
         </>
       )}
 

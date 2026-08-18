@@ -1,15 +1,16 @@
 .container {
   width: 100%;
+  min-width: 0;
 
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-4);
 
-  padding: var(--space-5);
+  padding: var(--space-4);
 
   border: 1px solid
     var(--color-border);
   border-radius:
-    var(--radius-large);
+    var(--radius-medium);
 
   color: var(--color-text);
   background:
@@ -24,12 +25,12 @@
 }
 
 .title {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-1);
 
   color:
     var(--color-text-strong);
 
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   line-height: 1.3;
 }
 
@@ -41,8 +42,8 @@
   color:
     var(--color-text-soft);
 
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: 0.8rem;
+  line-height: 1.45;
 }
 
 .clearButton {
@@ -50,35 +51,38 @@
 
   flex: 0 0 auto;
 
-  padding: 7px 12px;
+  padding: 7px 11px;
 
-  border: 1px solid #d9567f;
+  border: 1px solid
+    var(--color-border-strong);
   border-radius:
-    var(--radius-pill);
+    var(--radius-medium);
 
-  color: #d9567f;
+  color:
+    var(--color-text-soft);
   background: transparent;
 
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 750;
 
   box-shadow: none;
 }
 
 .clearButton:hover {
-  color: #ffffff;
-  background: #c84572;
+  border-color:
+    var(--color-text-soft);
+
+  color:
+    var(--color-text-strong);
+  background:
+    var(--color-surface-soft);
 }
 
 .rolePicker {
   display: grid;
-  grid-template-columns:
-    minmax(190px, 0.7fr)
-    minmax(0, 1.3fr);
-  align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-3);
 
-  padding: var(--space-5);
+  padding: var(--space-3);
 
   border: 1px solid
     var(--color-border);
@@ -90,20 +94,22 @@
 }
 
 .rolePicker h4 {
-  margin-bottom: var(--space-1);
+  margin: 0 0 2px;
 
   color:
     var(--color-text-strong);
 
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .rolePicker p {
+  margin: 0;
+
   color:
     var(--color-text-soft);
 
-  font-size: 0.82rem;
-  line-height: 1.45;
+  font-size: 0.76rem;
+  line-height: 1.4;
 }
 
 .roleOptions {
@@ -114,73 +120,70 @@
 }
 
 .roleOptions button {
-  min-height: 52px;
+  min-width: 0;
+  min-height: 46px;
 
-  padding: 9px 11px;
+  padding: 8px 10px;
 
   border: 1px solid
-    var(--color-border-strong);
+    var(--color-border);
   border-radius:
     var(--radius-medium);
 
-  color: var(--color-text);
+  color:
+    var(--color-text-soft);
   background:
     var(--color-surface);
 
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 750;
-  line-height: 1.3;
+  line-height: 1.25;
 
   box-shadow: none;
 }
 
 .roleOptions button:hover:not(:disabled) {
   border-color:
-    var(--color-primary-border);
+    var(--color-border-strong);
+
+  color:
+    var(--color-text-strong);
+  background:
+    var(--color-surface-soft);
+}
+
+.roleOptions button:disabled {
+  opacity: 0.42;
+}
+
+.roleOptions button[aria-pressed='true'] {
+  border-color:
+    var(--color-primary);
 
   color:
     var(--color-text-strong);
   background:
     var(--color-primary-soft);
-}
 
-.roleOptions button:disabled {
-  opacity: 0.48;
-}
-
-.roleOptions button[aria-pressed='true'][data-role='origin'] {
-  border-color: #a995d6;
-
-  color: #202344;
-  background: #c9bce9;
-}
-
-.roleOptions button[aria-pressed='true'][data-role='primary'] {
-  border-color: #d9567f;
-
-  color: #ffffff;
-  background: #d9567f;
-}
-
-.roleOptions button[aria-pressed='true'][data-role='additional'] {
-  border-color: #94b982;
-
-  color: #173d31;
-  background: #b9d5a8;
+  box-shadow:
+    inset 0 0 0 1px
+    var(--color-primary-border);
 }
 
 .textSelector {
+  overflow: hidden;
+
   border: 1px solid
     var(--color-border);
   border-radius:
     var(--radius-medium);
 
   background:
-    var(--color-surface-soft);
+    var(--color-surface);
 }
 
 .textSelector summary {
-  min-height: 50px;
+  min-height: 46px;
 
   display: flex;
   align-items: center;
@@ -188,12 +191,12 @@
   gap: var(--space-3);
 
   padding:
-    var(--space-3)
-    var(--space-4);
+    var(--space-3);
 
-  color: var(--color-text);
+  color:
+    var(--color-text-soft);
 
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 750;
 
   cursor: pointer;
@@ -205,42 +208,59 @@
 }
 
 .textSelector summary::after {
-  content: '+';
+  content: '';
 
-  color:
-    var(--color-primary);
+  width: 7px;
+  height: 7px;
 
-  font-size: 1.1rem;
+  flex: 0 0 auto;
+
+  border-right: 1.5px solid
+    var(--color-text-soft);
+  border-bottom: 1.5px solid
+    var(--color-text-soft);
+
+  transform:
+    rotate(45deg)
+    translateY(-2px);
 }
 
 .textSelector[open] summary::after {
-  content: '−';
+  transform:
+    rotate(225deg)
+    translate(-1px, -1px);
 }
 
 .textSelector[open] summary {
   border-bottom: 1px solid
     var(--color-border);
+
+  color:
+    var(--color-text-strong);
+  background:
+    var(--color-surface-soft);
 }
 
 .search {
   display: grid;
   gap: var(--space-2);
 
-  padding: var(--space-4);
+  padding: var(--space-3);
 }
 
 .search label {
-  color: var(--color-text);
+  color:
+    var(--color-text);
 
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
 .search input {
   width: 100%;
-  min-height: 48px;
+  min-height: 46px;
 
-  padding: 10px 14px;
+  padding: 9px 12px;
 
   border: 1px solid
     var(--color-border-strong);
@@ -270,26 +290,28 @@
   gap: var(--space-2);
 
   padding:
-    0 var(--space-4)
-    var(--space-4);
+    0
+    var(--space-3)
+    var(--space-3);
 }
 
 .regionList button,
 .sideOptions button {
-  min-height: 44px;
+  min-height: 42px;
 
-  padding: 8px 10px;
+  padding: 7px 9px;
 
   border: 1px solid
     var(--color-border);
   border-radius:
     var(--radius-medium);
 
-  color: var(--color-text);
+  color:
+    var(--color-text);
   background:
     var(--color-surface);
 
-  font-size: 0.76rem;
+  font-size: 0.73rem;
   font-weight: 700;
 
   box-shadow: none;
@@ -311,16 +333,21 @@
   border-color:
     var(--color-primary);
 
-  color: #ffffff;
+  color:
+    var(--color-text-strong);
   background:
-    var(--color-primary);
+    var(--color-primary-soft);
+
+  box-shadow:
+    inset 0 0 0 1px
+    var(--color-primary-border);
 }
 
 .sideConfiguration {
   display: grid;
   gap: var(--space-3);
 
-  padding: var(--space-4);
+  padding: var(--space-3);
 
   border: 1px solid
     var(--color-primary-border);
@@ -333,23 +360,22 @@
 
 .textSelector .sideConfiguration {
   margin:
-    0 var(--space-4)
-    var(--space-4);
+    0
+    var(--space-3)
+    var(--space-3);
 }
 
 .container > .sideConfiguration {
   grid-template-columns:
-    minmax(0, 1fr) auto;
+    minmax(0, 1fr)
+    auto;
   align-items: center;
 
-  border-color: #94b982;
+  border-color:
+    var(--color-border-strong);
 
   background:
-    color-mix(
-      in srgb,
-      #b9d5a8 32%,
-      var(--color-surface)
-    );
+    var(--color-surface-soft);
 }
 
 .sideConfiguration h4 {
@@ -358,7 +384,7 @@
   color:
     var(--color-text-strong);
 
-  font-size: 0.9rem;
+  font-size: 0.84rem;
 }
 
 .sideConfiguration p {
@@ -367,7 +393,7 @@
   color:
     var(--color-text-soft);
 
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   line-height: 1.4;
 }
 
@@ -378,39 +404,58 @@
 }
 
 .addButton {
-  min-height: 46px;
+  min-height: 44px;
 
   justify-self: start;
 
   padding:
-    9px var(--space-4);
+    8px
+    var(--space-4);
 
-  color: #ffffff;
+  border: 1px solid
+    var(--color-primary);
+  border-radius:
+    var(--radius-medium);
+
+  color:
+    var(--color-surface);
   background:
     var(--color-primary);
+
+  font-size: 0.8rem;
+  font-weight: 800;
 
   box-shadow: none;
 }
 
 .addButton:hover:not(:disabled) {
-  background:
-    var(--color-primary-hover);
+  filter: brightness(1.08);
 }
 
 .addButton:disabled {
+  border-color:
+    var(--color-border);
+
   color:
     var(--color-text-disabled);
   background:
     var(--color-surface-muted);
 }
 
+.clearButton:focus-visible,
+.roleOptions button:focus-visible,
+.textSelector summary:focus-visible,
+.regionList button:focus-visible,
+.sideOptions button:focus-visible,
+.addButton:focus-visible {
+  outline: 3px solid
+    var(--color-focus);
+  outline-offset: 3px;
+}
+
 @media (max-width: 720px) {
   .container {
-    padding: var(--space-4);
-  }
-
-  .rolePicker {
-    grid-template-columns: 1fr;
+    padding: var(--space-3);
   }
 
   .regionList {
@@ -421,7 +466,7 @@
 
 @media (max-width: 520px) {
   .container {
-    gap: var(--space-4);
+    gap: var(--space-3);
 
     padding: var(--space-3);
 
@@ -431,6 +476,7 @@
 
   .header {
     flex-direction: column;
+    gap: var(--space-3);
   }
 
   .clearButton {
@@ -438,20 +484,22 @@
   }
 
   .rolePicker {
-    gap: var(--space-4);
-
-    padding: var(--space-4);
+    padding: var(--space-3);
   }
 
   .roleOptions {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
   }
 
   .roleOptions button {
-    min-height: 52px;
+    min-height: 48px;
 
-    text-align: left;
+    padding:
+      7px
+      6px;
+
+    font-size: 0.68rem;
   }
 
   .regionList {
@@ -477,12 +525,25 @@
 }
 
 @media (max-width: 380px) {
+  .roleOptions {
+    grid-template-columns: 1fr;
+  }
+
+  .roleOptions button {
+    min-height: 44px;
+
+    text-align: left;
+  }
+
   .sideOptions {
     grid-template-columns: 1fr;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
   .container * {
     transition: none;
   }

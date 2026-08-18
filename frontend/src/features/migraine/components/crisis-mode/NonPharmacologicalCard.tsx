@@ -103,6 +103,16 @@ export function NonPharmacologicalCard({
     setShowAllMeasures,
   ] = useState(false);
 
+  const [
+    showNotes,
+    setShowNotes,
+  ] = useState(false);
+
+  const [
+    showHistory,
+    setShowHistory,
+  ] = useState(false);
+
   const handleToggle = (
     measure:
       NonPharmacologicalMeasure,
@@ -140,6 +150,7 @@ export function NonPharmacologicalCard({
 
     setSelectedMeasures([]);
     setNotes('');
+    setShowNotes(false);
     setAppliedAt(
       getCurrentLocalDateTime(),
     );
@@ -183,20 +194,47 @@ export function NonPharmacologicalCard({
         ),
     );
 
+  const lastRecord =
+    records.at(-1);
+
   return (
-    <div className={styles.card}>
-      <h2>
-        Medidas no farmacológicas
-      </h2>
+    <div
+      className={
+        styles.reliefCard
+      }
+    >
+      <header
+        className={
+          styles.reliefHeader
+        }
+      >
+        <div>
+          <p
+            className={
+              styles.painEyebrow
+            }
+          >
+            Alivio
+          </p>
 
-      <p>
-        Seleccioná lo que hiciste para
-        aliviar o acompañar la crisis.
-      </p>
+          <h2>
+            Medidas de alivio
+          </h2>
 
-      <section>
+          <p>
+            Marcá solo lo que hiciste
+            en este momento.
+          </p>
+        </div>
+      </header>
+
+      <section
+        className={
+          styles.reliefFrequent
+        }
+      >
         <h3>
-          Medidas frecuentes
+          Frecuentes
         </h3>
 
         <div className={styles.grid}>
@@ -208,6 +246,9 @@ export function NonPharmacologicalCard({
 
       <button
         type="button"
+        className={
+          styles.reliefSecondaryAction
+        }
         aria-expanded={
           showAllMeasures
         }
@@ -219,8 +260,8 @@ export function NonPharmacologicalCard({
         }
       >
         {showAllMeasures
-          ? 'Ocultar medidas adicionales'
-          : 'Mostrar todas las medidas'}
+          ? 'Ocultar todas las medidas'
+          : 'Ver todas las medidas'}
       </button>
 
       {showAllMeasures &&
@@ -242,7 +283,12 @@ export function NonPharmacologicalCard({
             }
 
             return (
-              <section key={category}>
+              <section
+                key={category}
+                className={
+                  styles.reliefCategory
+                }
+              >
                 <h3>
                   {
                     NON_PHARMACOLOGICAL_CATEGORY_LABELS[
@@ -265,7 +311,12 @@ export function NonPharmacologicalCard({
           },
         )}
 
-      <p>
+      <div
+        className={
+          styles.reliefSelectionStatus
+        }
+        aria-live="polite"
+      >
         {selectedMeasures.length === 0
           ? 'Ninguna medida seleccionada'
           : `${selectedMeasures.length} ${
@@ -274,10 +325,17 @@ export function NonPharmacologicalCard({
                 ? 'medida seleccionada'
                 : 'medidas seleccionadas'
             }`}
-      </p>
+      </div>
 
-      <label>
-        Fecha y hora
+      <label
+        className={
+          styles.reliefDateField
+        }
+      >
+        <span>
+          Fecha y hora
+        </span>
+
         <input
           type="datetime-local"
           value={appliedAt}
@@ -289,22 +347,51 @@ export function NonPharmacologicalCard({
         />
       </label>
 
-      <label>
-        Notas opcionales
-        <textarea
-          value={notes}
-          placeholder="Ej.: descansé en una habitación oscura durante una hora"
-          rows={3}
-          onChange={event =>
-            setNotes(
-              event.target.value,
-            )
+      <button
+        type="button"
+        className={
+          styles.reliefSecondaryAction
+        }
+        aria-expanded={showNotes}
+        onClick={() =>
+          setShowNotes(
+            current => !current,
+          )
+        }
+      >
+        {showNotes
+          ? 'Ocultar nota'
+          : 'Agregar nota'}
+      </button>
+
+      {showNotes && (
+        <label
+          className={
+            styles.reliefNotes
           }
-        />
-      </label>
+        >
+          <span>
+            Nota opcional
+          </span>
+
+          <textarea
+            value={notes}
+            placeholder="Ej.: descansé en una habitación oscura durante una hora"
+            rows={3}
+            onChange={event =>
+              setNotes(
+                event.target.value,
+              )
+            }
+          />
+        </label>
+      )}
 
       <button
         type="button"
+        className={
+          styles.reliefPrimaryAction
+        }
         disabled={
           selectedMeasures.length ===
             0 ||
@@ -315,47 +402,93 @@ export function NonPharmacologicalCard({
         Registrar medidas
       </button>
 
-      {records.length > 0 && (
-        <section>
-          <h3>
-            Medidas registradas
-          </h3>
+      {lastRecord && (
+        <section
+          className={
+            styles.reliefHistory
+          }
+        >
+          <button
+            type="button"
+            className={
+              styles.reliefHistoryToggle
+            }
+            aria-expanded={
+              showHistory
+            }
+            onClick={() =>
+              setShowHistory(
+                current => !current,
+              )
+            }
+          >
+            <span>
+              <small>
+                Último registro
+              </small>
 
-          <p>
-            {records.length}{' '}
-            {records.length === 1
-              ? 'registro'
-              : 'registros'}
-          </p>
+              <strong>
+                {lastRecord.measures
+                  .map(
+                    measure =>
+                      NON_PHARMACOLOGICAL_MEASURE_LABELS[
+                        measure
+                      ],
+                  )
+                  .join(', ')}
+              </strong>
+            </span>
 
-          <ul>
-            {records.map(record => (
-              <li key={record.id}>
-                <strong>
-                  {record.measures
-                    .map(
-                      measure =>
-                        NON_PHARMACOLOGICAL_MEASURE_LABELS[
-                          measure
-                        ],
-                    )
-                    .join(', ')}
-                </strong>
+            <span>
+              {formatAppliedTime(
+                lastRecord.appliedAt,
+              )}
+            </span>
+          </button>
 
-                <div>
-                  {formatAppliedTime(
-                    record.appliedAt,
-                  )}
-                </div>
+          {showHistory && (
+            <div
+              className={
+                styles.reliefHistoryList
+              }
+            >
+              <p>
+                {records.length}{' '}
+                {records.length === 1
+                  ? 'registro'
+                  : 'registros'}
+              </p>
 
-                {record.notes && (
-                  <div>
-                    {record.notes}
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
+              <ul>
+                {records.map(record => (
+                  <li key={record.id}>
+                    <strong>
+                      {record.measures
+                        .map(
+                          measure =>
+                            NON_PHARMACOLOGICAL_MEASURE_LABELS[
+                              measure
+                            ],
+                        )
+                        .join(', ')}
+                    </strong>
+
+                    <small>
+                      {formatAppliedTime(
+                        record.appliedAt,
+                      )}
+                    </small>
+
+                    {record.notes && (
+                      <p>
+                        {record.notes}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       )}
     </div>
