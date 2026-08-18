@@ -14,6 +14,7 @@ import type {
   RecordMode,
   TimePrecision,
   Treatment,
+  TriggerRecord,
 } from '../types/migraine.types';
 
 import {
@@ -82,6 +83,10 @@ interface MigraineStore {
 
   updateTriggers: (
     triggers: MigraineTrigger[],
+  ) => void;
+
+  updateTriggerRecords: (
+    triggerRecords: TriggerRecord[],
   ) => void;
 
   updateTreatment: (
@@ -441,6 +446,8 @@ const createInitialEpisode =
 
     triggers: [],
 
+    triggerRecords: [],
+
     treatment: {},
   });
 
@@ -763,6 +770,9 @@ const normalizeEpisode = (
 
     triggers:
       persistedEpisode.triggers ?? [],
+
+    triggerRecords:
+      persistedEpisode.triggerRecords ?? [],
 
     treatment: {
       ...initialEpisode.treatment,
@@ -1657,6 +1667,23 @@ export const useMigraineStore =
                 new Date().toISOString(),
 
               triggers,
+            };
+
+            return synchronizeEpisode(
+              state,
+              episode,
+            );
+          }),
+
+        updateTriggerRecords: triggerRecords =>
+          set(state => {
+            const episode: MigraineEpisode = {
+              ...state.episode,
+
+              updatedAt:
+                new Date().toISOString(),
+
+              triggerRecords,
             };
 
             return synchronizeEpisode(

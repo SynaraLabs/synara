@@ -1,3 +1,7 @@
+import {
+  useState,
+} from 'react';
+
 import type {
   MigraineEpisode,
   TreatmentEffectiveness,
@@ -14,7 +18,7 @@ import {
   useMigraineStore,
 } from '../store/migraine.store';
 
-import styles from '../migraine.module.css';
+import styles from './TreatmentSelector.module.css';
 
 interface Props {
   value?: MigraineEpisode['treatment'];
@@ -49,6 +53,11 @@ export function TreatmentSelector({
   onChange,
   showHeader = true,
 }: Props) {
+  const [
+    showMoreDetails,
+    setShowMoreDetails,
+  ] = useState(false);
+
   const storeTreatment =
     useMigraineStore(
       state =>
@@ -100,6 +109,14 @@ export function TreatmentSelector({
       treatment.dose?.trim() ||
       treatment.takenAt ||
       treatment.effectiveness ||
+      treatment.responseTimeMinutes !==
+        undefined ||
+      treatment.sideEffects?.length ||
+      treatment.notes?.trim(),
+    );
+
+  const hasMoreDetails =
+    Boolean(
       treatment.responseTimeMinutes !==
         undefined ||
       treatment.sideEffects?.length ||
@@ -245,25 +262,43 @@ export function TreatmentSelector({
       }
     >
       {showHeader && (
-        <div>
+        <header
+          className={
+            styles.header
+          }
+        >
+          <p
+            className={
+              styles.eyebrow
+            }
+          >
+            Tratamiento
+          </p>
+
           <h3 id="treatment-title">
-            Tratamiento utilizado
+            ¿Qué utilizaste?
           </h3>
 
           <p>
-            Registrá qué utilizaste y
+            Registrá el tratamiento y
             cómo respondió tu cuerpo.
           </p>
-        </div>
+        </header>
       )}
 
       <div
         className={
-          styles.treatmentForm
+          styles.primaryForm
         }
       >
-        <label>
-          Tipo de tratamiento
+        <label
+          className={
+            styles.typeField
+          }
+        >
+          <span>
+            Tipo de tratamiento
+          </span>
 
           <select
             value={selectedType}
@@ -287,12 +322,18 @@ export function TreatmentSelector({
         </label>
 
         {showMedicationDetails && (
-          <>
+          <div
+            className={
+              styles.medicationGrid
+            }
+          >
             <label>
-              {selectedType ===
-              'supplement'
-                ? 'Suplemento'
-                : 'Medicación'}
+              <span>
+                {selectedType ===
+                'supplement'
+                  ? 'Suplemento'
+                  : 'Medicación'}
+              </span>
 
               <input
                 type="text"
@@ -303,8 +344,8 @@ export function TreatmentSelector({
                 placeholder={
                   selectedType ===
                   'supplement'
-                    ? 'Ejemplo: magnesio'
-                    : 'Ejemplo: ibuprofeno'
+                    ? 'Ej.: magnesio'
+                    : 'Ej.: ibuprofeno'
                 }
                 autoComplete="off"
                 onChange={event =>
@@ -316,7 +357,9 @@ export function TreatmentSelector({
             </label>
 
             <label>
-              Dosis
+              <span>
+                Dosis
+              </span>
 
               <input
                 type="text"
@@ -324,7 +367,7 @@ export function TreatmentSelector({
                   treatment.dose ??
                   ''
                 }
-                placeholder="Ejemplo: 600 mg"
+                placeholder="Ej.: 600 mg"
                 autoComplete="off"
                 onChange={event =>
                   handleDoseChange(
@@ -333,11 +376,13 @@ export function TreatmentSelector({
                 }
               />
             </label>
-          </>
+          </div>
         )}
 
         <label>
-          Hora de uso
+          <span>
+            Hora de uso
+          </span>
 
           <input
             type="time"
@@ -352,133 +397,185 @@ export function TreatmentSelector({
             }
           />
         </label>
+      </div>
 
-        <label>
-          Resultado percibido
-
-          <select
-            value={
-              treatment.effectiveness ??
-              ''
-            }
-            onChange={event =>
-              handleEffectivenessChange(
-                event.target.value,
-              )
-            }
-          >
-            <option value="">
-              Seleccionar resultado
-            </option>
-
-            {TREATMENT_EFFECTIVENESS_OPTIONS.map(
-              option => (
-                <option
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ),
-            )}
-          </select>
-        </label>
-
-        <label
+      <section
+        className={
+          styles.effectiveness
+        }
+      >
+        <div
           className={
-            styles.responseTimeField
+            styles.sectionHeading
           }
         >
-          Tiempo hasta sentir mejoría
+          <h4>
+            Resultado percibido
+          </h4>
 
-          <div
-            className={
-              styles.numberInputGroup
-            }
-          >
-            <input
-              type="number"
-              min="0"
-              step="1"
-              inputMode="numeric"
-              value={
-                treatment
-                  .responseTimeMinutes ??
-                ''
+          <p>
+            ¿Cuánto te ayudó?
+          </p>
+        </div>
+
+        <div
+          className={
+            styles.effectivenessGrid
+          }
+        >
+          {TREATMENT_EFFECTIVENESS_OPTIONS.map(
+            option => {
+              const isActive =
+                treatment.effectiveness ===
+                option.value;
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={
+                    isActive
+                  }
+                  onClick={() =>
+                    handleEffectivenessChange(
+                      isActive
+                        ? ''
+                        : option.value,
+                    )
+                  }
+                >
+                  {option.label}
+                </button>
+              );
+            },
+          )}
+        </div>
+      </section>
+
+      <button
+        type="button"
+        className={
+          styles.moreToggle
+        }
+        aria-expanded={
+          showMoreDetails
+        }
+        onClick={() =>
+          setShowMoreDetails(
+            current => !current,
+          )
+        }
+      >
+        {showMoreDetails
+          ? 'Ocultar detalles'
+          : hasMoreDetails
+            ? 'Ver detalles registrados'
+            : 'Agregar más detalles'}
+      </button>
+
+      {showMoreDetails && (
+        <section
+          className={
+            styles.moreDetails
+          }
+        >
+          <label>
+            <span>
+              Tiempo hasta sentir
+              mejoría
+            </span>
+
+            <div
+              className={
+                styles.numberInputGroup
               }
-              placeholder="Ejemplo: 45"
+            >
+              <input
+                type="number"
+                min="0"
+                step="1"
+                inputMode="numeric"
+                value={
+                  treatment
+                    .responseTimeMinutes ??
+                  ''
+                }
+                placeholder="Ej.: 45"
+                onChange={event =>
+                  handleResponseTimeChange(
+                    event.target.value,
+                  )
+                }
+              />
+
+              <span>
+                minutos
+              </span>
+            </div>
+          </label>
+
+          <label>
+            <span>
+              Efectos secundarios
+            </span>
+
+            <input
+              type="text"
+              value={
+                sideEffectsValue
+              }
+              placeholder="Separalos con comas"
+              autoComplete="off"
               onChange={event =>
-                handleResponseTimeChange(
+                handleSideEffectsChange(
                   event.target.value,
                 )
               }
             />
+          </label>
 
+          <label
+            className={
+              styles.notesField
+            }
+          >
             <span>
-              minutos
+              Notas opcionales
             </span>
-          </div>
-        </label>
 
-        <label>
-          Efectos secundarios
-
-          <input
-            type="text"
-            value={
-              sideEffectsValue
-            }
-            placeholder="Separalos con comas"
-            autoComplete="off"
-            onChange={event =>
-              handleSideEffectsChange(
-                event.target.value,
-              )
-            }
-          />
-        </label>
-
-        <label>
-          Notas opcionales
-
-          <textarea
-            value={
-              treatment.notes ??
-              ''
-            }
-            placeholder="Ej.: alivió el dolor, pero continuaron las náuseas"
-            rows={3}
-            onChange={event =>
-              handleNotesChange(
-                event.target.value,
-              )
-            }
-          />
-        </label>
-      </div>
+            <textarea
+              value={
+                treatment.notes ??
+                ''
+              }
+              placeholder="Ej.: alivió el dolor, pero continuaron las náuseas"
+              rows={3}
+              onChange={event =>
+                handleNotesChange(
+                  event.target.value,
+                )
+              }
+            />
+          </label>
+        </section>
+      )}
 
       {hasTreatmentData && (
         <div
           className={
-            styles.treatmentSummary
+            styles.summary
           }
           role="status"
         >
-          <span aria-hidden="true">
-            ✓
+          <strong>
+            Tratamiento registrado
+          </strong>
+
+          <span>
+            Podés modificar estos datos
+            antes de finalizar el
+            episodio.
           </span>
-
-          <div>
-            <strong>
-              Tratamiento registrado
-            </strong>
-
-            <small>
-              Podés modificar estos
-              datos antes de finalizar
-              el episodio.
-            </small>
-          </div>
         </div>
       )}
     </section>
