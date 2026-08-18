@@ -17,10 +17,6 @@ import {
 } from '../common/PainLocationSelector';
 
 import {
-  ClinicalPhasePanel,
-} from '../common/ClinicalPhasePanel';
-
-import {
   CrisisEvolutionCard,
 } from './CrisisEvolutionCard';
 
@@ -104,10 +100,18 @@ type CrisisPanelId =
   | 'capacity'
   | 'evolution';
 
+interface ToolDefinition {
+  id: CrisisPanelId;
+  eyebrow: string;
+  title: string;
+  description: string;
+  status: string;
+}
+
 const getLocationCount = (
   location: AnatomicalPainMap,
 ): number => {
-  const keys = new Set();
+  const keys = new Set<string>();
 
   const addPoint = (
     point:
@@ -177,23 +181,18 @@ export function CrisisTools({
   const eventCount =
     crisis.events?.length ?? 0;
 
-  const handlePanelChange = (
-    panel: CrisisPanelId,
-    isOpen: boolean,
-  ) => {
-    setActivePanel(current => {
-      if (isOpen) {
-        return panel;
-      }
-
-      return current === panel
-        ? null
-        : current;
-    });
-  };
-
   const closePanel = () => {
     setActivePanel(null);
+  };
+
+  const handlePanelToggle = (
+    panel: CrisisPanelId,
+  ) => {
+    setActivePanel(current =>
+      current === panel
+        ? null
+        : panel,
+    );
   };
 
   const handleMedicationRegister = (
@@ -245,217 +244,362 @@ export function CrisisTools({
     closePanel();
   };
 
+  const tools: ToolDefinition[] = [
+    {
+      id: 'symptoms',
+      eyebrow: 'Actualización rápida',
+      title: 'Síntomas',
+      description:
+        'Marcá lo que estés sintiendo ahora.',
+      status: formatCount(
+        symptoms.length,
+        'activo',
+        'activos',
+      ),
+    },
+    {
+      id: 'medication',
+      eyebrow: 'Tratamiento',
+      title: 'Medicación',
+      description:
+        'Registrá una toma.',
+      status: formatCount(
+        medicationRecords.length,
+        'toma',
+        'tomas',
+      ),
+    },
+    {
+      id: 'location',
+      eyebrow: 'Dolor',
+      title: 'Localización',
+      description:
+        'Actualizá dónde sentís el dolor.',
+      status: formatCount(
+        locationCount,
+        'zona',
+        'zonas',
+      ),
+    },
+    {
+      id: 'relief',
+      eyebrow: 'Alivio',
+      title: 'Medidas de alivio',
+      description:
+        'Reposo, oscuridad, frío u otras.',
+      status: formatCount(
+        nonPharmacologicalRecords
+          .length,
+        'registro',
+        'registros',
+      ),
+    },
+    {
+      id: 'capacity',
+      eyebrow: 'Impacto',
+      title: 'Capacidad funcional',
+      description:
+        'Registrá cuánto te limita.',
+      status: formatCount(
+        functionalCapacityRecords
+          .length,
+        'registro',
+        'registros',
+      ),
+    },
+  ];
+
+  const activeTool =
+    tools.find(
+      tool =>
+        tool.id === activePanel,
+    );
+
   return (
-    <div>
-      <ClinicalPhasePanel
-        id="crisis-symptoms-title"
-        eyebrow="Actualización rápida"
-        title="Síntomas"
-        description="Marcá solamente lo que estés sintiendo ahora."
-        icon="○"
-        status={
-          formatCount(
-            symptoms.length,
-            'seleccionado',
-            'seleccionados',
-          )
-        }
-        isOpen={
-          activePanel === 'symptoms'
-        }
-        onOpenChange={isOpen =>
-          handlePanelChange(
-            'symptoms',
-            isOpen,
-          )
+    <section
+      className={styles.tools}
+      aria-labelledby="crisis-tools-title"
+    >
+      <header
+        className={
+          styles.toolsHeader
         }
       >
-        <SymptomsCard
-          symptoms={symptoms}
-          onToggle={
-            onSymptomToggle
-          }
-          onDone={closePanel}
-        />
-      </ClinicalPhasePanel>
+        <div>
+          <p
+            className={
+              styles.eyebrow
+            }
+          >
+            Registrar un cambio
+          </p>
 
-      <ClinicalPhasePanel
-        id="crisis-medication-title"
-        eyebrow="Tratamiento"
-        title="Medicación"
-        description="Registrá una toma sin salir del modo crisis."
-        icon="+"
-        status={
-          formatCount(
-            medicationRecords.length,
-            'toma',
-            'tomas',
-          )
-        }
-        isOpen={
-          activePanel ===
-          'medication'
-        }
-        onOpenChange={isOpen =>
-          handlePanelChange(
-            'medication',
-            isOpen,
-          )
+          <h2 id="crisis-tools-title">
+            ¿Qué necesitás actualizar?
+          </h2>
+
+          <p>
+            Elegí solo lo que cambió.
+            No hace falta completar todo.
+          </p>
+        </div>
+      </header>
+
+      <div
+        className={
+          styles.quickGrid
         }
       >
-        <MedicationCard
-          records={medicationRecords}
-          onRegister={
-            handleMedicationRegister
-          }
-        />
-      </ClinicalPhasePanel>
+        {tools.map(tool => {
+          const isActive =
+            activePanel === tool.id;
 
-      <ClinicalPhasePanel
-        id="crisis-location-title"
-        eyebrow="Dolor"
-        title="Localización"
-        description="Indicá dónde empezó y hacia dónde se extendió."
-        icon="⌖"
-        status={
-          formatCount(
-            locationCount,
-            'zona',
-            'zonas',
-          )
-        }
-        isOpen={
-          activePanel === 'location'
-        }
-        onOpenChange={isOpen =>
-          handlePanelChange(
-            'location',
-            isOpen,
-          )
-        }
-      >
-        <PainLocationSelector
-          value={
-            anatomicalLocation
-          }
-          onChange={
-            onLocationChange
-          }
-          onComplete={closePanel}
-          title="¿Dónde sentís el dolor?"
-        />
-      </ClinicalPhasePanel>
+          return (
+            <button
+              key={tool.id}
+              type="button"
+              className={
+                styles.quickAction
+              }
+              aria-expanded={
+                isActive
+              }
+              aria-controls={
+                `crisis-tool-${tool.id}`
+              }
+              onClick={() =>
+                handlePanelToggle(
+                  tool.id,
+                )
+              }
+            >
+              <span
+                className={
+                  styles.quickActionTop
+                }
+              >
+                <small>
+                  {tool.eyebrow}
+                </small>
 
-      <ClinicalPhasePanel
-        id="crisis-relief-title"
-        eyebrow="Alivio"
-        title="Medidas no farmacológicas"
-        description="Reposo, oscuridad, frío, hidratación u otras medidas."
-        icon="◇"
-        status={
-          formatCount(
-            nonPharmacologicalRecords
-              .length,
-            'registro',
-            'registros',
-          )
-        }
-        isOpen={
-          activePanel === 'relief'
-        }
-        onOpenChange={isOpen =>
-          handlePanelChange(
-            'relief',
-            isOpen,
-          )
-        }
-      >
-        <NonPharmacologicalCard
-          records={
-            nonPharmacologicalRecords
-          }
-          onRegister={
-            handleReliefRegister
-          }
-        />
-      </ClinicalPhasePanel>
+                <span
+                  aria-hidden="true"
+                  className={
+                    styles.chevron
+                  }
+                />
+              </span>
 
-      <ClinicalPhasePanel
-        id="crisis-capacity-title"
-        eyebrow="Impacto"
-        title="Capacidad funcional"
-        description="Registrá cuánto limita tus actividades en este momento."
-        icon="↔"
-        status={
-          formatCount(
-            functionalCapacityRecords
-              .length,
-            'registro',
-            'registros',
-          )
-        }
-        isOpen={
-          activePanel ===
-          'capacity'
-        }
-        onOpenChange={isOpen =>
-          handlePanelChange(
-            'capacity',
-            isOpen,
-          )
-        }
-      >
-        <FunctionalCapacityCard
-          records={
-            functionalCapacityRecords
-          }
-          onRegister={
-            handleCapacityRegister
-          }
-        />
-      </ClinicalPhasePanel>
+              <strong>
+                {tool.title}
+              </strong>
 
-      <ClinicalPhasePanel
-        id="crisis-evolution-title"
-        eyebrow="Resumen"
-        title="Evolución de la crisis"
-        description="Revisá los cambios registrados durante este episodio."
-        icon="⌁"
-        status={
-          formatCount(
-            eventCount,
-            'cambio',
-            'cambios',
-          )
-        }
-        isOpen={
-          activePanel ===
-          'evolution'
-        }
-        onOpenChange={isOpen =>
-          handlePanelChange(
-            'evolution',
-            isOpen,
-          )
-        }
-      >
-        <CrisisEvolutionCard
-          crisis={crisis}
-        />
+              <span
+                className={
+                  styles.quickStatus
+                }
+              >
+                {tool.status}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-        <div
+      {activeTool && (
+        <section
+          id={
+            `crisis-tool-${activeTool.id}`
+          }
           className={
-            styles.completion
+            styles.activePanel
+          }
+          aria-labelledby={
+            `crisis-tool-${activeTool.id}-title`
           }
         >
-          <button
-            type="button"
-            onClick={closePanel}
+          <header
+            className={
+              styles.activePanelHeader
+            }
           >
-            Cerrar resumen
-          </button>
-        </div>
-      </ClinicalPhasePanel>
-    </div>
+            <div>
+              <p
+                className={
+                  styles.eyebrow
+                }
+              >
+                {activeTool.eyebrow}
+              </p>
+
+              <h3
+                id={
+                  `crisis-tool-${activeTool.id}-title`
+                }
+              >
+                {activeTool.title}
+              </h3>
+
+              <p>
+                {
+                  activeTool.description
+                }
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className={
+                styles.closeButton
+              }
+              onClick={closePanel}
+            >
+              Cerrar
+            </button>
+          </header>
+
+          <div
+            className={
+              styles.panelContent
+            }
+          >
+            {activePanel ===
+              'symptoms' && (
+              <SymptomsCard
+                symptoms={symptoms}
+                onToggle={
+                  onSymptomToggle
+                }
+                onDone={closePanel}
+              />
+            )}
+
+            {activePanel ===
+              'medication' && (
+              <MedicationCard
+                records={
+                  medicationRecords
+                }
+                onRegister={
+                  handleMedicationRegister
+                }
+              />
+            )}
+
+            {activePanel ===
+              'location' && (
+              <PainLocationSelector
+                value={
+                  anatomicalLocation
+                }
+                onChange={
+                  onLocationChange
+                }
+                onComplete={
+                  closePanel
+                }
+                title="¿Dónde sentís el dolor?"
+              />
+            )}
+
+            {activePanel ===
+              'relief' && (
+              <NonPharmacologicalCard
+                records={
+                  nonPharmacologicalRecords
+                }
+                onRegister={
+                  handleReliefRegister
+                }
+              />
+            )}
+
+            {activePanel ===
+              'capacity' && (
+              <FunctionalCapacityCard
+                records={
+                  functionalCapacityRecords
+                }
+                onRegister={
+                  handleCapacityRegister
+                }
+              />
+            )}
+          </div>
+        </section>
+      )}
+
+      <section
+        className={
+          styles.evolutionArea
+        }
+      >
+        <button
+          type="button"
+          className={
+            styles.evolutionButton
+          }
+          aria-expanded={
+            activePanel ===
+            'evolution'
+          }
+          aria-controls="crisis-tool-evolution"
+          onClick={() =>
+            handlePanelToggle(
+              'evolution',
+            )
+          }
+        >
+          <span>
+            <small>
+              Resumen
+            </small>
+
+            <strong>
+              Evolución de la crisis
+            </strong>
+          </span>
+
+          <span
+            className={
+              styles.evolutionStatus
+            }
+          >
+            {formatCount(
+              eventCount,
+              'cambio',
+              'cambios',
+            )}
+          </span>
+        </button>
+
+        {activePanel ===
+          'evolution' && (
+          <div
+            id="crisis-tool-evolution"
+            className={
+              styles.evolutionContent
+            }
+          >
+            <CrisisEvolutionCard
+              crisis={crisis}
+            />
+
+            <div
+              className={
+                styles.completion
+              }
+            >
+              <button
+                type="button"
+                onClick={closePanel}
+              >
+                Cerrar resumen
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+    </section>
   );
 }

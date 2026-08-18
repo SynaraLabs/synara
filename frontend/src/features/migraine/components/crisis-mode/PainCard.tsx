@@ -102,6 +102,11 @@ export function PainCard({
     setHasPendingSelection,
   ] = useState(false);
 
+  const [
+    isExpanded,
+    setIsExpanded,
+  ] = useState(true);
+
   useEffect(() => {
     if (hasPendingSelection) {
       return;
@@ -129,12 +134,71 @@ export function PainCard({
 
     onRegister(draftIntensity);
     setHasPendingSelection(false);
+    setIsExpanded(false);
   };
 
   const handleUndo = () => {
     onUndo();
     setHasPendingSelection(false);
   };
+
+  const handleOpen = () => {
+    setDraftIntensity(
+      crisis.intensity,
+    );
+    setHasPendingSelection(false);
+    setIsExpanded(true);
+  };
+
+  if (!isExpanded && lastRecord) {
+    return (
+      <section
+        className={`${styles.card} ${styles.painCard}`}
+        aria-labelledby="current-pain-title"
+      >
+        <header
+          className={
+            styles.painHeader
+          }
+        >
+          <div>
+            <p
+              className={
+                styles.painEyebrow
+              }
+            >
+              Dolor actual
+            </p>
+
+            <h2 id="current-pain-title">
+              {lastRecord.intensity}/10
+              {' · '}
+              {getPainDescription(
+                lastRecord.intensity,
+              )}
+            </h2>
+          </div>
+
+          <p>
+            Actualizado a las{' '}
+            {formatTime(
+              lastRecord.time,
+            )}
+          </p>
+        </header>
+
+        <button
+          type="button"
+          className={
+            styles.secondary
+          }
+          onClick={handleOpen}
+        >
+          Actualizar dolor
+        </button>
+      </section>
+    );
+  }
 
   return (
     <section
