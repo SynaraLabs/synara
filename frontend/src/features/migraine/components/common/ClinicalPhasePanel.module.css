@@ -141,6 +141,10 @@
   display: none;
 }
 
+.summary::marker {
+  content: '';
+}
+
 .summary:hover {
   background:
     var(--phase-soft);
@@ -161,31 +165,7 @@
 .main {
   min-width: 0;
 
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.icon {
-  width: 46px;
-  height: 46px;
-
-  display: grid;
-  place-items: center;
-
-  flex-shrink: 0;
-
-  border: 1px solid
-    var(--phase-border);
-  border-radius: 50%;
-
-  color:
-    var(--phase-accent);
-  background:
-    var(--phase-soft);
-
-  font-size: 1.05rem;
-  font-weight: 800;
+  display: block;
 }
 
 .eyebrow {
@@ -265,28 +245,56 @@
 }
 
 .chevron {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
+
+  position: relative;
 
   display: grid;
   place-items: center;
 
+  flex-shrink: 0;
+
+  border: 1px solid
+    transparent;
   border-radius: 50%;
 
   color:
     var(--phase-accent);
 
-  font-size: 1rem;
-  line-height: 1;
-
   transition:
+    border-color
+      var(--transition),
     background-color
       var(--transition),
     transform
       var(--transition);
 }
 
+.chevron::before {
+  content: '';
+
+  width: 8px;
+  height: 8px;
+
+  border-right: 2px solid
+    currentColor;
+  border-bottom: 2px solid
+    currentColor;
+
+  transform:
+    translateY(-2px)
+    rotate(45deg);
+}
+
 .summary:hover .chevron {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--phase-accent) 22%,
+      transparent
+    );
+
   background:
     var(--phase-soft);
 }
@@ -320,18 +328,6 @@
     border-left-width: 3px;
   }
 
-  .main {
-    align-items: flex-start;
-    gap: var(--space-3);
-  }
-
-  .icon {
-    width: 40px;
-    height: 40px;
-
-    font-size: 0.95rem;
-  }
-
   .title {
     font-size: 1.08rem;
   }
@@ -351,8 +347,13 @@
   }
 
   .chevron {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .chevron::before {
+    width: 7px;
+    height: 7px;
   }
 
   .content {

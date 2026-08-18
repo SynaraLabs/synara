@@ -5,22 +5,18 @@ import {
 } from 'react';
 
 import styles from './AuraSelector.module.css';
+import evolutionStyles from './aura/AuraEvolution.module.css';
 
 import type {
   AuraClinicalSymptom,
   AuraTiming,
   AuraUpdateData,
   BodySide,
-  ClinicalSymptomCategory,
 } from '../types/migraine.types';
 
 import { useMigraineStore } from '../store/migraine.store';
 
 import {
-  AURA_CATALOG,
-  AURA_CATEGORY_ORDER,
-  AURA_SIDE_OPTIONS,
-  AURA_TIMING_OPTIONS,
   buildAuraLegacyFields,
   buildAuraPhaseTime,
   calculateAuraDurationMinutes,
@@ -35,9 +31,7 @@ import {
   getSelectedAuraSymptoms,
   inferAuraRecordMode,
   isValidAuraDate,
-  normalizeAuraSearch,
   parseLocalDateTime,
-  toLocalDateTimeValue,
 } from '../utils/auraClinical';
 
 import {
@@ -45,69 +39,13 @@ import {
   type PhaseEndSelection,
 } from './common/PhaseEndSelector';
 
+import {
+  AuraInitialFlow,
+} from './aura/AuraInitialFlow';
 
-const frequentAuraSymptoms =
-  new Set<string>([
-    'flashes',
-    'zigzagLines',
-    'blindSpots',
-    'blurredVision',
-    'visualSpots',
-    'tingling',
-    'numbness',
-    'spreadingParesthesia',
-    'wordFindingDifficulty',
-    'speechDifficulty',
-    'vertigo',
-    'imbalance',
-  ]);
-
-type AuraCategory =
-  (typeof AURA_CATEGORY_ORDER)[number];
-
-
-const categoryLabels:
-  Partial<
-    Record<
-      ClinicalSymptomCategory,
-      string
-    >
-  > = {
-  visual:
-    'Síntomas visuales',
-
-  sensory:
-    'Síntomas sensitivos',
-
-  language:
-    'Lenguaje y comunicación',
-
-  motor:
-    'Síntomas motores',
-
-  vestibular:
-    'Equilibrio y orientación',
-
-  cognitive:
-    'Síntomas cognitivos',
-
-  general:
-    'Otros síntomas del aura',
-
-  other:
-    'Otros',
-};
-
-
-function getCategoryLabel(
-  category:
-    ClinicalSymptomCategory,
-): string {
-  return (
-    categoryLabels[category] ??
-    category
-  );
-}
+import {
+  AuraUpdateFlow,
+} from './aura/AuraUpdateFlow';
 
 
 interface AuraSelectorProps {
@@ -118,18 +56,6 @@ interface AuraSelectorProps {
 export function AuraSelector({
   onComplete,
 }: AuraSelectorProps) {
-  const [
-    searchQuery,
-    setSearchQuery,
-  ] = useState('');
-
-  const [
-    activeCategory,
-    setActiveCategory,
-  ] = useState<
-    AuraCategory | null
-  >(null);
-
   const [
     draftSymptoms,
     setDraftSymptoms,
@@ -172,6 +98,11 @@ export function AuraSelector({
     feedback,
     setFeedback,
   ] = useState('');
+
+  const [
+    showEvolution,
+    setShowEvolution,
+  ] = useState(false);
 
 
   const aura = useMigraineStore(
@@ -229,6 +160,10 @@ export function AuraSelector({
   const isActive =
     aura.present && !isEnded;
 
+  const isFirstUpdate =
+    updates.length === 0 &&
+    !aura.present;
+
 
   useEffect(() => {
     setDraftSymptoms(
@@ -247,76 +182,6 @@ export function AuraSelector({
     aura.timing,
     currentSymptoms,
   ]);
-
-
-  const normalizedSearchQuery =
-    normalizeAuraSearch(
-      searchQuery,
-    );
-
-
-  const visibleDefinitions =
-    useMemo(() => {
-      const definitions =
-        AURA_CATALOG.filter(
-        definition => {
-          const matchesSearch =
-            normalizedSearchQuery.length >
-              0 &&
-            normalizeAuraSearch(
-              `${definition.label} ${definition.value}`,
-            ).includes(
-              normalizedSearchQuery,
-            );
-
-          if (
-            normalizedSearchQuery.length >
-            0
-          ) {
-            return matchesSearch;
-          }
-
-          if (activeCategory) {
-            return (
-              definition.category ===
-              activeCategory
-            );
-          }
-
-          return frequentAuraSymptoms.has(
-            definition.value,
-          );
-        },
-      );
-
-      return activeCategory ||
-        normalizedSearchQuery
-        ? definitions
-        : definitions.slice(0, 8);
-    }, [
-      activeCategory,
-      normalizedSearchQuery,
-    ]);
-
-
-  const visibleCategories =
-    useMemo(() => {
-      return AURA_CATEGORY_ORDER
-        .map(category => ({
-          category,
-
-          symptoms:
-            visibleDefinitions.filter(
-              definition =>
-                definition.category ===
-                category,
-            ),
-        }))
-        .filter(
-          group =>
-            group.symptoms.length > 0,
-        );
-    }, [visibleDefinitions]);
 
 
   const visibleUpdates =
@@ -788,19 +653,20 @@ export function AuraSelector({
       }
       aria-labelledby="aura-title"
     >
-      <header>
-        <h3 id="aura-title">
-          Aura
-        </h3>
+      {isEnded && (
+        <header>
+          <h3 id="aura-title">
+            Aura
+          </h3>
 
-        <p>
-          El aura puede incluir cambios
-          visuales, sensitivos, de
-          lenguaje, motores o de
-          equilibrio. Podés registrar
-          varias actualizaciones.
-        </p>
-      </header>
+          <p>
+            El aura puede incluir cambios
+            visuales, sensitivos, de
+            lenguaje, motores o de
+            equilibrio.
+          </p>
+        </header>
+      )}
 
 
       {aura.present && (
@@ -833,339 +699,100 @@ export function AuraSelector({
 
       {!isEnded && (
         <>
-          {draftSymptoms.length > 0 && (
-            <section
-              className={
-                styles.compactSelected
-              }
-              aria-labelledby="selected-aura-symptoms"
-            >
-              <h4 id="selected-aura-symptoms">
-                Seleccionados
-              </h4>
-
-              <div
-                className={
-                  styles.compactChips
-                }
-              >
-                {draftSymptoms.map(
-                  symptom => (
-                    <button
-                      key={symptom}
-                      type="button"
-                      onClick={() =>
-                        toggleSymptom(
-                          symptom,
-                        )
-                      }
-                      aria-label={`Quitar ${getAuraSymptomLabel(symptom)}`}
-                    >
-                      {getAuraSymptomLabel(
-                        symptom,
-                      )}
-
-                      <span aria-hidden="true">
-                        ×
-                      </span>
-                    </button>
-                  ),
-                )}
-              </div>
-            </section>
-          )}
-
-
-          <label>
-            Buscar síntomas de aura
-
-            <input
-              type="search"
-              value={searchQuery}
-              placeholder="Ejemplo: destellos, hormigueo o dificultad al hablar"
-              onChange={event => {
-                setSearchQuery(
-                  event.target.value,
-                );
-
-                if (
-                  event.target.value
-                ) {
-                  setActiveCategory(
-                    null,
-                  );
-                }
-
-                setFeedback('');
-              }}
-            />
-          </label>
-
-
-          {!normalizedSearchQuery && (
-            <div
-              className={
-                styles.compactCategories
-              }
-              aria-label="Categorías de síntomas del aura"
-            >
-              <button
-                type="button"
-                aria-pressed={
-                  activeCategory ===
-                  null
-                }
-                onClick={() =>
-                  setActiveCategory(
-                    null,
-                  )
-                }
-              >
-                Frecuentes
-              </button>
-
-              {AURA_CATEGORY_ORDER.map(
-                category => (
-                  <button
-                    key={category}
-                    type="button"
-                    aria-pressed={
-                      activeCategory ===
-                      category
-                    }
-                    onClick={() =>
-                      setActiveCategory(
-                        category,
-                      )
-                    }
-                  >
-                    {getCategoryLabel(
-                      category,
-                    )}
-                  </button>
-                ),
-              )}
-            </div>
-          )}
-
-
-          <section
-            className={
-              styles.compactResults
-            }
-          >
-            <h4>
-              {normalizedSearchQuery
-                ? 'Resultados'
-                : activeCategory
-                  ? getCategoryLabel(
-                      activeCategory,
-                    )
-                  : 'Más frecuentes'}
-            </h4>
-
-            {visibleCategories.map(
-              group => (
-                <div
-                key={
-                  group.category
-                }
-              >
-                <div
-                  className={
-                    styles.compactChoiceGrid
-                  }
-                  role="group"
-                  aria-label={
-                    getCategoryLabel(
-                      group.category,
-                    )
-                  }
-                >
-                  {group.symptoms.map(
-                    definition => (
-                      <button
-                        key={
-                          definition.value
-                        }
-                        type="button"
-                        className={
-                          styles.compactChoice
-                        }
-                        aria-pressed={
-                          draftSymptoms.includes(
-                            definition.value,
-                          )
-                        }
-                        onClick={() =>
-                          toggleSymptom(
-                            definition.value,
-                          )
-                        }
-                      >
-                        {definition.label}
-                      </button>
-                    ),
-                  )}
-                </div>
-                </div>
-              ),
-            )}
-
-
-            {visibleDefinitions.length ===
-              0 && (
-              <p
-                className={
-                  styles.helperText
-                }
-              >
-                No encontramos síntomas
-                con esa búsqueda.
-              </p>
-            )}
-          </section>
-
-
-          <div
-            className={
-              styles.auraDetailsGrid
-            }
-          >
-            <label>
-              ¿Cuándo ocurrió respecto
-              del dolor?
-
-              <select
-                value={draftTiming}
-                onChange={event => {
-                  setDraftTiming(
-                    event.target
-                      .value as
-                      | AuraTiming
-                      | '',
-                  );
-
-                  setFeedback('');
-                }}
-              >
-                <option value="">
-                  Sin indicar
-                </option>
-
-                {AURA_TIMING_OPTIONS.map(
-                  option => (
-                    <option
-                      key={
-                        option.value
-                      }
-                      value={
-                        option.value
-                      }
-                    >
-                      {option.label}
-                    </option>
-                  ),
-                )}
-              </select>
-            </label>
-
-
-            <label>
-              Lado afectado
-
-              <select
-                value={draftSide}
-                onChange={event => {
-                  setDraftSide(
-                    event.target
-                      .value as
-                      | BodySide
-                      | '',
-                  );
-
-                  setFeedback('');
-                }}
-              >
-                <option value="">
-                  Sin indicar
-                </option>
-
-                {AURA_SIDE_OPTIONS.map(
-                  option => (
-                    <option
-                      key={
-                        option.value
-                      }
-                      value={
-                        option.value
-                      }
-                    >
-                      {option.label}
-                    </option>
-                  ),
-                )}
-              </select>
-            </label>
-          </div>
-
-
-          <label>
-            ¿Cuándo ocurrió esta
-            actualización?
-
-            <input
-              type="datetime-local"
-              value={
+          {isFirstUpdate ? (
+            <AuraInitialFlow
+              dateTime={
                 updateDateTime
               }
-              max={
+              maxDateTime={
                 getCurrentLocalDateTimeValue()
               }
-              min={
-                toLocalDateTimeValue(
-                  auraStart,
-                )
+              selectedSymptoms={
+                draftSymptoms
               }
-              onChange={event => {
-                setUpdateDateTime(
-                  event.target.value,
+              timing={
+                draftTiming
+              }
+              side={draftSide}
+              notes={draftNotes}
+              onDateTimeChange={value => {
+                setUpdateDateTime(value);
+                setFeedback('');
+              }}
+              onToggleSymptom={
+                toggleSymptom
+              }
+              onTimingChange={value => {
+                setDraftTiming(value);
+                setFeedback('');
+              }}
+              onSideChange={value => {
+                setDraftSide(value);
+                setFeedback('');
+              }}
+              onNotesChange={value => {
+                setDraftNotes(value);
+                setFeedback('');
+              }}
+              onSave={
+                handleRegisterUpdate
+              }
+            />
+          ) : !showEndSelector ? (
+            <AuraUpdateFlow
+              currentSymptoms={
+                currentSymptoms
+              }
+              selectedSymptoms={
+                draftSymptoms
+              }
+              dateTime={
+                updateDateTime
+              }
+              maxDateTime={
+                getCurrentLocalDateTimeValue()
+              }
+              timing={
+                draftTiming
+              }
+              side={draftSide}
+              notes={draftNotes}
+              onToggleSymptom={
+                toggleSymptom
+              }
+              onResetSymptoms={() => {
+                setDraftSymptoms(
+                  currentSymptoms,
                 );
-
+                setFeedback('');
+              }}
+              onDateTimeChange={value => {
+                setUpdateDateTime(value);
+                setFeedback('');
+              }}
+              onTimingChange={value => {
+                setDraftTiming(value);
+                setFeedback('');
+              }}
+              onSideChange={value => {
+                setDraftSide(value);
+                setFeedback('');
+              }}
+              onNotesChange={value => {
+                setDraftNotes(value);
+                setFeedback('');
+              }}
+              onSave={
+                handleRegisterUpdate
+              }
+              onOpenEnd={() => {
+                setShowEndSelector(
+                  true,
+                );
                 setFeedback('');
               }}
             />
-          </label>
-
-
-          <label>
-            Nota de esta actualización
-
-            <textarea
-              value={draftNotes}
-              rows={3}
-              placeholder="Ejemplo: el hormigueo comenzó en la mano y avanzó hacia el rostro"
-              onChange={event => {
-                setDraftNotes(
-                  event.target.value,
-                );
-
-                setFeedback('');
-              }}
-            />
-          </label>
-
-
-          <button
-            type="button"
-            onClick={
-              handleRegisterUpdate
-            }
-          >
-            {aura.present
-              ? 'Registrar actualización'
-              : 'Registrar inicio del aura'}
-          </button>
+          ) : null}
         </>
       )}
 
@@ -1183,10 +810,50 @@ export function AuraSelector({
 
 
       {visibleUpdates.length > 0 && (
-        <section>
-          <h4>
-            Evolución del aura
-          </h4>
+        <section
+          className={
+            evolutionStyles.evolutionSection
+          }
+        >
+          <button
+            type="button"
+            className={
+              evolutionStyles.evolutionToggle
+            }
+            aria-expanded={
+              showEvolution
+            }
+            onClick={() =>
+              setShowEvolution(
+                current =>
+                  !current,
+              )
+            }
+          >
+            <span>
+              {showEvolution
+                ? 'Ocultar evolución'
+                : 'Ver evolución'}
+            </span>
+
+            <span
+              aria-hidden="true"
+            >
+              {showEvolution
+                ? '−'
+                : '+'}
+            </span>
+          </button>
+
+          {showEvolution && (
+            <div
+              className={
+                evolutionStyles.evolutionContent
+              }
+            >
+              <h4>
+                Evolución del aura
+              </h4>
 
           <ul>
             {visibleUpdates.map(
@@ -1250,25 +917,10 @@ export function AuraSelector({
               },
             )}
           </ul>
+            </div>
+          )}
         </section>
       )}
-
-
-      {isActive &&
-        !showEndSelector && (
-          <button
-            type="button"
-            onClick={() => {
-              setShowEndSelector(
-                true,
-              );
-
-              setFeedback('');
-            }}
-          >
-            Indicar que terminó el aura
-          </button>
-        )}
 
 
       {isActive &&

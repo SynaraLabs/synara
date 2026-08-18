@@ -44,7 +44,6 @@ export function ClinicalPhasePanel({
   eyebrow,
   title,
   description,
-  icon,
   status,
   tone,
   defaultOpen = false,
@@ -97,15 +96,6 @@ export function ClinicalPhasePanel({
             styles.main
           }
         >
-          <span
-            className={
-              styles.icon
-            }
-            aria-hidden="true"
-          >
-            {icon}
-          </span>
-
           <span>
             {eyebrow && (
               <span
@@ -156,9 +146,7 @@ export function ClinicalPhasePanel({
               styles.chevron
             }
             aria-hidden="true"
-          >
-            ⌄
-          </span>
+          />
         </span>
       </summary>
 

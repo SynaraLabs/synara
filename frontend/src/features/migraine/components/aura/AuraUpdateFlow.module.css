@@ -1,0 +1,439 @@
+.flow {
+  --aura-accent: #697dcc;
+  --aura-accent-strong: #4f62ae;
+  --aura-soft: #f0f2fa;
+  --aura-soft-strong: #e4e8f7;
+
+  width: 100%;
+  min-width: 0;
+
+  display: grid;
+  gap: var(--space-4);
+
+  scroll-margin-top: 72px;
+}
+
+.intro {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.eyebrow {
+  margin: 0;
+
+  color: var(--aura-accent-strong);
+
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.intro h3 {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-editorial);
+  font-size: clamp(
+    1.5rem,
+    4.5vw,
+    2rem
+  );
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.intro p {
+  max-width: 620px;
+
+  margin: 0;
+
+  color: var(--color-text-soft);
+
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.actionList {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.actionButton {
+  width: 100%;
+  min-height: 64px;
+
+  display: grid;
+  gap: 3px;
+
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--aura-accent) 20%,
+      var(--color-border)
+    );
+  border-radius: var(--radius-medium);
+
+  color: var(--color-text);
+  background: var(--color-surface);
+
+  text-align: left;
+
+  box-shadow: none;
+}
+
+.actionButton strong {
+  color: var(--color-text-strong);
+
+  font-size: 0.86rem;
+}
+
+.actionButton span {
+  color: var(--color-text-soft);
+
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.actionButton:hover {
+  border-color: var(--aura-accent);
+  background: var(--aura-soft);
+}
+
+.endAction {
+  width: 100%;
+  min-height: 50px;
+
+  border: 1px solid
+    var(--aura-accent);
+  border-radius: var(--radius-medium);
+
+  color: var(--aura-accent-strong);
+  background: var(--aura-soft);
+
+  font-weight: 750;
+
+  box-shadow: none;
+}
+
+.endAction:hover {
+  border-color: var(--aura-accent-strong);
+
+  color: #ffffff;
+  background: var(--aura-accent-strong);
+}
+
+.branchHeader {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.backButton {
+  min-height: 44px;
+
+  padding: 8px 12px;
+
+  border: 1px solid
+    var(--aura-accent);
+  border-radius: var(--radius-medium);
+
+  color: var(--aura-accent-strong);
+  background: var(--aura-soft);
+
+  font-weight: 750;
+
+  box-shadow: none;
+}
+
+.backButton:hover {
+  border-color: var(--aura-accent-strong);
+
+  color: #ffffff;
+  background: var(--aura-accent-strong);
+}
+
+.selectionArea,
+.allSymptoms,
+.sameNotice {
+  min-width: 0;
+
+  display: grid;
+  gap: var(--space-3);
+
+  padding: var(--space-4);
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--aura-accent) 20%,
+      var(--color-border)
+    );
+  border-radius: var(--radius-medium);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--aura-soft) 34%,
+      var(--color-surface)
+    );
+}
+
+.selectionArea h4 {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-size: 0.88rem;
+}
+
+.helper,
+.emptyMessage,
+.sameNotice p {
+  margin: 0;
+
+  color: var(--color-text-soft);
+
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.choiceGrid {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.symptomChoice {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+
+  padding:
+    var(--space-2)
+    var(--space-3);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+
+  color: var(--color-text);
+  background: var(--color-surface);
+
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.25;
+  text-align: left;
+
+  box-shadow: none;
+}
+
+.symptomChoice:hover {
+  border-color: var(--aura-accent);
+  background: var(--aura-soft);
+}
+
+.symptomChoice[aria-pressed='true'] {
+  border-color: var(--aura-accent-strong);
+
+  color: #ffffff;
+  background: var(--aura-accent);
+}
+
+.field {
+  min-width: 0;
+
+  display: grid;
+  gap: var(--space-2);
+
+  color: var(--color-text-strong);
+
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-width: 0;
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--aura-accent) 22%,
+      var(--color-border-strong)
+    );
+
+  background: var(--color-surface);
+}
+
+.field input,
+.field select {
+  min-height: 50px;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--aura-accent);
+
+  box-shadow:
+    0 0 0 4px
+    color-mix(
+      in srgb,
+      var(--aura-accent) 16%,
+      transparent
+    );
+}
+
+.categoryList {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.category {
+  min-width: 0;
+
+  overflow: hidden;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+
+  background: var(--color-surface);
+}
+
+.categoryButton {
+  width: 100%;
+  min-height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+
+  padding:
+    var(--space-3)
+    var(--space-4);
+
+  border: 0;
+  border-radius: 0;
+
+  color: var(--color-text-strong);
+  background: transparent;
+
+  font-size: 0.82rem;
+  font-weight: 750;
+  text-align: left;
+
+  box-shadow: none;
+}
+
+.categoryButton:hover {
+  color: var(--aura-accent-strong);
+  background: var(--aura-soft);
+}
+
+.categoryContent {
+  padding:
+    0
+    var(--space-4)
+    var(--space-4);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.primaryAction {
+  min-width: 200px;
+  min-height: 50px;
+
+  border-color: var(--aura-accent-strong);
+
+  color: #ffffff;
+  background: var(--aura-accent);
+
+  box-shadow: none;
+}
+
+.primaryAction:hover {
+  border-color: var(--aura-accent-strong);
+  background: var(--aura-accent-strong);
+}
+
+.actionButton:focus-visible,
+.endAction:focus-visible,
+.backButton:focus-visible,
+.symptomChoice:focus-visible,
+.categoryButton:focus-visible,
+.primaryAction:focus-visible {
+  outline: 3px solid
+    color-mix(
+      in srgb,
+      var(--aura-accent) 28%,
+      transparent
+    );
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .flow {
+    padding-bottom:
+      calc(
+        84px +
+        env(safe-area-inset-bottom)
+      );
+  }
+
+  .intro h3 {
+    font-size: 1.5rem;
+  }
+
+  .selectionArea,
+  .allSymptoms,
+  .sameNotice {
+    padding: var(--space-3);
+  }
+
+  .choiceGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .primaryAction {
+    width: 100%;
+  }
+}
+
+@media (max-width: 340px) {
+  .choiceGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actionButton,
+  .endAction,
+  .backButton,
+  .symptomChoice,
+  .categoryButton,
+  .primaryAction {
+    transition: none;
+  }
+}
