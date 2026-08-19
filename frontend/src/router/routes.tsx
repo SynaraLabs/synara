@@ -1,4 +1,8 @@
 import {
+  Navigate,
+} from 'react-router-dom';
+
+import {
   AppLayout,
 } from '../components/layout/AppLayout';
 
@@ -27,6 +31,10 @@ import {
 } from '../features/profile/pages/ProfilePage';
 
 import {
+  WelcomePage,
+} from '../pages/WelcomePage';
+
+import {
   Anxiety,
 } from '../pages/Anxiety';
 
@@ -42,9 +50,35 @@ import {
   Reports,
 } from '../pages/Reports';
 
+const ONBOARDING_STORAGE_KEY =
+  'synara-onboarding-completed';
+
+function OnboardingGate() {
+  const hasCompletedOnboarding =
+    localStorage.getItem(
+      ONBOARDING_STORAGE_KEY,
+    ) === 'true';
+
+  if (!hasCompletedOnboarding) {
+    return (
+      <Navigate
+        to="/welcome"
+        replace
+      />
+    );
+  }
+
+  return <AppLayout />;
+}
+
 export const routes = [
   {
-    element: <AppLayout />,
+    path: '/welcome',
+    element: <WelcomePage />,
+  },
+
+  {
+    element: <OnboardingGate />,
 
     children: [
       {

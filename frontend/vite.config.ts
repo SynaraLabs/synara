@@ -17,6 +17,7 @@ export default defineConfig({
         'apple-touch-icon.png',
         'pwa-192x192.png',
         'pwa-512x512.png',
+        'pwa-maskable-512x512.png',
       ],
 
       manifest: {
@@ -26,8 +27,8 @@ export default defineConfig({
         description:
           'Registro y seguimiento integral de episodios de migraña.',
 
-        theme_color: '#f7f8fa',
-        background_color: '#f7f8fa',
+        theme_color: '#fcf7ef',
+        background_color: '#fcf7ef',
 
         display: 'standalone',
         orientation: 'portrait',
@@ -55,7 +56,8 @@ export default defineConfig({
             type: 'image/png',
           },
           {
-            src: 'pwa-512x512.png',
+            src:
+              'pwa-maskable-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
