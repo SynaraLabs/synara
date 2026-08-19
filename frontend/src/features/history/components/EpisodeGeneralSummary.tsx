@@ -1,5 +1,6 @@
 import type {
   MigraineEpisode,
+  MigraineTrigger,
 } from '../../migraine/types/migraine.types';
 
 import {
@@ -88,6 +89,51 @@ const hasTreatmentData = (
   );
 };
 
+const getTriggerLabel = (
+  episode: MigraineEpisode,
+  trigger: MigraineTrigger,
+): string => {
+  if (trigger !== 'other') {
+    return (
+      TRIGGER_LABELS[trigger] ??
+      trigger
+    );
+  }
+
+  const customOtherTrigger =
+    episode.triggerRecords
+      ?.find(
+        record =>
+          record.trigger === 'other',
+      )
+      ?.notes
+      ?.trim();
+
+  if (customOtherTrigger) {
+    return `Otro: ${customOtherTrigger}`;
+  }
+
+  return (
+    TRIGGER_LABELS.other ??
+    'Otro posible desencadenante'
+  );
+};
+
+const getTriggerLabels = (
+  episode: MigraineEpisode,
+): string[] => {
+  const triggers =
+    episode.triggers ?? [];
+
+  return triggers.map(
+    trigger =>
+      getTriggerLabel(
+        episode,
+        trigger,
+      ),
+  );
+};
+
 const createSummaryId = (
   episode: MigraineEpisode,
 ): string => {
@@ -114,8 +160,8 @@ export function EpisodeGeneralSummary({
   const episodeDuration =
     getEpisodeDuration(episode);
 
-  const triggers =
-    episode.triggers ?? [];
+  const triggerLabels =
+    getTriggerLabels(episode);
 
   const treatment =
     episode.treatment;
@@ -127,7 +173,7 @@ export function EpisodeGeneralSummary({
     getEffectivenessLabel(episode);
 
   const hasGeneralContext =
-    triggers.length > 0 ||
+    triggerLabels.length > 0 ||
     treatmentRegistered ||
     Boolean(episode.notes?.trim());
 
@@ -214,20 +260,17 @@ export function EpisodeGeneralSummary({
           <div
             className={styles.items}
           >
-            {triggers.length > 0 && (
+            {triggerLabels.length >
+              0 && (
               <p>
                 <b>
                   Posibles
                   desencadenantes
                 </b>
-                {triggers
-                  .map(
-                    trigger =>
-                      TRIGGER_LABELS[
-                        trigger
-                      ],
-                  )
-                  .join(', ')}
+
+                {triggerLabels.join(
+                  ', ',
+                )}
               </p>
             )}
 

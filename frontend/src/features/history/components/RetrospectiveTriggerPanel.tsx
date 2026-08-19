@@ -1,9 +1,11 @@
 import {
+  useRef,
   useState,
 } from 'react';
 
 import type {
   MigraineEpisode,
+  MigraineTrigger,
 } from '../../migraine/types/migraine.types';
 
 import {
@@ -43,8 +45,16 @@ export function RetrospectiveTriggerPanel({
     setIsOpen,
   ] = useState(false);
 
+  const pendingTriggersRef =
+    useRef<MigraineTrigger[] | null>(
+      null,
+    );
+
   const triggers =
     episode.triggers ?? [];
+
+  const triggerRecords =
+    episode.triggerRecords ?? [];
 
   return (
     <ClinicalPhasePanel
@@ -52,7 +62,7 @@ export function RetrospectiveTriggerPanel({
       eyebrow="Contexto del episodio"
       title="Posibles desencadenantes"
       description="Agregá factores que podrían haber influido en este episodio."
-      icon="⌁"
+      icon=""
       status={formatTriggerCount(
         triggers.length,
       )}
@@ -63,15 +73,38 @@ export function RetrospectiveTriggerPanel({
     >
       <TriggerSelector
         value={triggers}
+        triggerRecords={
+          triggerRecords
+        }
         onChange={
-          updatedTriggers =>
+          updatedTriggers => {
+            pendingTriggersRef.current =
+              [
+                ...updatedTriggers,
+              ];
+          }
+        }
+        onTriggerRecordsChange={
+          updatedTriggerRecords => {
+            const updatedTriggers =
+              pendingTriggersRef.current ??
+              triggers;
+
             onChange({
               ...episode,
 
               triggers: [
                 ...updatedTriggers,
               ],
-            })
+
+              triggerRecords: [
+                ...updatedTriggerRecords,
+              ],
+            });
+
+            pendingTriggersRef.current =
+              null;
+          }
         }
         onComplete={() =>
           setIsOpen(false)

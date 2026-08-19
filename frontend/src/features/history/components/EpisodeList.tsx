@@ -116,6 +116,12 @@ const matchesSearch = (
     episode.notes ?? '',
     ...(episode.triggers ?? []),
     ...(
+      episode.triggerRecords?.map(
+        record =>
+          record.notes ?? '',
+      ) ?? []
+    ),
+    ...(
       episode.premonitory
         .symptoms ?? []
     ),
