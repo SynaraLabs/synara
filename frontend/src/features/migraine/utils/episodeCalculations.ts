@@ -122,24 +122,33 @@ export function calculateMinutes(
 export function formatDuration(
   minutes?: number,
 ): string {
-  if (minutes === undefined) {
+  if (
+    minutes === undefined ||
+    !Number.isFinite(minutes)
+  ) {
     return 'Sin registrar';
   }
 
-  if (minutes === 0) {
+  const roundedMinutes =
+    Math.max(
+      0,
+      Math.round(minutes),
+    );
+
+  if (roundedMinutes === 0) {
     return '0 min';
   }
 
-  if (minutes < 60) {
-    return `${minutes} min`;
+  if (roundedMinutes < 60) {
+    return `${roundedMinutes} min`;
   }
 
   const hours = Math.floor(
-    minutes / 60,
+    roundedMinutes / 60,
   );
 
   const remainingMinutes =
-    minutes % 60;
+    roundedMinutes % 60;
 
   if (remainingMinutes === 0) {
     return `${hours} h`;
