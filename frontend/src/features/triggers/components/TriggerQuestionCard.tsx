@@ -45,40 +45,19 @@ export function TriggerQuestionCard({
     response?.answer === 'often' ||
     response?.answer === 'sometimes';
 
-  const isAnswered =
-    Boolean(response?.answer);
-
   return (
     <article
       className={styles.card}
-      data-answered={
-        isAnswered ? 'true' : undefined
-      }
       aria-labelledby={`trigger-question-${question.id}`}
     >
-      <header className={styles.header}>
-        <div>
-          <h3
-            id={`trigger-question-${question.id}`}
-          >
-            {question.question}
-          </h3>
-
-          <p>{question.explanation}</p>
-        </div>
-
-        <span
-          className={styles.status}
-          aria-label={
-            isAnswered
-              ? 'Pregunta respondida'
-              : 'Pregunta pendiente'
-          }
+      <header
+        className={styles.header}
+      >
+        <h3
+          id={`trigger-question-${question.id}`}
         >
-          {isAnswered
-            ? 'Respondida'
-            : 'Pendiente'}
-        </span>
+          {question.question}
+        </h3>
       </header>
 
       <div
@@ -109,8 +88,26 @@ export function TriggerQuestionCard({
         })}
       </div>
 
+      {question.explanation && (
+        <details
+          className={
+            styles.explanation
+          }
+        >
+          <summary>
+            Más contexto
+          </summary>
+
+          <p>
+            {question.explanation}
+          </p>
+        </details>
+      )}
+
       {showNotes && (
-        <label className={styles.notes}>
+        <label
+          className={styles.notes}
+        >
           <span>
             ¿Qué observaste?
           </span>
@@ -122,7 +119,9 @@ export function TriggerQuestionCard({
           </small>
 
           <textarea
-            value={response?.notes ?? ''}
+            value={
+              response?.notes ?? ''
+            }
             rows={3}
             placeholder="Ej.: suele ocurrir los domingos cuando duermo más y desayuno tarde"
             onChange={event =>
