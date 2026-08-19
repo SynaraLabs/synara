@@ -1,4 +1,6 @@
 import {
+  useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -98,6 +100,21 @@ export function RecoveryStage({
     setFeedback,
   ] = useState('');
 
+  const panelRefs =
+    useRef<
+      Partial<
+        Record<
+          RecoveryPanel,
+          HTMLDivElement | null
+        >
+      >
+    >({});
+
+  const previousActivePanel =
+    useRef<RecoveryPanel | null>(
+      null,
+    );
+
   const resolvePremonitory =
     useMigraineStore(
       state =>
@@ -191,6 +208,40 @@ export function RecoveryStage({
   >(
     getInitialPanel,
   );
+
+  useEffect(() => {
+    if (
+      !activePanel ||
+      previousActivePanel.current ===
+        activePanel
+    ) {
+      previousActivePanel.current =
+        activePanel;
+
+      return;
+    }
+
+    previousActivePanel.current =
+      activePanel;
+
+    const element =
+      panelRefs.current[
+        activePanel
+      ];
+
+    if (!element) {
+      return;
+    }
+
+    window.requestAnimationFrame(
+      () => {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      },
+    );
+  }, [activePanel]);
 
   const handlePanelChange = (
     panel: RecoveryPanel,
@@ -395,6 +446,13 @@ export function RecoveryStage({
       ? 'Registrado'
       : 'Sin registrar';
 
+  const pendingMessage =
+    hasOpenPremonitory
+      ? 'Primero registrá cuándo terminaron las señales previas.'
+      : isPostdromeActive
+        ? 'La recuperación sigue en curso. Finalizá el postdromo o indicá que finalmente no lo tuviste.'
+        : '';
+
   return (
     <section className={styles.root}>
       <header className={styles.intro}>
@@ -408,297 +466,341 @@ export function RecoveryStage({
           </h2>
 
           <p className={styles.introDescription}>
-            La crisis terminó y el
-            postdromo comenzó en ese
-            mismo momento. Registrá su
-            evolución o indicá que
-            finalmente no tuviste
-            postdromo.
+            Completá la evolución después
+            de la crisis y agregá el contexto
+            que ayude a comprender este
+            episodio.
           </p>
         </div>
       </header>
 
-      <div
-        className={
-          styles.panelList
-        }
+      <section
+        className={styles.workspace}
+        aria-labelledby="recovery-follow-up-title"
       >
-        {hasOpenPremonitory && (
-          <ClinicalPhasePanel
-            id="recovery-premonitory-title"
-            eyebrow="Fase pendiente"
-            tone="premonitory"
-            title="Señales premonitorias"
-            description="Indicá cuándo terminaron o registrá una nueva actualización."
-            icon="◌"
-            status="En curso"
-            isOpen={
-              activePanel ===
-              'premonitory'
-            }
-            onOpenChange={isOpen =>
-              handlePanelChange(
-                'premonitory',
-                isOpen,
-              )
-            }
-          >
-            <PremonitorySelector
-              context="recovery"
-              onComplete={
-                closeActivePanel
-              }
-            />
+        <div className={styles.sectionIntro}>
+          <div>
+            <p className={styles.sectionEyebrow}>
+              Seguimiento
+            </p>
 
-            {!showPremonitoryOptions &&
-              !showPremonitoryEnd && (
-                <button
-                  type="button"
-                  className={
-                    styles.resolutionAction
-                  }
-                  onClick={
-                    handleOpenResolution
-                  }
-                >
-                  Indicar cuándo
-                  terminaron las señales
-                </button>
-              )}
+            <h3 id="recovery-follow-up-title">
+              Evolución clínica
+            </h3>
+          </div>
 
-            {showPremonitoryOptions && (
-              <section
-                className={
-                  styles.resolutionOptions
+          <p>
+            Resolvé primero las fases que
+            todavía están abiertas.
+          </p>
+        </div>
+
+        <div className={styles.panelList}>
+          {hasOpenPremonitory && (
+            <div
+              ref={element => {
+                panelRefs.current.premonitory =
+                  element;
+              }}
+              className={styles.panelAnchor}
+            >
+              <ClinicalPhasePanel
+                id="recovery-premonitory-title"
+                eyebrow="Fase pendiente"
+                tone="premonitory"
+                title="Señales premonitorias"
+                description="Indicá cuándo terminaron o registrá una nueva actualización."
+                icon=""
+                status="En curso"
+                isOpen={
+                  activePanel ===
+                  'premonitory'
+                }
+                onOpenChange={isOpen =>
+                  handlePanelChange(
+                    'premonitory',
+                    isOpen,
+                  )
                 }
               >
-                <h3>
-                  ¿Qué pasó con las
-                  señales?
-                </h3>
-
-                <button
-                  type="button"
-                  onClick={
-                    handleEndedWithCrisis
+                <PremonitorySelector
+                  context="recovery"
+                  onComplete={
+                    closeActivePanel
                   }
-                >
-                  Terminaron cuando
-                  terminó la crisis
-                </button>
+                />
 
-                <button
-                  type="button"
-                  onClick={
-                    handleEndedDuringCrisis
-                  }
-                >
-                  Terminaron en otro
-                  momento
-                </button>
+                {!showPremonitoryOptions &&
+                  !showPremonitoryEnd && (
+                    <button
+                      type="button"
+                      className={
+                        styles.resolutionAction
+                      }
+                      onClick={
+                        handleOpenResolution
+                      }
+                    >
+                      Indicar cuándo
+                      terminaron las señales
+                    </button>
+                  )}
 
-                <button
-                  type="button"
-                  onClick={
-                    handleContinuesAfterCrisis
-                  }
-                >
-                  Continúan después de
-                  la crisis
-                </button>
+                {showPremonitoryOptions && (
+                  <section
+                    className={
+                      styles.resolutionOptions
+                    }
+                  >
+                    <h3>
+                      ¿Qué pasó con las
+                      señales?
+                    </h3>
 
-                <button
-                  type="button"
-                  onClick={
-                    handleUnknownEnd
-                  }
-                >
-                  No recuerdo cuándo
-                  terminaron
-                </button>
+                    <button
+                      type="button"
+                      onClick={
+                        handleEndedWithCrisis
+                      }
+                    >
+                      Terminaron cuando
+                      terminó la crisis
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={
-                    handleCancelResolution
-                  }
-                >
-                  Cancelar
-                </button>
-              </section>
-            )}
+                    <button
+                      type="button"
+                      onClick={
+                        handleEndedDuringCrisis
+                      }
+                    >
+                      Terminaron en otro
+                      momento
+                    </button>
 
-            {showPremonitoryEnd && (
-              <PhaseEndSelector
-                title="¿Cuándo terminaron las señales previas?"
-                startTime={
-                  premonitoryStart
-                }
-                onConfirm={
-                  handlePremonitoryEnd
-                }
-                onContinue={
-                  handleContinuesAfterCrisis
+                    <button
+                      type="button"
+                      onClick={
+                        handleContinuesAfterCrisis
+                      }
+                    >
+                      Continúan después de
+                      la crisis
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleUnknownEnd
+                      }
+                    >
+                      No recuerdo cuándo
+                      terminaron
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleCancelResolution
+                      }
+                    >
+                      Cancelar
+                    </button>
+                  </section>
+                )}
+
+                {showPremonitoryEnd && (
+                  <PhaseEndSelector
+                    title="¿Cuándo terminaron las señales previas?"
+                    startTime={
+                      premonitoryStart
+                    }
+                    onConfirm={
+                      handlePremonitoryEnd
+                    }
+                    onContinue={
+                      handleContinuesAfterCrisis
+                    }
+                  />
+                )}
+
+                {feedback && (
+                  <p
+                    className={styles.feedback}
+                    aria-live="polite"
+                  >
+                    {feedback}
+                  </p>
+                )}
+              </ClinicalPhasePanel>
+            </div>
+          )}
+
+          <div
+            ref={element => {
+              panelRefs.current.postdrome =
+                element;
+            }}
+            className={styles.panelAnchor}
+          >
+            <ClinicalPhasePanel
+              id="recovery-postdrome-title"
+              eyebrow="Recuperación"
+              tone="recovery"
+              title="Postdromo"
+              description="Registrá cómo evoluciona la recuperación después de la crisis."
+              icon=""
+              status={postdromeStatus}
+              isOpen={
+                activePanel ===
+                'postdrome'
+              }
+              onOpenChange={isOpen =>
+                handlePanelChange(
+                  'postdrome',
+                  isOpen,
+                )
+              }
+            >
+              <PostdromeTrackingSection
+                onComplete={
+                  closeActivePanel
                 }
               />
-            )}
-
-            {feedback && (
-              <p
-                className={
-                  styles.feedback
-                }
-                aria-live="polite"
-              >
-                {feedback}
-              </p>
-            )}
-          </ClinicalPhasePanel>
-        )}
-
-      <ClinicalPhasePanel
-          id="recovery-postdrome-title"
-        eyebrow="Recuperación"
-        tone="recovery"
-          title="Postdromo"
-          description="Registrá cómo evoluciona la recuperación después de la crisis."
-          icon="◇"
-          status={postdromeStatus}
-          isOpen={
-            activePanel ===
-            'postdrome'
-          }
-          onOpenChange={isOpen =>
-            handlePanelChange(
-              'postdrome',
-              isOpen,
-            )
-          }
-        >
-          <PostdromeTrackingSection
-            onComplete={
-              closeActivePanel
-            }
-          />
-        </ClinicalPhasePanel>
-
-        <ClinicalPhasePanel
-          id="recovery-triggers-title"
-        eyebrow="Contexto"
-        tone="trigger"
-          title="Posibles desencadenantes"
-          description="Registrá factores que podrían haber influido en este episodio."
-          icon="⌁"
-          status={
-            getTriggerStatus(
-              triggerCount,
-            )
-          }
-          isOpen={
-            activePanel ===
-            'triggers'
-          }
-          onOpenChange={isOpen =>
-            handlePanelChange(
-              'triggers',
-              isOpen,
-            )
-          }
-        >
-          <TriggerSelector
-            onComplete={
-              closeActivePanel
-            }
-          />
-        </ClinicalPhasePanel>
-
-        <ClinicalPhasePanel
-          id="recovery-treatment-title"
-          eyebrow="Tratamiento"
-          tone="treatment"
-          title="Tratamiento utilizado"
-          description="Registrá qué utilizaste y cómo respondió tu cuerpo."
-          icon="+"
-          status={treatmentStatus}
-          isOpen={
-            activePanel ===
-            'treatment'
-          }
-          onOpenChange={isOpen =>
-            handlePanelChange(
-              'treatment',
-              isOpen,
-            )
-          }
-        >
-          <TreatmentSelector
-            showHeader={false}
-          />
-        </ClinicalPhasePanel>
-      </div>
-
-      {hasOpenPremonitory && (
-        <p
-          className={
-          styles.notice
-          }
-        >
-        <strong>
-          Señales previas pendientes.
-        </strong>{' '}
-
-        Primero debés registrar cuándo
-        terminaron.
-        </p>
-      )}
-
-      {isPostdromeActive && (
-        <p
-          className={
-          styles.notice
-          }
-        >
-        <strong>
-          La recuperación continúa.
-        </strong>{' '}
-
-        Registrá la recuperación
-        completa o indicá que no
-        tuviste postdromo.
-        </p>
-      )}
+            </ClinicalPhasePanel>
+          </div>
+        </div>
+      </section>
 
       <section
-        className={
-          styles.completionArea
-        }
+        className={styles.workspace}
+        aria-labelledby="recovery-context-title"
       >
-        <div
-          className={
-            styles.completionText
-          }
+        <div className={styles.sectionIntro}>
+          <div>
+            <p className={styles.sectionEyebrow}>
+              Contexto
+            </p>
+
+            <h3 id="recovery-context-title">
+              Sobre este episodio
+            </h3>
+          </div>
+
+          <p>
+            Estos datos pueden ayudarte a
+            reconocer patrones con el
+            tiempo.
+          </p>
+        </div>
+
+        <div className={styles.panelList}>
+          <div
+            ref={element => {
+              panelRefs.current.triggers =
+                element;
+            }}
+            className={styles.panelAnchor}
+          >
+            <ClinicalPhasePanel
+              id="recovery-triggers-title"
+              eyebrow="Contexto"
+              tone="trigger"
+              title="Posibles desencadenantes"
+              description="Factores que podrían haber influido."
+              icon=""
+              status={
+                getTriggerStatus(
+                  triggerCount,
+                )
+              }
+              isOpen={
+                activePanel ===
+                'triggers'
+              }
+              onOpenChange={isOpen =>
+                handlePanelChange(
+                  'triggers',
+                  isOpen,
+                )
+              }
+            >
+              <TriggerSelector
+                onComplete={
+                  closeActivePanel
+                }
+              />
+            </ClinicalPhasePanel>
+          </div>
+
+          <div
+            ref={element => {
+              panelRefs.current.treatment =
+                element;
+            }}
+            className={styles.panelAnchor}
+          >
+            <ClinicalPhasePanel
+              id="recovery-treatment-title"
+              eyebrow="Tratamiento"
+              tone="treatment"
+              title="Tratamiento utilizado"
+              description="Qué utilizaste y cómo respondió tu cuerpo."
+              icon=""
+              status={treatmentStatus}
+              isOpen={
+                activePanel ===
+                'treatment'
+              }
+              onOpenChange={isOpen =>
+                handlePanelChange(
+                  'treatment',
+                  isOpen,
+                )
+              }
+            >
+              <TreatmentSelector
+                showHeader={false}
+              />
+            </ClinicalPhasePanel>
+          </div>
+        </div>
+      </section>
+
+      {pendingMessage && (
+        <p
+          className={styles.notice}
+          role="status"
         >
+          <strong>
+            Seguimiento pendiente.
+          </strong>{' '}
+
+          {pendingMessage}
+        </p>
+      )}
+
+      <section className={styles.completionArea}>
+        <div className={styles.completionText}>
+          <p className={styles.sectionEyebrow}>
+            Episodio
+          </p>
+
           <h3>
             Cerrar el seguimiento
           </h3>
 
           <p>
-            Podrás consultar todo el
-            episodio desde el historial.
+            Cuando termines, todo el
+            registro quedará disponible
+            en el historial.
           </p>
         </div>
 
         <button
           type="button"
-          className={
-            styles.completeButton
-          }
-          disabled={
-            !canCompleteEpisode
-          }
-          onClick={
-            handleCompleteEpisode
-          }
+          className={styles.completeButton}
+          disabled={!canCompleteEpisode}
+          onClick={handleCompleteEpisode}
         >
           Finalizar episodio
         </button>
