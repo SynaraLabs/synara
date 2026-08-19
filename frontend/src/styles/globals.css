@@ -45,6 +45,8 @@ html {
 
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+
+  touch-action: manipulation;
 }
 
 body {
@@ -55,6 +57,8 @@ body {
     var(--color-text);
   background:
     var(--color-background);
+
+  touch-action: manipulation;
 }
 
 body,
@@ -373,6 +377,8 @@ hr {
 #root {
   width: 100%;
   min-height: 100vh;
+
+  touch-action: manipulation;
 }
 
 ::selection {
