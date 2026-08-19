@@ -5,6 +5,7 @@
   --profile-border: #dec1ca;
 
   width: 100%;
+  max-width: 100%;
   min-width: 0;
 
   display: grid;
@@ -16,6 +17,9 @@
 
 .pageHeader {
   position: relative;
+
+  min-width: 0;
+  max-width: 100%;
 
   padding:
     var(--space-6)
@@ -55,6 +59,8 @@
       3.2rem
     );
   line-height: 1.03;
+
+  overflow-wrap: anywhere;
 }
 
 .description {
@@ -72,6 +78,8 @@
 }
 
 .saveNotice {
+  max-width: 100%;
+
   display: inline-flex;
 
   margin:
@@ -92,9 +100,15 @@
   font-size: 0.7rem;
   font-weight: 700;
   line-height: 1.4;
+
+  overflow-wrap: anywhere;
 }
 
 .personalSection {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
   display: grid;
   gap: var(--space-4);
 
@@ -114,6 +128,8 @@
 }
 
 .sectionHeader {
+  min-width: 0;
+
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -143,6 +159,8 @@
 
   font-size: 1.2rem;
   line-height: 1.3;
+
+  overflow-wrap: anywhere;
 }
 
 .sectionHeader > span {
@@ -177,6 +195,9 @@
 }
 
 .fieldGrid {
+  width: 100%;
+  min-width: 0;
+
   display: grid;
   grid-template-columns:
     repeat(
@@ -209,6 +230,7 @@
 .fieldGrid input,
 .fieldGrid select {
   width: 100%;
+  max-width: 100%;
   min-width: 0;
   min-height: 48px;
 
@@ -246,6 +268,64 @@
     rgb(169 101 121 / 18%);
 }
 
+.sectionActions {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+
+  padding-top:
+    var(--space-2);
+}
+
+.savedMessage {
+  margin: 0;
+
+  color:
+    var(--profile-accent-strong);
+
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.continueButton {
+  min-height: 48px;
+
+  padding:
+    10px
+    var(--space-5);
+
+  border: 1px solid
+    var(--profile-accent-strong);
+  border-radius:
+    var(--radius-medium);
+
+  color: #ffffff;
+  background:
+    var(--profile-accent-strong);
+
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.continueButton:hover {
+  background:
+    #7f485c;
+}
+
+.continueButton:focus-visible {
+  outline: 3px solid
+    rgb(169 101 121 / 20%);
+
+  outline-offset: 3px;
+}
+
 @media (max-width: 600px) {
   .profile {
     gap: var(--space-4);
@@ -278,11 +358,26 @@
     gap: var(--space-2);
   }
 
+  .sectionHeader > span {
+    max-width: 100%;
+
+    white-space: normal;
+  }
+
   .fieldGrid {
     grid-template-columns: 1fr;
   }
 
   .fieldGrid label:first-child {
     grid-column: auto;
+  }
+
+  .sectionActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .continueButton {
+    width: 100%;
   }
 }

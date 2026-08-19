@@ -1,4 +1,5 @@
 import {
+  useRef,
   useState,
 } from 'react';
 
@@ -90,6 +91,16 @@ export function ProfileForm() {
     'personal',
   );
 
+  const [
+    isProfileSaved,
+    setIsProfileSaved,
+  ] = useState(false);
+
+  const contentRef =
+    useRef<HTMLDivElement | null>(
+      null,
+    );
+
   const profile =
     useProfileStore(
       state => state.profile,
@@ -100,6 +111,61 @@ export function ProfileForm() {
       state =>
         state.updateField,
     );
+
+  const activeSectionIndex =
+    PROFILE_SECTIONS.findIndex(
+      section =>
+        section.id ===
+        activeSection,
+    );
+
+  const isLastSection =
+    activeSectionIndex ===
+    PROFILE_SECTIONS.length - 1;
+
+  const moveToSection = (
+    sectionId: ProfileSectionId,
+  ) => {
+    setIsProfileSaved(false);
+    setActiveSection(
+      sectionId,
+    );
+
+    requestAnimationFrame(() => {
+      contentRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
+
+  const handleSaveAndContinue = () => {
+    if (isLastSection) {
+      setIsProfileSaved(true);
+
+      requestAnimationFrame(() => {
+        contentRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      });
+
+      return;
+    }
+
+    const nextSection =
+      PROFILE_SECTIONS[
+        activeSectionIndex + 1
+      ];
+
+    if (!nextSection) {
+      return;
+    }
+
+    moveToSection(
+      nextSection.id,
+    );
+  };
 
   return (
     <section
@@ -155,7 +221,7 @@ export function ProfileForm() {
                   : undefined
               }
               onClick={() =>
-                setActiveSection(
+                moveToSection(
                   section.id,
                 )
               }
@@ -167,6 +233,7 @@ export function ProfileForm() {
       </nav>
 
       <div
+        ref={contentRef}
         className={
           navigationStyles.content
         }
@@ -314,6 +381,35 @@ export function ProfileForm() {
           'menstrual' && (
           <MenstrualContextSection />
         )}
+
+        <div
+          className={styles.sectionActions}
+        >
+          {isProfileSaved && (
+            <p
+              className={
+                styles.savedMessage
+              }
+              role="status"
+            >
+              Perfil actualizado.
+            </p>
+          )}
+
+          <button
+            type="button"
+            className={
+              styles.continueButton
+            }
+            onClick={
+              handleSaveAndContinue
+            }
+          >
+            {isLastSection
+              ? 'Guardar perfil'
+              : 'Guardar y continuar'}
+          </button>
+        </div>
       </div>
     </section>
   );
